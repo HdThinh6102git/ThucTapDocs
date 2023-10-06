@@ -1,0 +1,209 @@
+Em đã đọc qua các mối quan hệ của các model SettingScreen 
+
+Phân tích qua cách làm: 
+
+	- data = SettingScreen.findOne where (cái truyền vào) 
+
+	- items = SettingScreenItem.findAll where screen_id == data.id 
+
+	- item_details = SettingScreenItemDetail.findAll where screen_item_id == item.id
+
+	- category cho từng item_details (ok) 
+
+Đến chỗ tìm item_products 
+	- Đối với api cũ mà Tính đưa em xem 
+		item_products sẽ là tập hợp các SettingScreenItemProduct 
+			và trong từng item_product sẽ có product là tập hợp các product có id == item_product.product_id
+	Cụ thể: 
+		(SettingScreenItemProduct có quan hệ với SettingScreenItem) 
+		+ item_products = SettingScreenItemProduct.findAll where screen_item_id == item.id 
+		Trong mỗi item_product sẽ có trường product 
+		+ product = Product.findAll(where product.id == item_product.product_id) 
+	
+	- Đối với api chị yêu cầu em làm 
+		item_products sẽ là tập hợp các product mà có category_id == category_id của item_detail 
+
+Ở đây em phân tích cách làm khi  chuyển đổi qua sử dụng include như sau: 
+	- data, items, item_details, cateogory có quan hệ với nhau do đó dùng include được 
+	
+	- Nhưng khi tiến hành tìm item_products thì product chưa có quan hệ với item_detail
+		+ Nếu muốn dùng include thì sẽ thay đổi trong item_detail model và set quan hệ với product 
+	item_products = 
+		
+	
+
+
+Vấn đề ở đây item_products cũ là settingScreenItemProduct 
+Còn item_products mới là product 
+
+
+
+Không có quan hệ giữa product và SettingScreenItemDetail 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Vấn đề chỗ tìm item_products là: 
+	
+	1. Định nghĩa: item_products sẽ là tập hợp các product mà có category_id == category_id của item_detail 
+	
+	2. Implement trong code: 
+		
+ 
+
+
+
+item_products 
+	C1: nó sẽ là model: product 
+		as item_products 
+		where category_id = item_detail.category_id 
+	Câu hỏi: Làm sao lấy được category_id 
+	
+	C2: nó sẽ là model: SettingScreenItemProduct 
+	
+	Nó không hề có trường category_id để lưu và sau đó get product dựa vào đó 
+	
+	C3: Tìm các quan hệ include cho đến được items và item_details 
+	Rồi duyệt vòng lặp ở items vào đó thêm các item_products 
+	2 vòng lặp tương tự bên kia 
+
+
+
+return SettingScreen.findOne({
+            where,
+            include: [
+                {
+                    model: SettingScreenItem,
+                    as: "items",
+                    order: ['position', 'ASC'],
+                    include: [
+                        {
+                            model: SettingScreenItemDetail,
+                            as: "item_details",
+                            
+                        },
+                        {
+                            model: SettingScreenItemProduct,
+                            as: "item_products",
+                          
+                        }
+                    ]
+                }
+            ]
+        }
+    )
+
+Theo như đoạn code ở trên thì output sẽ là 
+	data{
+		....
+		items: [
+			{
+				item_details:[]
+				item_products:[] 
+			}
+		]
+	}
+
+
+
+
+
+
+
+Theo yêu cầu của chị thì 
+	item_products sẽ là tập hợp các Product có category_id == item_detail.id 
+
+
+Nếu muốn sử dụng include có nghĩa sẽ thay thành như sau: 
+Chỗ item_products thay vì sử dụng model SettingScreenItemProduct thì sẽ sử dụng Product bởi lúc này ta cần tìm các product 
+
+Thế nhưng model Product và model SettingScreenItem thì không hề có quan hệ gì với nhau --> dẫn đến không hề có kết quả 
+
+return SettingScreen.findOne({
+            where,
+            include: [
+                {
+                    model: SettingScreenItem,
+                    as: "items",
+                    order: ['position', 'ASC'],
+                    include: [
+                        {
+                            model: SettingScreenItemDetail,
+                            as: "item_details",
+                            
+                        },
+                        {
+                            model: Product,
+                            as: "item_products",
+                          
+                        }
+                    ]
+                }
+            ]
+        }
+    )
+
+
+
+Nếu thực sự muốn sử dụng include thì có thể include đến mực item_detail và category 
+	rồi sau đó duyệt qua items trong từng item 
+	tạo ra item_products rồi tìm kiếm tương tự bên cũ 
+Như vậy cũng sẽ dùng vòng lặp tương tự 
+
+	data{
+		....
+		items: [
+			{
+				item_details:[	
+					{
+						...
+						category_id:...
+						...
+						category:{.....}
+					},
+				]
+				item_products:[
+					{
+						...
+						product:{
+						...
+						}
+					},
+					{
+					...
+					}
+						
+				] 
+			},
+			{
+			...
+			},
+			{
+			...
+			}
+		]
+	}
+
+
+	Với 
+		1. data là setting_screen.findOne (screen, website) 
+		2. items là setting_screen_item.findAll(screen_id == data.id) 
+		3. item_details là setting_screen_item_detail.findAll(screen_item_id == item.id) 
+		4. category là category.findOne(id == item_detail.category_id) 
+		5. item_products là setting_screen_item_product.findAll(screen_item_id == item.id) 
+		6. product là product.findOne(id == item_product.product_id) 
+		
+Chưa sắp xếp được theo thứ tự position 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

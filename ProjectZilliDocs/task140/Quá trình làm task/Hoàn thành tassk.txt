@@ -1,0 +1,112 @@
+1. Flow tạo setting Screen 
+	1.1. Update code
+		- File page-constant.ts
+			+ product_list_screen: 'product_list_screen'
+			+ product_list
+		- File setting_landing.ts 
+			+ Trong array shopping_screens thêm {name: 'product_list_screen'}
+		- File setting_screen.service.ts 
+			+ Trong hàm createSettingScreen thêm else if trong vòng lặp for 
+				setting_screen = PAGE_ENUM.product_list[i-1].name
+	1.2. Flow để tạo ra 
+		B1: Request /api/v1/admin/setting-website
+			Body: {
+    				"name": "Tiêu đề tesst",
+    				"website": "zili_website",
+    				"website_id": 0,
+    				"status": false
+			}
+		B2: Call hàm createWebsiteAction của SettingWebsiteController 
+		B3: Call hàm createSettingWebsite của settingWebsiteService
+		B4: Create SettingWebsiteGroup với arguments:  req.body 
+		B5: Do website_id = 0 nên duyệt qua array shopping_screens lần lượt đối với từng screen 
+		B6: Call hàm createSettingScreen của settingScreenService 
+			arguments: screen.name, request.website, groupId(là id của SettingWebsiteGroup vừa mới tạo)
+		B7: Create SettingScreen với arguments trên 
+		B8: Chạy vòng lặp từ 1 đến PAGE_ENUM.max(23)
+			const screen_detail = PAGE_ENUM.screen_item + i
+		B9: Đối với mỗi lần lặp, kiểm tra screen là gì và set Setting_Screen tương ứng đối với các list đã được set ở setting_landing.ts 
+			setting_screen = PAGE_ENUM.product_list[i-1].name
+			setting_screen là một column thuộc table SettingScreenItem 
+			--> Mỗi lần lặp sẽ tạo ra một SettingScreenItem và push nó vào array SettingScreenItems 
+				với position: i , status: true
+		B10: BulkCreate (SettingScreenItems) 
+		B11: createSettingScreen return SettingScreen vừa được tạo 
+		B12: createSettingWebsite return SettingWebsiteGroup vừa được tạo 
+Câu hỏi đặt ra: 
+Với output data 
+	- Level 1: data (setting_screen.findOne)
+ 	- Level 2: items (SettingScreenItem.findAll(where: screen_id = data.id )
+	- Level 3: item (SettingScreenItem)
+	Duyệt qua items , trong từng item 
+		Tạo ra một item_details 	
+	- Level 4: item_details là một array (SettingScreenItemDetail.findAll, screen_item_id: screen_item_id) có 1 phần tử duy nhất 
+	 	Trong item_detail Level 5: category (Category.findOne where id: category_id)
+	- Level 4: item_products (list các product có category_id của item_details ở trên )
+		Product.findAll(category_id: category_id)
+	
+	Chuyển đổi item_products cho đúng format yêu cầu
+
+Vậy thì 
+	1. SettingScreenItemDetails được tạo ra khi nào và gọi api nào ? trong updatesettingScreen 
+	2. Category cho từng SettingScreenItemDetail được thêm vào khi và gọi api nào để thêm ?trong updatesettingScreen 
+	
+2. Flow get setting product_list_screen item 
+	B1: Request /api/v1/screen//product_list?screen=product_list_screen&website=zili_website&group_id=28
+	B2: Call hàm findSettingItemForProductListScreenAction của settingScreenController
+	B3: Call hàm findSettingItemForProductListScreen của settingScreenService
+		argument where.screen = screen, website, group_id
+	B4: data = await SettingScreen.findOne(where)
+	B5: items = await SettingScreenItem.findAll(screen_id: data.id)
+	B6: Duyệt qua items , trong từng item 
+		Tạo ra một item_details 	
+	- Level 4: item_details là một array (SettingScreenItemDetail.findAll, screen_item_id: screen_item_id) có 1 phần tử duy nhất 
+	 	Trong item_detail Level 5: category (Category.findOne where id: category_id)
+	- Level 4: item_products (list các product có category_id của item_details ở trên )
+		Product.findAll(category_id: category_id)
+	
+	Chuyển đổi item_products cho đúng format yêu cầu
+	B7: data.dataValues.items = items
+	B8: return data
+
+
+3. Check lỗi chính tả, console.log, urladmin có guard ở các file đã update 
+	3.1. Folder enums
+		- page/page-constant.ts (oki)
+		- setting/setting-landing.ts (oki)
+	3.2. Folder controllers (setting/settingwebsite)
+		- screen/index.ts (oki)
+		- screen/setting-screen.controller.ts (oki)
+	3.3. Folder services (setting/settingwebsite)
+		- screen/setting-screen.service.ts (oki)
+
+4. Trước khi commit and push (đợi hỏi lại chị Liễu nói đúng rồi thì làm những việc sau)
+	- validate lại trường hợp hôm trước api bị chết và báo lỗi về (nếu cần) , check thêm một vài trường nếu có null pointer,...
+	- backup nhưng gì đã làm và pull về 
+	- commit với commit message theo commit rules
+	- tạo nhánh mới push lên (đặt tên theo rules ) 
+	- git push --set-upstream origin feature/WOWI-140
+	- tạo merge request gửi leader 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

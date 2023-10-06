@@ -1,0 +1,122 @@
+Yêu cầu: Bổ sung API lấy ra danh sách các bài tin tức(blog) nổi bật 
+
+Danh sách các việc cần làm: 
+
+I/ Thứ 1: Thêm file migrate (dùng để thêm trường blog_id trong bảng setting_screen_item_detail) 
+
+Nơi implement: knex/migration
+Các bước thực hiện
+	B1: Đọc file README.md để biết cách tạo ra file migration mới 
+	B2: Đọc các file migration Update cũ để tham khảo cách làm 
+	B3: Đọc các kiểu dữ liệu để làm đồng nhất (nó là foreign_key)
+	B4: Thêm blog_id vào trong model setting_screen_item_detai.model
+	
+Tiến độ: Đã thêm thành công vào db zili_dev  và đã có file migration cả up và down (blog_id kiểu string)  
+ 
+
+II/ Thứ 2: Thêm quan hệ giữa bảng blog và setting_screen_item_detail 
+
+Nơi implement: src/model/setting/setting-website/screen/detail/setting_screen_item_detail.model.ts
+Các bước thực hiện 
+	B1: Xác định quan hệ giữa bảng blog và setting_screen_item_detail là quan hệ gì 
+		TH1: Nếu set là belongsTo thì 
+			- Khi thực hiện tìm kiếm nhờ vào quan hệ (include) thì sẽ là blog.findOne mà có id == setting_screen_item_detail.blog_id
+		TH2: Nếu set là hasMany thì 
+			- Khi thực hiện tìm kiếm nhờ vào quan hệ (include) thì sẽ là blog.findAll mà có id == setting_screen_item_detail.blog_id
+--> Dựa vào xem xét hàm findSettingScreen thì chọn TH 
+(Các hàm findSettingScreen dùng để lấy lên các item khi load trang web)
+(Chỗ này cần tìm hiểu kĩ về việc sử dụng findSetting để đưa ra quyết định chọn TH nào) 
+	
+	B2: Implement với format tham khảo từ các quan hệ khác đã được cài đặt 
+
+Tiến độ: Đã implement tuy nhiên chưa chắc chắn chỗ quan hệ đó là gì
+
+III/ Thứ 3: Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item 
+
+Nơi implement: src/enums/page/page-constants 
+	- Ở array homes {name: 'home_featured_blog'},
+
+Các bước thực hiện: 
+	B1: Tìm nơi có enum tương tự home_
+	B2: implement theo format đã có trước đó 
+		- src/enums/page/page-constant.ts
+		- thêm vào array homes [ {name: 'home_featured_blog'} ] 
+		- thêm enum home_featured_blog: 'home_featured_blog',
+	B3: Tìm nơi dùng để thêm enum này vào 
+		Thứ 1: Là api có url /api/v1/admin/setting-website (Post) 
+		Thứ 2: Ở controller gọi hàm settingWebsiteService.createSettingWebsite(req.body)
+		Thứ 3: Trong service trên có trường hợp gọi hàm settingScreenService.createSettingScreen(screen.name, request.website, groupId)
+		Thứ 4: Trong hàm settingScreenService.createSettingScreen ta thấy: 
+			- enum home_featured_blog sẽ được gán cho trường setting_screen của bảng setting_screen_item 
+			- Ở trường hợp nếu screen của setting_screen đó == PAGE_ENUM.home_screen thì 
+				gán setting_screen = PAGE_ENUM.homes[i-1].name và enum này ở trong array homes
+			
+	B4: Tìm nơi mà nó sẽ được sử dụng như thế nào 
+		- Nơi mà sử dụng enum này sẽ là nơi mình lưu trường is_blog_featured và trường possition hoặc cả blog_id 
+		- Dự đoán ở settingPublishWebsite
+	
+
+Tiến độ: Đã xonng chỗ thêm vào giờ còn chỗ tìm nơi sẽ sử dụng enum này 
+
+IV/ Thứ 4: Thêm trường is_blog_featured (boolean) và trường position (integer) trong bảng blog
+
+Nơi implement: knex/migration
+
+Các bước thực hiện: 
+	B1: Đọc file README.md để biết cách tạo ra file migration mới 
+	B2: Đọc các file migration Update cũ để tham khảo cách làm 
+	B3: Đọc các kiểu dữ liệu để làm đồng nhất
+	B4: Thêm is_blog_featured, position vào trong model blog.model
+
+Tiến độ: Đã tạo thành công
+
+V/ Thứ 5: Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+
+Nơi implement: Đang tìm 
+	- Dự đoán: 
+(1)		+ blog_id sẽ được add vào setting_screen_item_detail khi nào?????
+(2)		+ quan hệ giữa bảng blog và setting_screen_item_detail là để làm gì????
+	- Xem qua tham khảo: 
+		+ publishSettingWebsiteAction
+		+ setting screen (implement ở đây) 
+	- Cụ thể: 
+		API publishWebsiteSetting
+		+ http://localhost:3600/api/v1/admin/setting/website/publish/:group_id (url) 
+		+ index --> publishSettingWebsiteAction --> settingScreenWebsiteService.updateDataWithHomeScreen(homeScreen)
+			--> if (item.setting_screen === PAGE_ENUM.home_product_more) {
+		API updateSetting Screen 
+		+ http://localhost:3600/api/v1/admin/screen/update 
+		+ index --> updateSettingScreenAction --> settingScreen.updateSettingScreen(screen_item, screenItem)
+
+Các bước thực hiện: 
+
+Tiến độ:
+
+VI/ Thứ 6: Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+
+Nơi implement:
+	1. index {{api_url}}/blog/feature?page=1&perPage=5
+	2. controller 
+		- src/controllers/setting-blog/blog.controller.ts
+		B1: set where.is_blog_featured = true;
+		B2: findAndCountAll(where) 
+		order (positon, asc) 
+	3. service 
+		- src/services/setting-blog/blog.service.ts
+
+
+Các bước thực hiện: 
+
+Tiến độ: done 
+
+
+
+
+
+
+
+
+
+
+
+

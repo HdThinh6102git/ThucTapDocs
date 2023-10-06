@@ -1,0 +1,66 @@
+B1: Leader 
+	- Tạo repo mới trên github
+	- Bật terminal và cd vào một workplace nào đó mình muốn làm việc 
+	- Làm theo các bước mà git hướng dẫn create a new repo 
+		+ echo 
+		+ git init ....
+	--> Tạo ra được first commit trên remote repo 
+	- Tạo branch develop 
+		git branch develop 
+	- Tạo issue trên remote repo (để phân công task) 
+	- checkout branch main 
+	- push first commit ở main branch qua develop branch 
+B2: Team member 
+	- check xem có issue nào cần mình làm hay không 
+	- pull hay clone project về chưa biết ? 
+	- pull về từ branch develop (có thể là vậy)
+	- tạo ra một nhánh mới là feature/id-issue_name
+	- code 
+	- check out feature branch 
+	- add and commit 
+	- git commit -m "#STTisue - thinh issue name"
+	- git push lên 
+		+ tạo ra một nhánh feature 
+		+ tạo ra một issue commit có tag ID 
+		+ hiện thị một thông báo push cho leader xem (compare and pull request) 
+B3: Leader hoặc Team member chưa rõ là ai ) 
+	- thực hiện compare - pull request 
+	- sau đó tạo pull request kèm với comment (chưa có review code chỗ này)
+	- chỗ này có thể là teammember làm
+	- comment là I do refer #IssueId
+	- create pull request 
+B4: Leader 
+	- xem pull request và review code 
+	- git nó sẽ check là có bị conflict hay không 
+	- review xong leader sẽ quyết định reject hoặc merge 
+	- nếu oki leader sẽ thực hiện comment và confirm merge 
+	- Xem kĩ và edit lại là merge vào develop 
+B6: Trên cấp leader (hơn nữa) 
+	- thực hiện review lần nữa 
+	- checkout develop pull về 
+	- git checkout -b release=1.0.0 develop 
+	git tag 'v1.0.0'
+	- git push --tags 
+	đây là nhánh release chứ chưa merge vào main nó sẽ tạo một tags trong phần code 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	 
+	

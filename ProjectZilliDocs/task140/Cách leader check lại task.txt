@@ -1,0 +1,2 @@
+1. Merge xong sẽ yêu cầu document trên postman 
+2. Sẽ tạo data trên db staging và test 

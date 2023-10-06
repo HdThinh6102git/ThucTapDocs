@@ -1,0 +1,139 @@
+1. Các thành phần trong project service này 
+		- Được vận hành tầm 1 tháng trước 
+	Các folder con: 
+		1.1. .husky (chưa biết)
+		1.2. bin (chưa biết)
+		1.3. docker chứa docker file để làm điều gì đó 
+		1.4. public (chưa biết) 
+		1.5. seeds/json chứa 2 file json permisson-group.json và permission-screen.json 
+		(Permission là quyền cho phép truy cập vào các API của hệ thống) 
+			+ Trong file permisson-group.json là một array gồm các object name, displayName, id
+			(VD: user, màn hình người dùng, 1 hay history , màn hình lịch sử)	
+				* user, history, startup, bonus, devote, event, settings
+				* Màn hình người dùng
+				* Màn hình lịch sử
+				* Màn hình gói khởi nghiệp
+				* Màn hình gói điểm thưởng
+				* Màn hình gói cống hiến
+				* Màn hình sự kiện
+				* Màn hình cài đặt chung
+			+ Trong file permission-screen.json là một array gồm các object name, displayName, permissionGroup 
+			(VD: customer_contract_management, quản lý hợp đồng, 1 hay event_management, quản lý sự kiện, 6) 
+				* Quản lý hợp đồng
+				* Xét duyệt người dùng
+				* Quản lý khách hàng
+				* Quản lý điểm người dùng
+				* Quản lý giao dịch
+				* Quản lý lịch sử nạp điểm
+				* Quản lý lịch sử rút điểm
+				* Quản lý thanh toán
+				* Quản lý điểm trôi
+				* Quản lý gói khởi nghiệp
+				* Quản lý gói điểm thưởng
+				* Chi tiết người dùng tham gia gói điểm thưởng
+				* Quản lý cấu hình cống hiến
+				* Quản lý danh sách tham gia cống hiến
+				* Chi tiết người dùng tham gia gói cống hiến
+				* Quản lý sự kiện
+				* Quản lý cài đặt chung
+		1.6. test chứa các e2e testing 
+		1.7. typings chứa global.d.ts chứa các type dùng chung DB_HOST: string; DB_PORT: string; DB_USER,....
+		1.8. src 
+			Gồm các folder 
+			- auth, common, config, crobjob, grpc-gonfig, migration, proto, samplegRPC, shared, transaction, user 
+			Gồm các file root: 
+			- app.middleware.ts, app.module.ts, app.ts, grpc-server.options.ts, repl.ts, swagger.ts 
+2. Flow của project service này: 
+	2.1. app.ts
+		Ở async function bootstrap
+		Không sử dụng NestFactory.createMicroservice
+		B1: Mà dùng appMicro = await  Nest.create(AppModule) 
+		B2: appMicro.connectMicroservice<MicroserviceOptions>(grpcServerOptions);
+		B3: await appMicro.startAllMicroservices();
+		B4: const app = await NestFactory.create<NestExpressApplication>
+		app.enableCors();
+		// Express Middleware
+  		middleware(app);
+		app.setGlobalPrefix('api/v1');
+  		app.use(json({ limit: '50mb' }));
+		app.use(urlencoded
+		await app.listen(process.env.PORT || 3000);
+		return app.getUrl();
+	2.2. app.module.ts 
+		import và config các module, provider dùng global 
+	2.3. app.middleware.ts 
+		export function middleware 
+		config các middleware (compression, session, passport.initiablize, passport.session, helmet,...)
+		app.use()
+	2.4. grpc-server.options.ts
+		config grpcServerOptions (lúc trước mình config luôn trong file main.ts) 
+		Giờ tách ra config và export thành const sau đó truyền vào dạng argument 
+			- transport.GRPC, url (SERVER_GRPC_URL), package, protoPath, loader
+	2.5. repl.ts 
+		function bootstrap 
+			await repl(AppModule) 
+			repl from "@nestjs/core" 
+		Chưa biết nó dùng chỗ nào có thể là repl trong nodejs trên cmd 
+	2.6. swagger.ts 
+		const app = await NestFactory.create(AppModule);
+		const options = new DocumentBuilder()
+		const document = SwaggerModule.createDocument(app, options);
+		await app.listen(process.env.PORT || 8000);
+		--> Tạo ra app để document api trên swagger 
+	2.7. Các folder 
+		- auth, common, config, cronjob, grpc-config, migration, proto, sampleGRPC, shared, transaction, user 
+		2.7.1. auth (code của service auth) 
+			- constant, controller, decorator, dtos, guards, providers, strategies 
+		2.7.2. common
+			exception filter, decorator, middleware, providers , utils 
+		2.7.3. config 
+			
+		2.7.4. cronjob
+			- set schedule 
+		2.7.5. grpc-config 
+		2.7.6. migration 
+		2.7.7. migration 
+		2.7.8. proto 
+		2.7.9 sampleGRPC
+		2.7.10. shared 
+		2.7.11. transaction
+		2.7.12. user 
+----------------------------------------------------------
+Xem thử luồng chạy 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+		
+
+		 

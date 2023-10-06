@@ -1,0 +1,178 @@
+1. Tạo ra product_list_screen 
+	1.1. Dùng 
+		- Service: createSettingScreen (setting-screen.service.ts ) 
+		- Sửa ở hàm createSettingScreen ở service và thêm enum ở (page-constant.ts)
+			+ PAGE_ENUM: thêm product_list_screen
+					thêm productlists: [] gồm 4 phần tử
+						- product_categories, product_categories1,2,3
+					(Nó chính là column setting_screen trong table setting_screen_item) 
+			+ Service: thêm else if(screen == product_list_screen
+				(chỗ này để tạo ra 23 setting_screen_item) 
+			+ Trong setting-landing.ts 
+				( thêm product_list_screen vào shopping_screens)
+	
+Note: Chưa tìm thấy service để add các trường cho setting_screen_item_detail và setting_screen_item_detail_product 
+	(Hỏi lại cần không nếu cần viết thêm một service mới) 
+		- Controller: tạo ra một controller createSettingScreenAction (setting-screen.controller.ts) 
+			+ Cơ bản là nó gọi lại createSettingScreen ở service 
+		- url api 
+			+ app.post(urlAdminDefault,settingScreenController.createSettingScreenAction)
+	
+	1.2. Các thuộc tính còn thiếu mình thêm thủ công ở db
+
+2. Tìm kiếm settingItem cho product_list_screen
+
+	2.1. Dùng 
+		- Service: findSettingItemForProductListScreen (setting-screen.service.ts ) 
+		- Controller: findSettingItemForProductListScreenAction (setting-screen.controller.ts)
+		- url api: app.get(urlDefault + '/products', settingScreenController.findSettingItemForProductListScreenAction)
+
+3. backup và pull về  (done) 
+4. add các file 
+
+5. Tạo product_list_screen với createSettingWebsite (chưa đúng với ý muốn get chưa được) 
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. API createSettingWebsite 
+	1.1. url api 
+		/api/v1/admin/setting-website/ (method post) 
+	1.2. Gọi những hàm nào và làm những việc nào 
+		- Controller: settingWebsiteController.createWebsiteAction
+			+ gọi đến service createSettingWebsite(req.body) 
+			+ res {website} 
+		- Service: setting-website.service.ts 
+			+ Tạo settingWebsiteGroup (cơ bản truyền vào request body) 
+			{name, website, website_id, status) 
+			+ groupId = id của settingWebsiteGroup vừa tạo ra 
+			Nếu req.website_id > 0 
+			+ Tạo các settingScreenTemp cần thiết cho website 
+				* Duyệt qua các screen thuộc array shopping_screens (const trong file setting-landing.ts)
+					Đối với từng screen tương ứng gọi hàm createSettingScreenTemp(screen, groupId)
+				* Duyệt qua các menu thuộc array shopping_menus
+					Đối với từng menu tương ứng gọi hàm createSettingMenuTemp(menu, groupId) 
+			Nếu req.website_id <= 0 
+				Tương tự cũng duyệt qua nhưng gọi hàm createSettingScreen và hàm createSettingMenu 
+		- Service: setting-screen-service.ts 
+			+ createSettingScreen
+				* param: screen, website, groupId
+				* Tạo settingScreen có screen, website, groupId, ispublic = 0 
+				* Duyệt từ 1 đến PAGE_ENUM.max ( được set trong page_constant.ts = 23)
+				* Gán cho cột setting_screen và screen_detail = screen_item_i 
+				* Xét nếu screen == product_list_screen và product_lists[0] có tồn tại (2 cái này ở trong page_constant.ts ) 
+				* thì gán cho setting_screen lần lượt bằng các phần tử của product_lists
+				* --> tạo ra một settingScreenItem sau đó push vào array settingScreenItems 
+				(position, screen_detail, setting_screen, status, screen_id (đã tạo ở trên) 			
+				* Lưu screenItems vào db return findSettingItem (screen, website, is_public :0 ) vừa mới tạo 
+			+ createSettingScreenTemp 
+				* param: screen, groupId 
+				* Tạo settingScreen 
+				* Duyệt qua array SettingScreenItems
+					- xóa id của screenitem cũ , gán screen_id của screenItem = id của settingscreen vừa tạo ra 
+					-  tạo ra các screenItem 
+
+				* Kiểm tra nếu array SettingScreenItemDetails có tồn tại và có phần tử
+				* Duyệt qua array ItemDetails
+					- Xóa id của screenItemDetail và 
+					- Gán screen_item_id = id của screenItem vừa tạo ở trên và chứa nó 
+					- Tạo ra screenItemDetail 
+				* Kiểm tra nếu array SettingScreenItemDetailProducts có tồn tại 
+				* Duyệt qua array SettingScreenItemDetailProducts 
+					- delete item_detail_product.id
+					- screen_item_detail_id = id của screenItemDetail chứa nó 
+					- Tạo screen_item_detail_product 
+				* return về SettingScreen vừa mới tạo 	
+develop.wowi@gmail.com
+*wNQRj&x7$Rt/tw
+					
+		
+		
+				 
+	1.3. param của api là gì 
+2. API deleteSettingWebsite 
+	2.1. url api 
+		/api/v1/admin/setting-website/:id (id của settingwebsitegroup cần xóa) (method:delete) 
+	2.2. Gọi những hàm nào và làm những việc nào
+		- Controller: settingWebsiteController.deleteWebsiteAction
+			+ Gọi đến service settingWebsiteService.deleteSettingWebsite(id)
+		- Service: 
+			+ Tìm settingWebsiteGroup dựa vào id được truyền vào theo url 
+			+ Tìm settingWebsite dựa vào groupId vừa tìm được ở trên 
+			+ Duyệt qua array settingScreens
+			+ Trong từng settingScreen duyệt qua array SettingScreenItems  
+			+ Trong từng settingScreenItem duyệt qua array SettingScreenItemDetails 
+				* xóa SettingScreenItemDetailProducts (SettingScreenItemDetailId tương ứng) 
+			+ Xóa SettingScreenItemDetail (có SettingScreenItemId tương ứng) 
+			+ Xóa SettingScreenItemProduct (có SettingScreenItemId tương ứng) 
+			+ Xóa SettingScreenItem (có SettingScreenId tương ứng)
+			+ Xóa SettingScreen (có groupId tương ứng) 	
+			+ Tương tự xóa lần lượt với menus 			
+	2.3. param của api là gì
+3. API updateSettingWebsite
+	3.1. url api 
+		/api/v1/admin/setting-website/:id (method: put) (id của settingWebsiteGroup cần update) 
+	3.2. Gọi những hàm nào và làm những việc nào 
+		- Controller: settingWebsiteController.updateWebsiteAction
+			+ Gọi đến service settingWebsiteService.updateSettingWebsite(id)
+		- Service: 
+			+ Tìm SettingWebsiteGroup dựa vào id được truyền vào theo url 
+			+ Tìm tất cả SettingScreen dựa vào groupId vừa tìm được 
+			+ Duyệt qua array SettingScreens thực hiện publish SettingScreen
+			+ Tìm tất cả SettingMenu dựa vào groupId vừa tìm được 
+			+ Duyệt qua array SettingMenus thực hiện publish menu  
+			+ update SettingWebsiteGroup với các thông tin trên và status == true
+	3.3. param của api là gì
+
+4. Debug API get product_list_screen tại sao chết (do truyền param group_id sai khi get) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

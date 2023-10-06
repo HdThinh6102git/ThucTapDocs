@@ -1,0 +1,22 @@
+1. Sửa lại chỗ response (nếu update thành công trả về true) ngược lại trả về false 
+2. đổi for in thành for of 
+3. Note post man 
+4. Lỗi update không được thì trả lỗi 400 hoặc status code tương ứng 
+
+Trường hợp thành công: 
+	- Tất cả data ở các trường mong muốn được update thành công 
+	return true
+
+Trường hợp có thể thất bại:  
+	- Input đầu vào 
+		+ image_base_url_thumb (255) và thumb_url của product_variant (255) --> Sẽ không thể xảy ra lỗi 
+		+ tương tự với name_display và name_display_mobile 
+		+ where id = product.id (cũng k thể sai bởi vì duyệt qua vòng for lấy từ findAll) và đã check products tồn tại mới duyệt 
+			--> nên không thể xảy ra lỗi 
+
+	--> Vậy nên trường hợp duy nhất có thể xảy ra ngoài ý muốn là 
+		- Không tìm thấy data product nào để update (product.findAll = rỗng), sẽ không update được gì và return false 
+	
+		Tuy nhiên ở đây em thấy trường hợp này xảy ra thì cũng sẽ không ảnh hưởng gì đến data, vậy em có cần check và báo về client không chị. 
+
+

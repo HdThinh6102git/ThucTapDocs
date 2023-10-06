@@ -1,0 +1,29 @@
+Bổ sung thông tin trả về ở api get danh sách đánh giá sản phẩm
+
+Hiện tại chỉ có api get danh sách đánh giá sản phẩm, chưa có trả về thông tin tổng đánh giá của sản phẩm:
+
+Số lượng đánh giá cho từng sao của sản phẩm để hiển thị lên UI như sau:
+
+1. Phân tích cụ thể là muốn làm gì: 
+	- Đã có một cái api get danh sách đánh giá sản phẩm (tìm api này ở đâu) 
+	- Cần get thêm thông tin là (tổng đánh giá của sản phẩm dưới dạng số star hiện qua UI) 
+	
+
+
+	- API hiện tại trả về: 
+		+ array gồm các review 
+
+		
+2. Các bước thực hiện 
+	- Check trong table 
+		+ thấy được thuộc tính coin (nó là gì) 
+		+ total_like
+	- Tìm cái api cũ và test thử nó hoạt động oki chưa
+		+ nằm trong user/customer/review  
+	- Nó lấy bảng nào 
+	- Tìm bảng và tìm thông tin tổng đánh giá ở đâu 
+	- Viết bổ sung cho controller, service, model nếu cần
+
+
+
+	

@@ -1,0 +1,178 @@
+Các phần cần làm:
+
+1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	Done:
+		- update_setting_screen_item_detail_table.js 
+		- setting_screen_item_detail.model.ts 
+
+2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+	Done: 
+		- setting-screen-item-detail.model.ts
+
+3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+	Done: 
+		- page-constants.ts 
+
+4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	Done: 
+		- update_blog_table.ts
+		- blog.model.ts
+
+5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	Done: 
+		- setting-screen.service.ts (updateDataWithHomeScreen) 
+		- src/services/setting/setting-blog/blog.service.ts (updateBlogFeatured) 
+
+6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+	Done: 
+		- src/controllers/setting/setting-blog/index.ts 
+		- src/controllers/setting/setting-blog/blog.controller.ts
+		- src/services/setting/setting-blog/blog.service.ts
+Dạ em gửi merge nha chị
+https://gitlab.com/zili-coffee/service/-/merge_requests/97
+Dạ em vừa tạo commit và merge-request, chị kiểm tra giúp em: 
+	1. Em để logic lưu thông tin của 2 trường is_blog_featured trong service updateDataWithHomeScreen là đúng chưa nha chị
+	2. Giá trị của position em set như vậy là ổn chưa. (position FE truyền xuống) 
+	3. Em để quan hệ giữa Setting_Screen_Item_Detail với Blog là belongsTo thì có hợp lí chưa. 
+	4. Em chưa tìm thấy được chỗ để lưu giá trị blog_id vào table Setting_Screen_Item_Detail nên em chưa test việc setting
+	(Em chỉ mới test api get featured Blog nên chị đừng merge nha) 
+
+------------------------------------------------------------------------------
+
+Sửa sau review 
+	1. Sửa chính tả từ feature --> featured (thêm d) 
+		- index (url) và tên hàm controller 
+		- controller (sửa tên hàm) và logger và tên hàm service 
+		- service, sửa tên hàm 
+	2. Bỏ filter theo categoryId, slug, flag 
+	3. Sửa position không tự sinh mà fe truyền về (này chưa sửa) 
+	4. Sửa lại tên service thành updateFeaturedBlog (done) 
+--------------------------------------------------------------------------------------------------------------------------------------------
+14/09/2023/16:48	
+Câu hỏi: Sửa position không tự sinh mà fe truyền về
+
+Dạ chị, em thấy có một vấn đề khi để FE truyền giá trị position về, chị kiểm tra giúp em với nha:  
+
+Flow hiện tại để thực hiện lưu thông tin của 2 trường is_blog_featured và position
+Nếu muốn FE truyền position về thì: 
+ 
+	B1: Call api /api/v1/admin/setting/website/publish/:group_id
+	--> Gọi đến hàm settingPublishController.publishSettingWebsiteAction
+(1)	--> Ở controller nhận về param group_id và nhận thêm position (từ req.body) 
+	--> Kiểm tra nếu  (settingScreen.screen === PAGE_ENUM.home_screen) 
+		đúng thì  gọi hàm updateDataWithHomeScreen(homeScreen)  
+(2)	--> Truyền thêm argument là position khi gọi updateDataWithHomeScreen
+	--> Duyệt qua các Setting_Screen_Item thuộc homeScreen được truyền về 
+	--> Kiểm tra nếu item.setting_screen == PAGE_ENUM.home_featured_blog thì 
+	--> Duyệt qua các Setting_Screen_Item_Detail thuộc item đó 
+(3)	--> Gọi hàm updateFeaturedBlog (id: item_detail.blog_id, position (được truyền về) , is_blog_featured: true) 
+
+Vấn đề: 
+	- Ở số (3) do hàm updateFeaturedBlog dùng chung 1 position vậy thì các Blog sẽ có position giống nhau sau 1 lần updated 
+------------------------------------------------------------------------------------------------------------------------------------------
+Trả lời: 
+chị nói lại chỗ này nhé
+	- position được FE truyền xuống cho blog khi call api update setting screen
+	- trong từng cái setting screen item detail nó có trường position á, em lấy trường đó để update cho trường position trong bảng blog
+	- khi mà update các blog thì trước tiên em remove các position ở tất cả các blog có trường is_blog_featured đi, xong rồi mới update cái mới
+	- Em xem cái table nào gắn cái blogId ở setting vào á, thì em lấy position trong cái table đó để update vào position của blog là được nè
+
+Lưu ý: 
+	- Mình đang làm api publishSettingScreen chứ không phải là updateSettingScreen 
+	Câu hỏi 1: (Vậy là việc lưu này để ở updateSettingScreen hả chị) 
+	- Update Position dựa vào position của item_detail mà item_detail được truyền về kèm theo blog_id 
+
+	Luồng lúc này sẽ trở thành: 
+	
+	B1: /api/v1/admin/screen/update (put) 
+	Call api update setting screen với body là 
+		- screen_items [] , screen, website, group_id 
+(1) 	Ở trong screen_items : có các item , trong một item có các item_detail , trong item_detail có blog_id (được thêm ở đâu đó) 
+(2)	B2: Tìm một SettingScreen mà có website == website, screen == screen, group_id == group_id
+	(Cụ thể ở đây argument là: website == "zili_website", screen == "home_screen", group_id == 24 ) 
+	(Ở đây là SettingScreen đã có sẵn trong db) 
+
+	B3: Kiểm tra nếu tìm thấy SettingScreen và Có SettingScreen.id thì 
+		Lấy ra oldScreenItems = SettingScreen.items 
+
+	B4: Kiểm tra nếu (new)screen_items.length > 0 thì duyệt qua các newScreen_Item trong array đó 
+		Duyệt qua array oldScreen_Items
+			Kiểm tra nếu (new)screen_item.screen === (old)ScreenItem.screen thì 
+(3)
+				Gọi hàm settingScreen.updateSettingScreen((new)screen_item, (old)screenItem)
+
+(5) Nếu muốn lưu thông tin is_blog_featured và position ở api này thì để chỗ này 
+		B3.1: Kiểm tra nếu (old)ScreenItem.setting_screen === PAGE_ENUM.home_featured_blog thì 
+			Duyệt qua các (old)ScreenItem.item_detail 
+				Gọi hàm updateFeaturedBlog(id: (old)ScreenItem.item_detail.blog_id, position: (old)ScreenItem.item_detail.position, 
+						is_blog_featured: true ) 
+Câu hỏi đặt ra là old hay new để chỗ này 
+
+
+Vấn đề ở số (3) cho thấy updateSettingScreen lại được truyền vào argument là screen_item 
+		nhưng ở service lại để param là SettingScreenNew và SettingScreenOld (Có cần đổi tên param chỗ này không) 
+		thành NewSettingScreenItem và OldSettingScreenItem 
+	
+	Ở updateSettingScreen Service 
+	B5: Gọi hàm SettingScreenItem.update() với tham số truyền vào NewSettingScreenItem và OldSettingScreenItem.id 
+	B6: Duyệt qua các OldSettingScreenItem.item_details và lần lượt xóa các SettingScreenItemDetailProduct đã tồn tại 
+	B7: Xóa SettingScreenItemDetail mà có screen_item_id == OldSettingScreenItem.id 
+	B8: Xóa SettingScreenItemProduct mà có screen_item_id == OldSettingScreenItem.id 
+	B9: Kiểm tra nếu có NewSettingScreenItem.item_details và length của nó > 0 thì 
+		Duyệt qua các item_detail đó 
+			B9.1: Xóa item_detail.id 
+			B9.2: Set item_detail.screen_item_id  = OldSettingScreenItem.id 
+			B9.3: Set item_detail = SettingScreenItemDetail.create(item_detail) 
+				(Tạo mới item_detail với id mới và thông tin mới ) 
+(4) 			Chỗ tạo mới ở bước 9.3 này có thể đã bao gồm blog_id được truyền về từ request.body ( và được lưu thông tin ngay chỗ này)  
+	
+	
+
+
+
+
+
+
+
+
+
+
+(5) và (4) 
+(5) lưu is_blog_featured và position (old hay là new nếu để chỗ đó ) 
+(4) lưu blog_id 
+
+Có thể kết hợp cả 2 api lại không hay để chung một chỗ, nếu để chung một chỗ thì luồng đi sẽ như thế nào và khác chỗ thì sẽ thế nào 
+hay hơn hay dở hơn 
+
+
+Note: Vấn đề check giá trị error cũng có vấn đề (false, true) ở UpdateSettingScreenAction  
+
+		
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

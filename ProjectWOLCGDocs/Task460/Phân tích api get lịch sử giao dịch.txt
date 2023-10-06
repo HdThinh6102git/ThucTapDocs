@@ -1,0 +1,92 @@
+1. url của api  
+	- API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+	- http://localhost:3200/api/v1/transaction/detail/filter?type=TRANSFER_POINTS
+
+2. Controller
+	- @Get('detail/filter')
+	- getTransactionDetails
+	- param (ctx: RequestContext, query: TransactionDetailFilter) 
+		+ TransactionDetailFilter(type: TRANSACTION_TYPE, status: TRANSACTION_STATUS, start: Date, end: Date) 
+			* TRANSACTION_TYPE: ( là các transaction type: WITHDRAW, TRANSFER_POINTS,...) 
+(**)	- Kiểu trả về: TransactionDetailOutput
+	- transactionService.detailTransaction(ctx.user.id, query)
+3. Service: 
+	- async detailTransaction
+(1)	- param(userId, filter: TransactionDetailFilter) 
+(**)	- Kiểu trả về: TransactionDetailOutput
+	- let query = chuỗi string 
+	( `type <> '${TRANSACTION_STATUS.NEW_REQUEST}' and (u.id = '${userId}' or r.id = '${userId}')`;)
+	- const transactionDetails: TransactionDetailOutput[]
+(2)	- Nếu filter.type thì cộng chuỗi query với  `and t.type iLike '${filter.type}'`;
+	- Nếu filter.status thì cộng chuỗi query với `and t.status iLike '${filter.status}'`;
+	- Nếu filter.start thì cộng chuỗi query với `and t.createdAt >= '${filter.start.toISOString()}'`;
+	- Nếu filter.end thì cộng chuỗi query với `and t.createdAt <= '${filter.end.toISOString()}'`; (Cần check lại tại sao cả end và start đều giống nhau)
+	- const transactions = transactionRepo.createQueryBuilder('t') 
+				.leftJoinAndSelect('t.user', 'u')
+				.leftJoinAndSelect('t.receiver', 'r')
+				.where(query)
+				.orderBy('t.createdAt', 'DESC').getMany();
+	(Đoạn này có nghĩa là tạo create
+	- const packageSavings = savingPackageRepo.find
+	- const packages = packageRepo.find
+	- const devotePackages = devoteRepo.find
+(3)	- Duyệt qua array transactions 
+		+ Nếu TRANSACTION_TYPE.COMMISSION_UP_LEVEL và user.id === userId hoặc 
+			TRANSACTION_TYPE.COMMISSION_INVEST_LEADER và user.id === userId hoặc 
+			TRANSACTION_TYPE.COMMISSION_INVEST_DIRECT và user.id === userId
+		thì continue ( qua lần lặp tiếp theo mà không excute code bên dưới nữa) 
+		+ Nếu type = TRANSACTION_TYPE.DEPOSIT và status !== TRANSACTION_STATUS.COMPLETED
+		thì continue 
+		+ const transactionDetail = plainToClass(TransactionDetailOutput, value,
+		+ transactionDetail.amountType = WORK_TYPE.AMOUNT;
+		+ transactionDetail.user = plainToClass(UserSummaryOutput,transactionDetail.user,
+		+ switch case check transaction.type 
+			* Nếu TRANSACTION_TYPE.TRANSFER thì 	
+				-TH1: transaction.receiver.id == userId thì 
+					+ transactionDetail.user = plainToClass(UserSummaryOutput,value.user,)
+					+ transactionDetail.receiver = plainToClass(UserSummaryOutput,value.receiver,)
+					+ transactionDetail.operator = TRANSACTION_OPERATOR.SUMMATION;
+				-TH2: 
+					+ transactionDetail.user = plainToClass(UserSummaryOutput,value.user,)
+					+ transactionDetail.receiver = plainToClass(UserSummaryOutput,value.receiver,)
+					+ transactionDetail.operator = TRANSACTION_OPERATOR.SUBTRACTION;
+			* Nếu TRANSACTION_TYPE.DEPOSIT thì 
+				- transactionDetail.operator = TRANSACTION_OPERATOR.SUMMATION;
+				- transactionDetail.receiver = null;
+			* Nếu TRANSACTION_TYPE.RE_BACK thì 
+				- transactionDetail.operator = TRANSACTION_OPERATOR.SUMMATION;
+				- transactionDetail.receiver = null;
+				- transactionDetail.amountType = WORK_TYPE.RE_BACK;
+			* Nếu TRANSACTION_TYPE.COMMISSION_UP_LEVEL thì không làm gì 
+			* Nếu TRANSACTION_TYPE.COMMISSION_INVEST_DIRECT thì không làm gì 
+			* Nếu TRANSACTION_TYPE.COMMISSION_INVEST_LEADER thì 
+			.......
+		+ transactionDetails.push(transactionDetail);
+	
+	- const total = transactionDetails.length; (Tổng lượng record) 
+	- const output: TransactionDetailOutput[] = [];
+	- Duyệt vòng lặp lấy ra lượng record theo offset filter (paging) và gán phần tử cho array output 
+(4)	- Duyệt vòng lặp qua array output thực hiện transaction.operator = this.checkOperatorWithStatus(transaction);
+	- return { listData: output, total: total };
+	
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

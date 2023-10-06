@@ -1,0 +1,22 @@
+1. Có 2 hướng đi chính trong một cty 
+	- Strategy Focus 
+	(Tập trung vào direction, vào strategy của công ty lâu dài, business cty) 
+	- Technology Focus 
+2. Solution architect 
+	- Hiểu rộng: hardware, infra, secu, data, business 
+	- Focus vào solution: đi gặp khách hàng, vấn đề khách hàng gặp phải , khảo sát 
+	- Đưa ra các solution để đáp án được vấn đề 
+3. Technical architects 
+	- Không cần focus nhiều vào strategy 
+	- Thiên về sử dụng công nghệ, cực kì chuyên sâu về công nghệ 
+	- Ví cloudcomputing là phải hiểu sâu và các khía cạnh nhỏ của nó 
+	- Bao gồm nhiều loại technical architect 
+		+ software architect 
+		+ infra architect
+		+ data architect 
+4. Enterprise architect 
+	- không cần biết nhiều về technology mà focus vào strategy , business 
+	- xu hướng công nghệ nào phù hợp với công ty hiện tại 
+	- để đem lại lợi nhuận giải pháp mới cho cty 
+	
+	

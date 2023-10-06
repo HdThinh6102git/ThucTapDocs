@@ -1,0 +1,40 @@
+1. Install nextjs 
+2. Create new project 
+3. Create module Auth 
+	Controller 
+	Service 
+4. Create module Users 
+	Service 
+Trong User Service có 2 object users gồm 2 user 
+Một function findOne (tìm user theo userName) 
+
+Sau đó import user service vào trong user module 
+
+
+5. Implement Sign in Endpoint 
+	Class AuthService 
+Có hàm singIn 
+	gọi đến userService.findOne 
+	Check user name nếu đúng sai exception 
+	Đúng return true 
+6. Import AuthService vào Authmodule 
+7. Gọi hàm singin từ AuthService vào AuthController 
+8. Implement JWT to authorize 
+Thay vì authen thành công return true thì 
+dùng this.jwtService.signAsync(payload) 
+để generate ra JWT từ UserID và UserName 
+9. Tạo 1 constant (Secret key) 
+dùng để generate JWT nhờ vào hàm 
+JwtModule.register của framework nextjs 
+
+chỗ này test curl một tí rồi mới tới bước tiếp theo 
+
+Vấn đề ở đây là nguyên lí hoạt động của curl 
+
+Và cái authcontroller nó chạy như nào 
+
+10. implement auth.guard đùng để filter request (cần kèm theo JWT ) 
+
+
+
+ 

@@ -1,0 +1,17 @@
+Yêu cầu: Bổ sung API lấy ra danh sách các blog categories
+	bổ sung api để lấy ra các category của blog.
+findAllBlogCategory 
+	- Đã có api làm điều này ở admin , giờ thêm url client dùng lại hàm cũ để get 
+	- Không dùng hàm cũ được do ở admin nó có param mà user không cần param 
+	- Và ở user chỉ được phép get active categories  
+1. index 
+	src/controllers/setting/setting-blog/blog-category/index.ts
+		app.get(urlDefault+ '/all', blogCategoryController.findAllBlogCategory)
+2. controller
+	src/controllers/setting/setting-blog/blog-category/blog-category.controller.ts
+3. service 
+	src/services/setting/setting-blog/blog-category/blog-category.service.ts
+
+
+
+Done : chú ý chỗ filter truyến xuống cho where.type = param truyền xuống luôn k check linh tinh 

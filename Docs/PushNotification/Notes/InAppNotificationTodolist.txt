@@ -1,0 +1,70 @@
+1. Yêu cầu cần có 
+	- NestJS CLI globally installed 
+	- A Firebase project with the Cloud Messaging service 
+	enable 
+2. Các bước thực hiện 
+	2.1. Cài đặt FCM và enable FCM API 
+	install firebase-admin package 
+		npm install --save firebase-admin
+	2.2. Tạo NestJS user và notification resources 
+	-app để push notifications 
+	-user resources là
+		+ những tt lưu trữ cho riêng từ user 
+		+(device type, push notification preferences 
+		contact information) 
+	thông tin này sẽ được dùng để điều chỉnh nội dung mà 
+	push thông báo dựa vào sở thích hoặc lịch sử của user
+	- notification resources là 
+		+ logic và functionality enable, disable, và 
+	send push notification. 	
+		+ gồm schedule notifications, create and manage
+	notification group , customize content and appearance 
+	notification
+		+ gồm tracking the delivery 
+		+ engagement of notification 
+		+ open rates, click-through rates 
+	- Tạo NestJS resources (done)
+		nest g res notification --no-spec
+		nest g res users --no-spec
+	- Test route controller (done)
+	- Set up MySQL  (chưa done)
+		+ Cài đặt mysql2 và typeorm package 
+	npm install --save mysql2 typeorm @nestjs/typeorm @nestjs/config
+		+ Update app.module 
+	import TypeOrmModule.forRoot 
+	config the connection to mysql db 
+	- Dùng các biến môi trường để config 
+	- Tạo các biến môi trường trong file .env 
+	(Host, port, username, password, db name, type of db 
+	entities , synchronization status 
+Ở đây chưa dùng các biến môi trường mà set cứng 
+Tạo db local k dùng trên docker , 
+chưa Import entity notification  
+
+	2.3. Implement User Resources
+	- Implement user module 
+	Dùng typeormModule để setup mysql connection và tạo 
+	user entity 
+	- Implement user entity 
+	Này giống với JPA (Tạo entity để mapping xuống mysql)
+	Tạm thời vậy tí implement tiếp 
+	2.4. Implement notification resources 
+	Dùng typeormmodule để set up mysql connection và tạo 
+	notification entity 
+	- implement notification module 
+	- create notifications và notification entity 
+	2.5 FCM notification token là gì 
+	mobile app hoặc browser nó sẽ đăng kí với FCM và sau 
+đó FCM trả về unique token 
+	Thiết bị sẽ trả token này về nestjs server và mình lưu 
+nó vào db 
+	Khi nào user push notification , thì cái token này sẽ 
+sending về đúng thiết bị với FCM 
+	2.6. Implment NotificationService 
+	2.7. Config user services 
+	2.8. Config user controller 
+	2.9. Testing controller endpoints  
+	
+
+
+

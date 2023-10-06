@@ -1,0 +1,74 @@
+I/ Lưu thông tin vào 
+	1. Trường blog_id của table setting_screen_item_detail
+
+	2. Enum home_featured_blog ở trường setting_screen của table setting_screen_item 
+
+	3. Hai trường is_blog_featured (boolean) và position (integer) của table blog 
+
+Luồng đi cụ thể: 
+
+Thứ nhất: Lưu thông tin enum home_featured_blog vào trường setting_screen của table setting_screen_item (Done) 
+	B1: 
+	Request đến api /api/v1/admin/setting-website (post) 
+		--> gọi đến hàm createWebsiteAction (controller: setting-website.controller.ts)
+		--> Controller sẽ gọi đến hàm settingWebsiteService.createSettingWebsite(req.body)
+		--> Ở Service duyệt qua array SETTING_SCREENS.shopping_screens (thuộc file src/enums/setting/setting-landing.ts )
+		--> Gọi đến hàm settingScreenService.createSettingScreen(screen.name, request.website, groupId)
+		--> Ở trường hợp screen.name == home_scren 
+			Sẽ thực hiện lưu giá trị của enum home_featured_blog vào trường setting_screen 
+(1)	Lưu ý: Xác định tham số truyền vào api createWebsiteAction 
+		- website_id, website, name, type, status 
+
+Thứ hai: Lưu thông tin vào trường blog_id của table setting_screen_item_detail 
+	B1: 
+(2)	Câu hỏi lớn đặt ra là thông tin của setting_screen_item_detail sẽ được lưu vào khi nào ???????
+	Câu hỏi 2: Tại sao phải lưu blog_id vào table này ????????
+	
+	Dự đoán vị trí: 
+		- setting-screen.controller.ts 
+		- setting-screen.service.ts (createSettingScreenTemp) và (createSettingScreen)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Thứ ba: Lưu thông tin vào hai trường is_blog_featured (boolean) và position (integer) của table blog
+	B1: 
+	Request đến api /api/v1/admin/setting/website/publish/:group_id (post) 
+		--> Gọi đến hàm publishSettingWebsiteAction (controller: setting-publish.controller.ts)
+		--> Ở Controller tìm các settingScreen (và các thành phần con của nó) mà có group_id == group_id truyền về từ param 
+		--> Sau đó ở Controller sẽ duyệt qua các SettingScreen vừa tìm được 
+		--> Và ở trường hợp settingScreen.screen === PAGE_ENUM.home_screen thì 
+			- Tìm chi tiết của SettingScreen đó bằng cách gọi hàm homescreen = settingScreenWebsiteService.findSettingScreen
+			- Gọi đến hàm settingScreenWebsiteService.updateDataWithHomeScreen(homeScreen)
+		--> Ở service duyệt qua các items(Setting_Screen_item) của homeScreen truyền về 
+		--> Ở trường hợp item.setting_screen bằng PAGE_ENUM.home_featured_blog
+		--> Duyệt qua các item_details của item 
+		--> Gọi đến hàm updateBlogFeatured(item_detail.blog_id,position)
+		--> Update is_blog_featured = true, position = position 
+			
+(3)	Lưu ý: Xác định tham số truyền vào api publishSettingWebsiteAction
+	Param là group_id 
+
+II/ Lấy thông tin ra 
+	
+	1. Danh sách các bài blog có trường is_blog_featured = true
+		
+	2. Sort danh sách các bài blog theo giá trị của trường position 

@@ -1,0 +1,39 @@
+1. createWithdraw
+	- param (userId, input: WithdrawInput dto (amount, pin_code, note) 
+	- Kiểu trả về TransactionOutput
+	- const setting = sharedService.getSetting()
+	- const user = userRepo.findOne(id: userId)
+	- Nếu !user thì trả về UnauthorizedException
+	- Nếu user.pin_code != input.pin_code thì trả về exception INCORRECT_PIN_CODE
+	- const withdraw = transactionRepo.findOne(user.id = userId, TRANSACTION_STATUS.NEW_REQUEST, TRANSACTION_TYPE.WITHDRAW) 
+	- const verification_code = makeId(6); (create random)
+	- const verification_time = Date.now() + convertMilliseconds(VERIFICATION_TIME);
+	- Nếu withdraw và withdraw.verification_time và withdraw.verification_code và verifi_time hết hạn thì trả về 
+		exception REVERIFICATION_TIME
+	- mailService.sendVerificationEmailTransaction(TRANSACTION_TYPE.WITHDRAW, user.email, verification_code)
+(1)	- Nếu withdraw và withdraw.status = TRANSACTION_STATUS.NEW_REQUEST thì 
+		+ withdraw.verification_code = verification_code
+		+ withdraw.verification_time = verification_time
+		+ transactionRepo.save(withdraw)
+		+ const output = plainToClass(TransactionOutput, withdraw,
+		+ return {status: RESULT_STATUS.SUCCEED, status: RESULT_STATUS.SUCCEED,}
+	- const transaction = new Transaction();
+	- transaction.type = TRANSACTION_TYPE.WITHDRAW;
+	- transaction.status = TRANSACTION_STATUS.NEW_REQUEST;
+	- transaction.amount = input.amount;
+	- transaction.user = user;
+	- transaction.verification_code = verification_code;
+	- transaction.verification_time = verification_time;
+	- transaction.mail = user.email;
+	- transaction.work_type = WORK_TYPE.AMOUNT;
+	- transaction.note = input.note;
+	- const wallet = walletRepo.findOne(user.id = userId, status: WALLET_STATUS.VERIFIED, active: WALLET_ACTIVE.ACTIVE) 
+	- Nếu !wallet thì trả về exception WALLET_NOT_FOUND
+	- transaction.address = wallet.address;
+	- transaction.fee = setting.withdrawal_fee_percentage;
+	- transactionRepo.save(transaction);
+	- output = plainToClass(TransactionOutput, transaction,
+	- return {status: RESULT_STATUS.SUCCEED, data: output,}
+Change : 
+	- (1) bỏ withdraw.status = TRANSACTION_STATUS.NEW_REQUEST chỉ còn Nếu withdraw
+2. createTransferPoints

@@ -1,0 +1,190 @@
+----------------------------------------------------------------------------------------------------------------------------------------
+Xác định yêu cầu của task 
+Yêu cầu lớn: 
+	- Bổ sung API lấy ra danh sách các bài tin tức(blog) nổi bật
+	(Bổ sung api để lấy ra các bài blog nổi bật hiển thị lên trang chủ)
+Các phần cần làm: 
+	1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+	3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+	4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Mục tiêu cần đạt được sau khi hoàn thành task:  
+	Login với adminZilliAccount 
+	B1: Tạo ra danh sách các blog (được thêm bằng api hoặc UI )
+Khi muốn set một bài viết nào đó là đặc trưng (featured blog)
+(Đối với test thì cần phải gọi hàm createSettingWebsite để có thể tạo ra setting-Screen_item là home_featured_blog)
+	B2: Gọi api updateSettingScreen ( truyền vào các blog_id tương ứng muốn set)
+	(Chỗ này có thể là UI tick chọn hoặc call api và điền vào req.body)
+		--> Lưu thông tin các blog_id muốn set đặc trưng
+	B3: Admin nhấn nút Tải lên ở màn hình setting (nút này sẽ call api publish) 
+		- Sẽ reset giá trị của  các trường is_blog_featured và position về default nếu blog tuple đó is_blog_featured = true 
+		- Sau đó set is_blog_feature = true và position = item_detail.position (với item_detail.blog_id = blog.id) 
+
+	B4: Ở Giao diện client call api get danh sách featured blog (lấy ra danh sách blog có is_blog_featured = true và sort theo position tăng dần)
+
+----------------------------------------------------------------------------------------------------------------------------------------
+Quá trình làm task 
+
+	Bước 1: Xác định việc cần làm và nơi sẽ làm 
+	Bước 2: Tìm cách để implement những việc dễ đến khó (sau khi làm xong thì note lại các bước làm nó và xác định done) 
+	Bước 3: Đối với những việc khó cần nhiều logic mà mình chưa từng biết thì đọc code và phân tích code ra (ý nghĩa từng dòng code và logic của cả hàm đó) 
+	Bước 4: Xác định luồng chạy của hàm đó 
+	Bước 5: Một khi đã tìm ra được giải pháp để làm thì tổng hợp những note ở trên lại và ghi lại các giải pháp có thể giải quyết được vấn đề và gửi nó cho người giao task để xác nhận đúng yêu cầu hay chưa 
+	(Có thể push code lên và  gửi kèm code đã implement để giúp người đọc dễ hình dung hơn) 
+	Bước 6: Dựa vào ý kiến đưa ra chọn giải pháp cuối cùng và tiến hành implement nó 
+	Bước 7: Sau khi đã implement xong thì check các lỗi chính tả, các lỗi dấu chấm, dấu chấm phẩy, check ở git hub desktop có những thay đổi nào là dư thừa , lỗi khiến người review khó review hơn hay không, các dòng code không cần thiết 
+	có thể cải thiện được thêm gì hay không 
+	Bước 8: Sửa hết các lỗi cần thiết và push nó lên merge request check có bị conflict hay không 
+	Bước 9: Tiến hành test dựa trên mục tiêu cần đạt được sau khi hoàn thành task 
+	Bước 10: Sau khi đã test xong thì tiến hành note lại api đã làm trên postman chung, tiến hành note lại các bước đã làm một cách cụ thể, trên jira sẽ note lại các api đã được noted ở postman và các trường được thêm 
+	cũng như các bước để test . 
+	Bước 11: Ping người giao và báo đã hoàn thành task , nếu kiểm tra có vấn đề thì tiến hành sửa và cập nhật 
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+Các phần cần làm mà mình đã hoàn thành: 
+ 	1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+		1.1. Đã thêm file migrate và chị Liễu đã review (done)
+		Các bước đã làm: 
+			B1: Đọc file readme và dùng lệnh để tạo ra một file migration mới 
+			B2: Tham khảo các file update_table khác để implement (format và kiểu dữ liệu phù hợp) 
+			B3: Test thử file migrate đã hoạt động đúng ý chưa (up and down) 
+
+		1.2. Đã thêm blog_id vào file setting-screen-item-detail.model.ts (done) 
+		Các bước đã làm: 
+			B1: Vào file và tham khảo các trường còn lại để implement 
+
+	2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+		2.1. Đã thêm quan hệ ở code nhưng chưa thêm quan hệ foreign key ở db bởi vì sợ sẽ bị lỗi ở db (done) 
+		Các bước đã làm: 
+			B1: Tham khảo cách implement quan hệ ở các file và các trường khác 
+			B2: Xác định nên thêm quan hệ cho 2 bảng này là quan hệ gì 
+			B3: Thử quan hệ hasMany và test api getFeaturedBlog hoặc getBlogs thì bị lỗi blog_id does not exist 
+			B4: Hỏi đồng nghiệp và xác định đã làm đúng với cách thêm quan hệ hay chưa 
+			B5: Tìm cách fix lỗi trên bằng cách thêm quan hệ foreign key cho db, tuy nhiên vẫn không fix được 
+			B6: Suy xét lại dùng belongsTo cho quan hệ thì không fix được lỗi mà còn hợp với logic của ứng dụng
+
+	3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+		3.1. Đã thêm ở file page-constant.ts (enum/page) trong array homes và là const bên trong file này (done) 
+		Các bước đã làm: 
+			B1: Tìm trong các file enum tìm có enum nào tương tự như enum đó không 
+			B2: Xác định nơi mà thông tin của trường setting_screen trong bảng setting_screen_item được lưu vào 
+			B3: Xác định luồng mà nó sẽ được lưu vào từ UI--> API --> Service --> DB 
+			B5: Implement vào sau khi đã tìm ra 
+
+	4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+		4.1. Đã thêm file migration update_blog_table.js để thêm 2 trường trên vào bảng blog(done)
+		Các bước đã làm: 
+			B1: Đọc file readme và dùng lệnh để tạo ra một file migration mới 
+			B2: Tham khảo các file update_table khác để implement (format và kiểu dữ liệu phù hợp) 
+			B3: Test thử file migrate đã hoạt động đúng ý chưa (up and down)	
+ 
+		4.2. Đã thêm 2 trường trên vào file blog.model.ts (done)
+		Các bước đã làm: 
+			B1: Tìm và tham khảo kiểu dữ liệu của 2 trường này ở các bảng khác 
+			B2: implement với format tương tự các trường còn lại 
+
+	5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+		5.1. Đã check và lưu được data của 2 trường trên ở service updateDataWithHome ở api publishSettingWebsite (done) 
+		Các bước thực hiện: 
+			B1: Đọc code mẫu mà người giao task đã chỉ định (đọc phân tích từng dòng code và logic của nó API-->Service) 
+			B2: Xác định cách implement 
+			B3: Xác định luồng gọi API 
+			B4: Implement và test 
+
+		5.2. Đã tìm được nơi lưu được trường blog_id của table setting_screen_item_detail ở service của api updateSettingScreen (done) 
+	
+		Các bước đã làm: 
+			B1: Đọc code mẫu mà người giao task đã chỉ định (đọc phân tích từng dòng code và logic của nó API--> Service) 
+			B2: Xác định cách implement 
+			B3: Xác định luồng gọi API 
+			B4: Implement và test 
+
+	6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Logic của các api liên quan trong task này: 
+	1. API getFeaturedBlog ( get ra danh sách các bài blog đặc trưng) 
+		1.1. index(/api/v1/blog/featured) get 
+		1.2. controller fetchFeaturedBlogsAction
+			- paging (limit, offset) 
+			- type = blog.displayed 
+			- delete_at = null 
+			- is_featured_blog = true 
+			B1: Gọi hàm BlogService.fetchFeaturedBlogs(where, limit, offset) 
+			B2: Ở service gọi hàm blog.findAndCountAll (limit, offset, where, order (position, ASC) 
+			B3: Response 
+-------------------------------------------------------------------------------------------------------------------------------------------------
+	2. API createBlog (tạo ra bài blog mới ) 
+		1.1. index(/api/v1/admin/blog) post
+		1.2. controller createBlogAction
+			- param request.body 
+			B1: gọi hàm BlogService.createBlog(req.body)
+			B2: ở service gọi hàm thêm 
+		Lưu ý: Điều kiện để thêm các slug không được trùng nhau 
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+	3. chị nói lại chỗ này nhé
+position được FE truyền xuống cho blog khi call api update setting screen
+trong từng cái setting screen item detail nó có trường position á, em lấy trường đó để update cho trường position trong bảng blog
+
+
+khi mà update các blog thì trước tiên em remove các position ở tất cả các blog có trường is_blog_featured đi, xong rồi mới update cái mới
+
+
+Dạ ở hàm updateFeaturedBlog thì nó update cái blog có id gửi về á chị 
+Nhưng logic là update tất cả blog có is_blog_featured = true (em nghĩ để ở trong thì không chắc là nó sẽ có is_blog_featured = true á chị )
+
+
+1. Xin verify code push code lên github 
+2. Ping chị Liễu và chekc 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

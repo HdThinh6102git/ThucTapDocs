@@ -1,0 +1,24 @@
+Viết 1 cái api bổ sung data vào 2 trường: (thuộc table product) 
+	 - image_base_url_thumb
+	 - name_display_mobile
+Dựa vào
+	Giá trị trường name_display để cập nhật vào trường name_display_mobile
+	Giá trị trường thumb_url đầu tiên trong product_variant để cập nhật vào trường image_base_url_thumb
+	(Nếu thum_url không có giá trị thì trả về null) 
+	Cái này api phải for tất cả sản phẩm có trong hệ thống rồi update lại á em, update giống như 3 cái sản phẩm trên đã có data ấy
+
+url: http://localhost:3600/api/v1/product/data/mobile
+1. index
+	app.patch(`${urlDefault}data/mobile`, productController.updateProductDataForMobileAction);
+2. controller 
+	updateProductDataForMobileAction
+3. service
+	updateProductDataForMobile
+	product.findAll 
+	for qua tìm vào gán 
+	product_variant 
+
+
+
+
+Sửa cái tên ở controller và service thành update 

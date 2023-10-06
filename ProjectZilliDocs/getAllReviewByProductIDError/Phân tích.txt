@@ -1,0 +1,10 @@
+Vấn đề: mỗi lần đổi giá trị của param perpage là sẽ không get ra được record review nào mặc dù get được số lượng record 
+
+
+1. index 
+app.get(`${urlDefault}/product/filter/:productId`, reviewController.getAllReviewByProductId);
+2. controller 
+getAllReviewByProductId
+3. service 
+
+Đã biết lỗi: do nếu để vietkey gõ param perPage nó sẽ nhận là 0 ở lần đầu (có lẽ do postman )

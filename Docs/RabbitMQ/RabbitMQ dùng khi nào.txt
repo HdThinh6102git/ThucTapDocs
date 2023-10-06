@@ -1,0 +1,64 @@
+Framework sử dụng cơ chế Message broker để các service giao tiếp với nhau. 
+
+1. Message broker là gì ? 
+	- Là một chương trình trung gian được thiết kế để validating, transforming và routing messages. 		
+	- Phục vụ nhu cầu giao tiếp giữa các ứng dụng hay service (trong microservice)
+
+Có 2 hình thức giao tiếp với một Message Broker 
+	- Publish và Subscribe (Topics) 
+		B1: Publisher(Server) sẽ publish message qua Message Broker 
+		(Xong publisher không care nữa) 
+		B2: Message Broker sẽ exchange các message này vào các queue 
+		(Có 3 kiểu exchange: direct, topic , fanount ) 
+		B3: Các consumers(clients) sẽ subscribe các queue , message broker sẽ dựa vào đó gửi message về tương ứng 
+	
+	- Point to Point (Queues)
+
+2. Trường hợp sử dụng RabbitMQ 
+	2.1. Là chương trình trung gian (Tách kiến trúc ra ) 
+		- Thay vì request gửi về server quản lí thì đưa cho rabbitmq làm dùm  
+	2.2. Trường hợp 2: 
+		- Một request gửi về mà response trả về chỉ cần thông báo nhưng sau đó cần thực hiện nhiều service khác nhau
+			nếu để chúng chạy tuần tự sẽ mất lượng lớn thời gian mới có thể trả về được. 
+		- Có nghĩa vấn đề gặp phải ở đây là ta phải thực hiện xong service mới có thể response được trong khi chỉ cần thông báo 
+		(VD: cần 3 service: send mail(200ms) , tích điểm(300ms), ranking (500ms) chạy tuần tự sẽ mất 1000ms)
+	Giải pháp: 
+		- Áp dụng rabbitmq vào để server chỉ việc nhận request sau đó chuyển request đó cho rabbitmq và lập tức response cho client 
+		còn lại việc xử lí service để cho rabbitmq đảm nhiệm (thì service đó vẫn sẽ được thực hiện bth)
+	 	(Chuyển về bất đồng bộ) 
+	2.3. Trường hợp 3: 
+		Ta có một hệ thống ở thời điểm bình thường chỉ nhận 50 request/s và db có thể nhận tối đa 2000 request/s 
+		Thế nhưng tại một thời điểm có chương trình khuyến mãi số lượng request tăng đột biến lên 5000 request/s --> sập 
+		Tối đa 2000 request/s bởi vì tối chỉ muốn có tối đa 2000 sản phẩm khuyến mãi được bán 
+		
+	Giải pháp: 
+		- Rabbit mq sử dụng queue (hàng đợi) 
+		- Ta sẽ set rabbitmq nằm trung gian nhận request gửi về 
+		- Set để queue của rabbitmq giữ 5000request/s và sẽ chứa tối đa 2000request trong một ô của queue 
+			từ đó set up gửi tối đa 2000 request/s về cho db 
+		- Và cứ thế sau khi db xử lí xong rabbitmq sẽ gửi tiếp --> không sập db
+		- Việc tồn đọng lượng lớn request ở rabbitmq không có vấn đề bởi vì qua giờ cao điểm thì sẽ trở lại 50 request/s nhưng rabbit mq vẫn 
+		sẽ gửi 2000request/s về cho db do đó qua giờ cao điểm số lượng còn lại sẽ được xử lí nhanh chóng.  
+
+
+3. Nhược điểm của rabbitmq 
+	- Tăng độ phức tạp của hệ thống 
+	- Có thể bị miss message
+	- Tính nhất quán của hệ thống 
+	(Ví dụ trường hợp 1 nó sử dụng bất đồng bộ giao cho rabbitmq xử lí rồi trả về thành công, tuy nhiên nó chưa hề thành công)
+
+4. Có nhiều loại MQ vậy dùng loại nào phù hợp cho từng tình huống nào? 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

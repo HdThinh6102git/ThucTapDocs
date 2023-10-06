@@ -1,0 +1,185 @@
+Lưu is_blog_featured, position và cả blog_id ở updateSettingScreen 
+
+Flow từ lúc tạo ra blog đến khi get ra được các featured blog 
+
+Done	B1: Tạo blog (chưa có thông tin cho 2 trường is_blog_featured, position) 
+(1)	B2: Update Setting_Screen để lưu thông tin blog_id trong bảng setting_screen_item_detail 				Service
+(2)	B3: Cũng ở UpdateSettingScreen sau khi lưu blog_id để lưu thông tin của is_blog_featured và position (Controller) 	Service 
+	(blog.position = item_detail.position (where item_detail.blog_id === blog.id))
+Done	B4: Get Featured Blog với is_blog_featured = true và  sort theo position tăng dần (ASC)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ Ở api updateSettingScreen sẽ có 
+	1. req.body là 
+		Một json object: (screen_items, screen, website, group_Id), trong đó screen_items là một array gồm các screen_item 
+		Mỗi Screen_Item có item_details là một array gồm các item_detail 
+(3)		Mỗi item_detail sẽ có các attribute khác và blog_id  
+	2. Logic updateSettingScreenAction: 
+		B1: OldSettingScreen = findOneSettingScreen và các thành phần bên trong nó với (website, screen, group_id) 
+		B2: OldScreenItems = OldSettingScreen.items 
+		B3: Duyệt qua các screen_items(new được truyền về) 
+			Bên trong vòng lặp duyệt qua các OldScreenItems  
+If 1				Bên trong vòng lặp 2: kiểm tra nếu newScreenItem.screen == oldScreenItem.screen thì 
+(4) 				Gọi hàm settingScreenService.updateSettingScreen(newScreenItem, oldScreenItem) 
+Chỗ số (4) bên trong service sẽ có chỗ để update blog_id 
+				
+				
+If 2 				Sau khi thực hiện xong hàm settingScreenService.updateSettingScreen(newScreenItem, oldScreenItem) thì 
+				Kiểm tra nếu newScreenItem.screen == PAGE_ENUM.home_screen
+					- Tìm homeScreen = findSettingScreen với thông tin chi tiết hơn 
+(5)					- Gọi hàm updateDataWithHomeScreen(homeScreen) 
+					Trong hàm updateDataWithHomeSCreen sẽ duyệt qua các Setting_Screen_Item 
+					Kiểm tra nếu item.setting_screen === PAGE_ENUM.home_featured_blog thì 
+						Duyệt qua các item_detail ở trong của item đó gọi hàm 
+(6) 				 			blogService.updateFeaturedBlog
+						({id: item_detail.blog_id,position: item_detail.position, is_blog_featured: true})
+Chỗ số (6) bên trong blogService.updateFeaturedBlog sẽ có logic để lưu is_blog_featured, position. 
+
+
+
+Chỗ số (4) logic của hàm updateSettingScreen trong settingScreenService 
+	Ở updateSettingScreen Service 
+	B5: Gọi hàm SettingScreenItem.update() với tham số truyền vào NewSettingScreenItem và OldSettingScreenItem.id 
+	B6: Duyệt qua các OldSettingScreenItem.item_details và lần lượt xóa các SettingScreenItemDetailProduct đã tồn tại 
+	B7: Xóa SettingScreenItemDetail mà có screen_item_id == OldSettingScreenItem.id 
+	B8: Xóa SettingScreenItemProduct mà có screen_item_id == OldSettingScreenItem.id 
+	B9: Kiểm tra nếu có NewSettingScreenItem.item_details và length của nó > 0 thì 
+		Duyệt qua các item_detail đó 
+			B9.1: Xóa item_detail.id 
+			B9.2: Set item_detail.screen_item_id  = OldSettingScreenItem.id 
+(7)			(Trong item_detail thuộc NewSettingScreenItem đã có value của blog_id) 
+			B9.4: Set item_detail = SettingScreenItemDetail.create(item_detail) 
+				(Tạo mới item_detail với id mới và thông tin mới ) 
+			Chỗ tạo mới ở bước 9.4 này có thể đã bao gồm blog_id được truyền về từ request.body ( và được lưu thông tin ngay chỗ này)  
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Điểm còn bất cập ở chỗ này là 
+	1. (4) lưu thông tin blog_id (OKiiiiiiiiiiiiiiiiiiiiiiiiii) 
+	2. (6) lưu thông tin is_blog_featured, position (Bất cập) 
+		- Kiểm tra nếu screen = home_screen gọi hàm updateDataWithHomeScreen (homescreen) 
+Note: Nếu gọi hàm updateDataWithHomeScreen phải truyền vào là một 
+
+
+--------------------------------------------------------------------------------------------------------------
+Flow từ lúc tạo ra blog đến khi get ra được các featured blog 
+
+Done	B1: Tạo blog (chưa có thông tin cho 2 trường is_blog_featured, position) 
+(1)	B2: Update Setting_Screen để lưu thông tin blog_id trong bảng setting_screen_item_detail 				
+(2)	B3: Cũng ở UpdateSettingScreen sau khi lưu blog_id để lưu thông tin của is_blog_featured và position 
+	(blog.position = item_detail.position (where item_detail.blog_id === blog.id))
+Done	B4: Get Featured Blog với is_blog_featured = true và  sort theo position tăng dần (ASC)
+---------------------------------------------------------------------------------------------------------------
+
+Dạ chị, cho em hỏi về việc lưu thông tin của 2 trường is_blog_featured và position có 2 options: 	
+
+I/ Option 1. Lưu vào ở api UpdateSettingScreen 
+	Flow sẽ như sau: 
+	Chỉ gọi một api duy nhất là UpdateSettingScreen là làm được cả việc lưu thông tin cho 3 trường blog_id, is_blog_featured và cả position 
+
+Các bước lần lượt là: 	
+Done	B1: Tạo blog (chưa có thông tin cho 2 trường is_blog_featured, position)
+(1)	B2: Update Setting_Screen để lưu thông tin blog_id trong bảng setting_screen_item_detail
+(2)	B3: Cũng ở UpdateSettingScreen sau khi lưu blog_id để lưu thông tin của is_blog_featured và position 
+	(blog.position = item_detail.position (where item_detail.blog_id === blog.id))
+Done	B4: Get Featured Blog với is_blog_featured = true và  sort theo position tăng dần (ASC)
+
+Vấn đề cần hỏi: 
+
+	Ở api updateSettingScreen sẽ có 
+		1. req.body là 
+			Một json object: (screen_items, screen, website, group_Id), trong đó screen_items là một array gồm các screen_item 
+			Mỗi Screen_Item có item_details là một array gồm các item_detail 
+(3)			Mỗi item_detail sẽ có các attribute khác và blog_id	
+		2. Ở số (1) lưu thông tin blog_id truyền xuống bằng req.body truyền về (oki) 
+(4)		3. Ở số (2) muốn lưu thông tin xuống thì gọi hàm updateDataWithHomeScreen (homeScreen) 
+
+	
+Nếu như sử dụng Option 1 thì em có câu hỏi: 
+	
+Câu hỏi 1: Em muốn hỏi ở số (4) nếu sử dụng hàm updateDataWithHomeScreen(homeScreen) nó sẽ thực hiện các thao tác thừa ngoài việc lưu thông tin của 
+	trường is_blog_featured và position, vậy thì em có cần viết một service khác để làm việc này hay vẫn sử dụng service này ạ. 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+II/ Option 2. Lưu vào ở api PublishSettingWebsite 
+	Flow sẽ như sau: 
+	Gọi api UpdateSettingScreen trước để lưu trường blog_id 
+	và sau đó gọi api PublishSettingWebsite để lưu thông tin cho trường is_blog_featured và position 
+Các bước lần lượt là: 	
+Done	B1: Tạo blog (chưa có thông tin cho 2 trường is_blog_featured, position)
+(1)	B2: Update Setting_Screen để lưu thông tin blog_id trong bảng setting_screen_item_detail
+(2)	B3: B3: Publish SettingWebsite để lưu thông tin của is_blog_featured và position 					
+	(blog.position = item_detail.position (where item_detail.blog_id === blog.id))
+Done	B4: Get Featured Blog với is_blog_featured = true và  sort theo position tăng dần (ASC)
+
+
+Câu hỏi 2: Dạ theo chị là nên chọn option 1 hay option 2 vậy ạ.		
+
+------------------------------------------------------------------------------------
+
+Dạ em hiểu flow mà admin làm như sau: 
+	B1: Tạo ra danh sách các blog (được thêm bằng api hoặc UI ) 
+	Khi muốn set một bài viết nào đó là đặc trưng (featured blog) 
+	B2: Gọi api updateSettingScreen ( truyền vào các blog_id tương ứng muốn set) 
+	(Chỗ này có thể là UI tick chọn hoặc call api và điền vào req.body) 
+	--> Lưu thông tin các blog_id muốn set đặc trưng 
+	B3: Admin nhấn nút Tải lên ở màn hình setting (nút này sẽ call api publish) sẽ set các trường is_blog_featured = true và position 
+	B4: Ở Giao diện client call api get danh sách featured blog (lấy ra danh sách blog có is_blog_featured = true và sort theo position tăng dần)	
+
+Chị check giúp em flow là đúng chưa chị nha. 
+
+
+
+
+---------------------------------------------------
+Flow test 
+	B1: Login với role admin (https://api.zilicoffee.vn/api/v1/auth/user/login)
+	B2: Dùng api create blog để tạo ra danh sách blog (các blog không đượcc trùng slug)  
+	B3: Dùng api createSetting (parram gif ) 
+	B3: Dùng api updateSettingScreen để set các blog là đặc trưng (với blog_id) 
+	B4: Dùng api publishSettingWebsite để lưu thông tin 2 trường is_blog_featured, position 
+	B5: Dùng api getFeaturedBlog để get ra danh sách bài viết đặc trưng 
+
+Tesst xong thì hỏi và sửa lại tên param chỗ updateSettingScreen 
+	Update rồi test thử rồi push lên xong hỏi 
+
+Check lại code đã gửi merge okii chưa cần sửa lại gì không 
+	1. Dư thừa khoảng cách , dấu , gì không thiếu gì k 
+	2. logic code như z đã okii chưa 
+	3. Check lại yêu cầu xem đã làm đúng yêu cầu chưa 
+
+
+Document: 
+	1. postman 
+	2. jira (flow tesst và các api cần thiết để test ) 
+Ping leader 
+	(hỏi có sửa chỗ param updateSettingScreen hay không) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				
+	
+	

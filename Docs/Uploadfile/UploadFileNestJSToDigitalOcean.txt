@@ -1,0 +1,80 @@
+Mọi thứ set up oki chỉ là chưa tạo instance trên Digital Ocean để upload lên thật
+Cảnh báo phải chuyển đổi qua AWS SDK JS(v3) 
+Chưa test được thực tế có upload được hay chưa 
+
+1. Install aws-sdk 
+npm install aws-sdk
+2. trong project tạo spaces module dùng để upload 
+	- Trong spaces module tạo folder SpacesService để implement logic upload
+	- Trong folder SpacesService có file index.ts và doSpaceService.ts
+	- Trong file index.ts có 
+		+ import package aws-sdk as AWS
+		+ export const DoSpaceServiceLib 
+		+ Khởi tạo const spacesEndpoint = new AWS.Endpoint 
+		+ Khởi tạo const S3 = new AWS.S3 
+		Trong ngày nó sẽ declare 
+			enpoint: spaceEndpoint (ở trên)	
+			credentials: new AWS.Credentials
+				accessKeyId: (thêm vào digital ocean spaces key) 	
+				secretAccessKey: (thêm vào digital ocean spaces secret)
+		+ export const DoSpacesServiceProvider (Chưa biết dùng chỗ nào)
+		Đây là một provider declare 
+			provide: DoSpaceServiceLib (ở trên)
+			useValue: S3
+		+ export interface UploadedMulterFileI 
+		(Interface represent một uploaded file object) (chưa biết dùng chỗ nào) 
+		Có các trường 
+			fieldname: string, originalname: string, encoding: string , 
+			mimetype: string, buffer: Buffer, size: number 
+	- Trong file doSpaceService.ts (implement logic upload file) 
+		+ export class DoSpacesService 
+		(Dùng để các nơi cần dùng service upload thì imports vào)
+		+ Trong class DoSpacesService có 
+			* constructor inject(DoSpaceServiceLib) s3: AWS.S3 (chưa biết dùng chỗ nào)
+			* asynce function UploadFile (chưa biết dùng chỗ nào)
+			Hàm này có: 
+				- Cần asynce bởi vì uploadfile là bất đồng bộ 
+				- Param là file: UploadedMulterFileI (Interface đã export từ index.ts)
+				- Khởi tạo const fileName = Date.Now + file.OriginalName
+				(Khởi tạo fileName mới để tránh trường hợp trùng tên file upload)
+				- Hàm này sẽ return về một promise (resolve, reject) 
+				(Promise này chỉ được resolve/hoàn thành khi file upload complete )
+				Cụ thể promise có: 
+					+ this.s3.putObject(s3 là AWS.S3 đã inject trong constructor 
+					Object này sẽ có 
+					Object 1: 
+						* Bucket: (thêm tên của spaces bucket ) 
+						* key: fileName, 
+						* Body: file.buffer (file này là interface UploadedMulterFileI)
+						* ACL: 'public-read' 
+					Callbackfunction: 
+						*param: error: AWS.AWSError
+						if(!error) thì thực hiện resolve
+							return về public link to spaces/filename
+						else thì reject và return error 
+							DoSpacesService_Error: Someth went wrong
+	- Tạo ra controller để thực thi service upload file 
+	- Trong file spaces.controller 
+		+@Public() (Để pass qua JWT Protect) 
+		+ constructor doSpacesService: DoSpacesService (Inject Service dùng để upload đã implement ở trên)
+		+ async uploadFile (Hàm upload file là hàm bất đồng bộ method POST)
+		Hàm này có: 
+			* param: @UploadedFile() file: UploadedMulterFileI
+			(Decorator @UploadedFile thuộc nestjs/common) 
+			(Interface UploadedMulterFileI export từ index.ts của SpaceService)
+			* Khởi tạo url = await doSpaceService.uploadFile(file)
+			Vậy hàm của service sẽ trả về một url của spaces chứa file đó để truy cập đến 
+	- Declare các Service , Controller cần thiết cho module upload file 
+	- Trong file spaces.module.ts
+		+ Controllers: [SpacesController]
+		+ provider: [DoSpaceServiceProvider, DoSpacesService] 
+
+					
+				
+		 
+			
+			
+			
+			
+
+			

@@ -1,0 +1,64 @@
+6. Câu hỏi đặt ra: 
+	5.1. Api setting screen được gọi khi nào ở trang chủ ?
+	(Ngay lúc load trang chủ là sẽ gọi api này) 
+	Và sau đối với trang product thì được gọi khi nào?  
+	5.2.
+
+
+
+Dạ chị, em đọc qua api setting screen cho trang chủ admin
+Em thấy được flow của nó và em hiểu yêu cầu đề ra của chị là như sau
+Chị xem thử đúng không nha chị. 
+
+Luồng đi của việc setting trang chủ admin sẽ là: 
+	Bước 1: request load trang 	
+	Bước 2: call api setting screen home_screen
+	--> trả về output data là:
+		- Level 1: data{} 
+		- Level 2: thông tin của setting_screen + items 
+		- Level 3: item_details 
+			item_products 
+		- Level 4: (của item_details) item_detail_products 
+			wardrobe 
+			category 
+			gallery 
+		- Level 4: (của item_products) 
+			product 
+		- Level 5: (của gallery) 
+			customer 
+		- Level 5: (của product) 
+			media 
+	Bước 3: Frontend sẽ dựa vào output data để load dữ liệu lên 
+
+Tương tự như trên: 
+	Cần bổ sung api setting trang danh sách sản phẩm (user)
+	Bước 1: request load trang danh sách sản phẩm 
+	Bước 2: call api setting screen product_list_screen trả về output data: 
+		- Level 1: data{}
+		- Level 2: items [] 
+		- Level 3: item_details[]: có list categories mà admin chọn   
+		- Level 4: item_detail (là các item category thuộc list categories) 
+		- Level 5: item_detail_products (list of products của category mà admin setting ở trên) 
+	Bước 3: Mobile sẽ dựa vào output data để load dữ liệu lên 
+
+
+Câu hỏi: 
+	- list categories mà admin chọn: là được chọn từ đâu (chọn bằng cách nào) 
+	(Thực ra việc này không quan trọng miễn mình có thể trả về danh sách categories là được )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

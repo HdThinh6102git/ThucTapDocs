@@ -1,0 +1,176 @@
+Monolithic Architect 
+	1. Flow 
+		Browser(getProduct) --> Server(Query) -->  DB
+	2. Qui trình dev app 
+		Team 1 (Work) --> Project làm một component nào đó. 
+		Team 2 (Work) --> Cùng Project đó làm component 2 
+		Khi phát sinh yêu cầu mới  sẽ lại có một team mới join vào và làm component đó 
+	
+	3. Các challenges gặp phải trong kiến trúc này 
+			
+		- Maintainability (Khó để bảo trì) 
+		(Bởi vì càng về sau càng có thêm yêu cầu và từ đó các component trong dự án sẽ càng nhiều cũng như sẽ càng có nhiều team) 
+		Lúc này project sẽ là dự án rất lớn, khi sửa một component rất dễ dẫn đến conflict ngay cả quá trì dev, merge,...
+		
+		- Hard to Debug 
+		(Bởi vì với một lượng code quá lớn, ta rất khó khăn để debug) 
+		
+		- Agile Killer, Days to releases 
+		(Bởi vì dự án một khi đã quá lớn,mà ta không thể release ra các chức năng nhỏ riêng lẻ mà phải release cả project và việc đó mất nhiều time)
+		(Điều này khiến ta không áp dụng được mô hình Agile (Scrum))
+	
+		- Scality, Availability (Khó để scale dự án, và tính sẵn sàng dễ gặp sự cố) 
+		(Bởi vì trong một dự án lớn, khi ta thêm một component mới vào, nó sẽ ảnh hưởng đến các component khác, nếu sai xót sẽ dẫn đến cả 
+		project ảnh hưởng.) 
+		(Hay giữa các service component nó sẽ có lượng tải khác nhau, khi muốn scale cho service này thì service khác sẽ bị thừa
+		và đồng thời sẽ khiến bị quá kinh phí cho phép [budget]) 
+		(Khi một service này bị crash sẽ khiến cả hệ thống crash từ đó ảnh hưởng đến tính sẵn sàng [availability] của cả hệ thống)
+
+		- Old Tech Lock-In (Bị giới hạn bởi 1 ngôn ngữ hay công nghệ cũ) 
+		( Bởi vì ta không thể implement một component service mới với công nghệ khác hoặc mới hơn sẽ dẫn đến conflict cả project)
+
+
+MicroServices Architect
+	1. Flow 
+		Browser (getService1)--> Server 1 (Query) --> (db) 
+			(getService2) --> Server 2(Query) đến cùng 1 db 
+	Mỗi service chạy trên một server khác nhau(deploy) 		
+	Lúc này theo như hình là dùng cùng 1 db 
+	2. Qui trình dev app 
+		Team 1(work) --> project 1(Service 1) 
+		Team 2(work)--> project 2(Service2) 
+	3. Các benefits của kiến trúc này
+		
+		- Flexibility, Tech Agnostic (Không bị giới hạn công nghệ và kĩ thuật ) 
+		(Mỗi service có thể dùng một công nghệ, kĩ thuật riêng biệt) 
+		
+		- Maintainability (Dễ dàng bảo trì) 
+		(Mỗi service được bảo trì riêng biệt, nhỏ dễ bảo trì, debug,...) 
+		
+		- Effortless Scalability (Ít công sức để scale một service) 
+		(Bởi vì service nằm độc lập nên scale khi cần và không ảnh hưởng đến các service khác) 
+	
+		- Secured And Fault tolerance (An toàn và Tránh được các lỗi) 
+		(Bởi vì trong mono người làm service khác có thể xem được code của toàn project , không cần thiết) 
+		(Hay ta có thể tách db để tăng tính bảo mật ) 
+		(Hay fault tolerance chính là một service crash không ảnh hưởng đến cả project) 
+
+		- Agile, Faster Time to Market (Dễ dàng release, nếu apply CI, CD vào thì cực nhanh luôn) 
+		(Bởi vì release từng service riêng lẻ)
+	
+	4. Vấn đề gặp phải khi triển khai kiến trúc
+		
+		4.1. Với flow 
+			Browser --> Server 1(Service1) 
+				--> Server 2(Service2) 
+			- Browser sẽ cần biết quá nhiều server nếu có nhiều service 
+			(Và đồng thời các service của mình sẽ bị lộ ra internet quá nhiều) 
+		Giải pháp: 
+			- Dùng APIGateWay
+			- Flow sẽ trở thành 
+			Browser --> APIGateway --> Server 1(Service1) 
+						--> Server 2(Service2) 
+			- Lợi ích nhận được APIGateway 
+				+ Bảo mật cao: APIGateWay sẽ nằm trong red zone nó sẽ nhận tất cả request và thực hiện auth 
+					Các Service và DB sẽ nằm trong green zone lúc này ta có thể để nó trong mạng private  
+				+ Single Entry Point for FE, Routing (FE chỉ việc truy xuất đến 1 server chính) 
+				(Không cần biết quá nhiều ip, và phải mất công nhận biết ip đó thuộc service nào) 
+				+ Policies, Rate Limit Implementation 
+				(Ở APIGateway ta có thể set các chính sách cho request gửi về, hoặc giới hạn số lần request, hoặc được vào trong bao lâu) 
+				+ Protocol translation 
+				(Ở ngoài có thể là RESTful API nhưng vào các service có thể đổi format hay đổi protocol khác) 
+		
+		4.2. Tuy nhiên API Gateway vẫn phải nhận biết quá nhiều IP khi có nhiều service 
+			- Thậm chí một service còn có nhiều instances, khó để biết có bao nhiêu instances để gọi. 
+		Giải pháp: 
+		(Service Registry and Lookup) 
+			- Các thành phần: 
+				+ Browser, APIGateway, Các Server(Service), Registry, DB 
+			- Flow sẽ trở thành: 
+				B1: Các Server (Service) chạy thì nó sẽ register với registry 
+				(Tên, bao nhiêu instance, ip là gì) 
+				(Khi có bất cứ cập nhật nào như instance bị tắt thì registry sẽ nhận biết và cập nhật) 
+				B2: Browser make request đến API Gateway thì API gateway sẽ Look up đến registry 
+				( Yêu cầu với registry tôi cần service này , cung cấp cho tôi ip các instance của nó) 
+				B3: Nhờ vào ip nhận được từ registry APIGateway sẽ request đến service có ip đó và nhận kết quả 
+		
+		4.3. Vấn đề config server 
+			- Khi có quá nhiều service trên nhiều server mà mỗi service có một config khác nhau dẫn đến việc ta phải config cho rất nhiều
+			server rất tốn công. 
+		Giải pháp: 
+		(Config server) 
+			- Tạo ra một server là config server 
+			- Ta sẽ để tất cả config của các service trong project trên 1 server duy nhất theo dạng key pair (vd: service: config) 
+			- Flow: 
+				+ Khi service được start lên thì nó sẽ get configs từ config server 
+			Lợi ích: 
+				+ Có thể cập nhật config sau khi build server 
+				(Bình thường khi build một service lên ta không thể thay đổi config của nó )
+				(Không thể thay đổi env hay db connection,...) 
+				+ Giờ ta có thể thay đổi key pair trong config server và nó sẽ auto update config cho server on run time 
+		
+		4.4. Phân chia một service dựa vào điều gì ? 
+			- Bám theo domain object 
+		
+		4.5. Data bị overloaded 
+		Giải pháp: 
+			- Chia db ra thành các db độc lập dành riêng cho từng service 
+			- Team làm service sẽ quản lí vertical từ trên xuống tới db 
+		Tuy nhiên vấn đề phát sinh: 
+			- Chia db như nào cho hợp lí 
+			- Đồng thời chia ra sẽ bị mất các relationship ( sẽ không tự động validate trong db được nữa) 
+			- Vậy giải pháp là phải validate bằng các kỹ thuật khác 
+		
+		4.6. Quá nhiều server deploy trên nhiều service lại dẫn đến quá mức kinh phí cho phép 
+			- Theo kiến trúc cũ ta sẽ deploy lên máy thật hoặc máy ảo 	
+			- Nếu máy ảo (hypervisor) 
+				+ Chạy hệ điều hành lên và hypervisor tốn ram 
+				+ Chạy từng hệ điều hành trên từng máy ảo lại tốn ram 
+		Giải pháp: 
+			- Dùng docker 
+				+ Chạy hệ điều hành và docker lên tốn ram 
+				+ Chạy app trên docker không tốn ram 
+				+ Chạy trên các container trên docker runtime 
+			- Khi lên cloud thì dùng Kubernete gì đó chứ k xài docker 
+			- Docker chỉ dùng để combine docker image sau đó đóng gói , chạy bằng kubernete 
+		
+	5. Vấn đề giao tiếp giữa các service 
+	
+		5.1. Tại sao không dùng RESTFul API 
+			- Một http call cần header, handset, request, nhiều thứ 
+			- Một request mất 500ms 
+			- Vậy nên nếu một request từ APIGateway xuống các service gọi qua lại với nhau thì sẽ tốn rất nhiều thời gian để trả về 
+		
+		Giải pháp sẽ là Event Driven Design 
+	
+	6. Một vài pattern để làm việc với Microservices hiệu quả 
+		
+		6.1. Logging, Tracing 
+			- Dùng để log ra các lỗi khi vận hành service 
+			- Hay tracing để biết được luồng chạy tới service khi thực hiện một request nào đó (đi qua từng service sẽ tracing ra )
+		6.2. Health check And Monitoring 
+			- Dùng kĩ thuật để check thường xuyên instance nào còn chạy hay không để từ đó đưa ra xử lí phù hợp 
+		6.3. Circuit Breaker 
+			- Pattern này là một dạng triển khai các công tắc bật tắt giữa các service sao cho phù hợp 
+		6.4. Event Driven Design 
+			- Pattern dùng để thiết kế các event giao tiếp giữa các service từ đó đạt được high performance mong muốn. 
+		6.5. CQRS và Event Sourcing 
+			- Thuộc event driven design 
+			- Tách biệt read and write ra các service khác nhau để đạt được performance 
+			- Bởi vì Query (read) cần một lượng load cao 		
+		6.7. Nếu cần logic mới liên quan giữa 2 service ta có thể combine lại thành một service mới 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

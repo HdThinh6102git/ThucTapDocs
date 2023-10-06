@@ -1,0 +1,43 @@
+1. Truyền từ postman về controller để test thử 
+Gửi về controller thành công 
+2. Test riêng với hàm updateProduct của productService 
+- Tại sao phải check productslug đã tồn tại chưa 
+Tồn tại nó sẽ return luôn chứ k update 
+
+- Tạm thời set product_slug = "set_qua_" 
+
+xem dữ liệu gửi về đó oki chưa 
+gửi về service thành công 
+3. implement  để update data xuống db từ service 
+truyền về product_types = "" 
+vào service nó bỏ qua if đầu tiên 
+truyền về product_image_details = "" 
+bỏ qua if thứ 2 
+truyền về product_images = "" 
+bỏ qua if thứ 3 
+Thêm các field mới vào hàm await Product.update (done)
+Thêm các field mới vào product.model.ts ở model 
+xong giờ cần thêm vào db 
+(Hỏi Tính thử thêm các trường mới vào db có gặp vấn đề 
+gì với các API khác không) 
+Thêm các field vào db rồi 
+Giờ test thử có lưu vào db được chưa 
+
+
+4. thêm vào origin_url: lưu hình ảnh vị trí trồng sản 
+phẩm 
+	- Chỗ này chắc phải upload ảnh 
+	- Chứ không phải là một string truyền từ client 
+	về và lưu vào db 
+{where: {id: product_id}}
+
+	
+
+
+
+
+
+
+
+
+

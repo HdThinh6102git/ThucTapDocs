@@ -1,0 +1,8 @@
+Cách tạo ra một screen 
+	product_list_screen
+
+1. Mình tìm thấy hàm create 
+	createSettingScreen (screen, website, groupid) 
+	- Dùng model SettingScreen.create 
+		+ Nếu có truyền theo groupId thì thêm , còn k thì để default 
+	

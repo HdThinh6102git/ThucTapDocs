@@ -1,0 +1,33 @@
+1. Tạo một module upload-file
+2. tạo một controller upload-file 
+3. Trong file upload-file.controller.ts có 
+	- Hàm async uploadFile()
+	Hàm này có 
+		+ Decorator @Post('upload-file')
+		+ Decorator @UseInterceptors
+		Trong này có: FileIntercepter (thuộc nestjs/platform-express) 
+		Argument của FileIntercepter có: 
+			* 'file' (Đây là tên key sẽ set ở form-data Postman trả về)
+			* 1 object có 1 thuộc tính là stoeage: diskStorage 
+			(diskStorage thuộc multer package )
+			* Argument của diskStorage sẽ là 1 object 
+				- destination: "./uploads" (chỉ định folder sẽ chứa file được upload lên trong project, nếu chưa có sẽ tự tạo ra sau khi 
+				request
+				- filename (chỉ định file name được upload)
+	--> Test bằng postman (form-data --> select file--> send)
+	Upload thành công
+	- Hàm getFile() (Hàm để get file từ folder của project ra)
+		+ Để lấy được file ra thì cần update file main.ts 
+			* chỉnh lại chỗ NestFactory.create<NestExpressApplication>
+			* app.useStaticAssets(path.join(__dirname, "../uploads" ));
+		+ Trong hàm này thì 
+			res.sendFile(path.join(__dirname, "../../uploads/" + file.fileName));
+
+Nhìn chung thì upload 
+	- Nếu để up lên cloud thì 
+		- Ở service sẽ dùng aws-sdk để put object đó lên folder của vps rồi return về đường dẫn 
+		- Ở controller sẽ dùng Decoratore @UseIntecepter(FileIntercepter) để config key và nhận file được gửi về và gửi về cho service xử lí 
+	- Nếu ở local 
+		- Ở controller sẽ dùng @UseIntecepter(FileIntercepter) config key, folder lưu file uploaded và filename thế là xong 
+		- Get ở local thì cần set để app send file từ folder đó ra 
+				

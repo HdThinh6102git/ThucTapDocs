@@ -1,0 +1,23 @@
+Đây là project gì để làm gì 
+Project bên ngoài: 
+
+1. DOCKER 
+	- Có project docker chứa các file lệnh dùng để 
+		+ Config postgresql, nginx, password, php 
+		+ www ( api, club, cms) 
+2. FRONT_END 
+	3.1. Admin (project FE site admin đã code và đang tiếp tục phát triển) 
+	3.2. Product admin (project FE site product admin đã code và đang tiếp tục phát triển) 
+	3.3. Product user (Project FE site Product user mới chỉ initialize 23/8/2023) 
+	3.4. User (Project FE site User đây là luồng chính đang phát triển và chạy) 
+3. GBWOL 
+	(28/8/2023) không có gì trong folder này 
+4. BACK_END (được chia theo microservice) 
+	Mỗi folder tương ứng với một service và chứa một project tương ứng  
+	
+	4.1. Auth 		
+	4.2. Enterprise
+	4.3. Payment 
+	4.4. Product 
+	4.5. System 
+	4.6. User 

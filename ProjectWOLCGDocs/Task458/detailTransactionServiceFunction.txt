@@ -1,0 +1,28 @@
+Chú ý: 
+	- Đã thấy TransactionDetailOutput có trường note (Trả về lí do) 
+	- Thêm type filter Transfer points ở api get lịch sử giao dịch có thể được thêm chỗ TransactionDetailFilter 
+		+ type: TRANSACTION_TYPE
+		(Khi làm chỉnh sửa title template send mail  Đối với API chuyển điểm từ WITHDRAW thành TRANSFER POINTS 
+			đã thêm TRANSACTION_TYPE.TRANSFER_POINTS)
+1. Param (userId, TransactionDetailFilter )
+	1.1. TransactionDetailFilter 
+		- type: TRANSACTION_TYPE
+		- status: TRANSACTION_STATUS
+		- start: Date
+		- end: Date
+2. Kiểu trả về (TransactionDetailOutput)
+	+ id, amount, status, note, createdAt, user, type, receiver, operator, name
+3. Business logic của function 
+	B1: let query = `type <> '${TRANSACTION_STATUS.NEW_REQUEST}' and (u.id = '${userId}' or r.id = '${userId}')`;
+	(Tạo ra một câu query select 
+		+ u.id = '${userId}
+		+ r.id = '${userId}
+	B2: Constant array transactionDetails: TransactionDetailOutput[]
+	B3: check các properties của TransactionDetailFilter
+		Có thì gắn vào câu query 
+	B4: Constant transactions = transactionRepo.createQueryBuilder .where(query)
+	(Lấy các transactions tương ứng về) 
+	B5: Constant packageSavings = savingPackageRepo.find(type == Transaction_type.invest_saving 
+	B6: 
+	
+

@@ -1,0 +1,506 @@
+Follow video and docs 
+https://github.com/JacobSNGoodwin/ranker-course/tree/20-connect-to-socketio/tutorials
+
+Đây là app dùng để tạo vote sau đó sẽ sinh ra code và người tạo có thể đưa code đó cho người khác
+	 Người khác có thể dựa vào code của poll để tham gia vào vote và client sẽ hiển thị data gần như tức thì. (Nhờ vào websocket) 
+
+Công nghệ sử dụng 
+	- Server: nestjs, websocket(socket.io), redis 
+	- client reactjs , websocket (socket.io-client)
+Tham khảo: https://www.youtube.com/playlist?list=PLnrGn4P6C4P5J2rSSyiAyxZegws4SS8ey
+
+
+1. Khởi tạo project bằng lệnh 
+	npx degit https://github.com/JacobSNGoodwin/ranker-course.git#starter
+Clone project của config sẵn (Dùng lệnh này sẽ không bị dính remote của người sở hữu)
+	- Thấy được là client và server là 2 folder và trong đó là project riêng hoàn toàn package json riêng tuy nhiên nó nằm chung 1 project lớn 
+	và có package.json cho cục lớn. (Tạo project riêng bằng các lệnh trong từng folder)
+	- Đứng ở folder lớn dùng lệnh để cài tất cả thư viện trong các file package.json 
+	npm install 
+	- Đứng ở folder lớn dùng lệnh để chạy đồng thời client , server và tạo db trên docker với docker compose 
+	npm run start
+	Cụ thể là lệnh gì thì xem trong package.json folder lớn. 
+
+Note: Cấu trúc của project này đẹp , cần đọc lại để build RESTAPI giống vậy.  
+	Cụ thể source initial cần quan tâm: 
+		- docker-compose.yml (file này để config và tạo ra redis db) 
+		- folder client (react chưa đọc) 
+		- folder server để build server với nestjs 
+		- Trong folder server hiện tại chỉ có appmodule và main.ts 
+			+ Có sử dụng ConfigService thuộc nestjs/config để dùng các biến môi trường (clean code khá đẹp)
+				* imports: [ConfigModule.forRoot()], trong app.module 
+				* const configService = app.get(ConfigService);
+  				  const port = parseInt(configService.get('PORT'));
+			+ Dùng Logger thuộc nestjs/common để log ra những gì cần như là server đang chạy cổng nào cũng ổn đáng học.
+				* logger.log(`Server running on port ${port}`); 
+			+ Có một cái hay nữa là trong file main.ts có config cái cors để chỉ định các url có thể truy cập API này
+				
+2. Set up REST API (Create, Join và Rejoin Poll)
+	- Set up lại chỗ cors không set cứng mà dùng biến môi trường (clean code hơn nên học và tập sử dụng ngay từ không set cứng)
+		const clientPort = parseInt(configService.get('CLIENT_PORT'));
+  				app.enableCors({
+    					origin: [
+      					`http://localhost:${clientPort}`,
+      					new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
+    					],
+ 					 });
+	- Tạo controller bình thường và tạo dto tương ứng cần trả về (có một cách tạo khác là tạo class dtos.ts rồi export các class dto trong đó
+	tuy nhiên cách này nhiều dto sẽ loạn không đẹp nên không làm theo)
+3. Tạo PollService mà chưa có db 
+	- Có một cái rất hay ở đây đó class ids.ts nó dùng để export ra các const là id ngẫu nhiên của user, poll,... (dùng package nanoid)
+	- implement mấy cái function create, join, rejoin poll bình thường thôi 
+	- Nhớ là ở controller dùng @Body và dto 
+	- Một cái hay nữa là lớp types.ts nó export các type có các trường giống với dto truyền xuống chứ không dùng dto cho service đặt tên các type 
+	là fields 
+
+25/7/2023 
+4. Tạo redis module và config nó để connect với redis trên docker compose 
+	- Custom Redis Dynamic Nestjs module 
+	- Mục đích của việc custom này là
+		+ để biết được rằng đã connect to redis trước khi redis client được dùng cho các module khác 
+		+ cách dùng của module này khác với synchronous của configmodule.root()
+		+ để kết nối với config module trong redis module để dùng 
+		+ custom này để tạo một redismodule có syntax và cách dùng giống với JWT module của nestjs (custom provider)
+	
+	- Class redis.module.ts này sẽ khai báo ra cái khung để config và sử dụng redismodule
+	- file redis.module.ts có: 
+		+ export const IORedisKey (chưa biết để làm gì)
+		+ type redisModuleOptions (khai báo type dùng cho việc config redismodule khi sử dụng) có 
+			* connectionOptions: redisOptions; (là tham số để config khi sử dụng, config host, port)
+			* onClientReady(client: redis) ==> void  (là tham số để config khi sử dụng, bắt sự kiện đã connect) 
+		+ type RedilAsynmoduleoptions (chưa biết để làm gì) 
+			* Pick <ModuleMetadata import (là gì)
+			 ( dùng để chỉ định có thể import các module muốn dùng vào module này khi sử dụng)
+			* Pick <FactoryProvider inject (là gì) 
+			(tương tự để chỉ định có thể inject)
+		+@Module 
+		+ export class RedisModule
+		Class RedisModule có một hàm async registerAsync()
+			* param là usefactory, imports, inject, RedisAsyncModuleOptions
+			* const redisProvider (chưa biết để làm gì) có các trường 
+				- provide: IoRedisKey
+				- useFactory ( nó là gì để làm gì) return client , inject 
+Note: useFactory được dùng để custom provider cùng cấp với controller và service nhưng không phải mặc định của framework mà là custom của dev 
+			* return object 
+				- module: Redismodule 
+				- imports, ( dùng để import các module muốn dùng trong module này)	
+				- providers: [redisProvider] 
+				- exports: [redisProvider]
+	- import redis module trong polls.module 
+	- file modules.config.ts dùng để config và export ra redis module theo khung đã khai báo ở trên (thay vì config trong module cần dùng) 
+		+ export const redisModule = RedisModule.registerAsync()
+	UseFactory ở đây là tham số của redismodule đã declare ở trên 
+		+ Cụ thể ở đây ta custom  một provider là redisModule 
+		+ Chỉ định connectionOptions: (host, port của redis) 
+		+ bắt sự kiện onClientReady(client) (callback function)
+		--> ở bước này chỉ log ra để check là client ready chưa. (Để xác định là đã connect được với redis )
+
+5. Create Polls Repository (repo để làm việc với redis db)
+	- Declare construct inject config and redisclient 
+	- import repository into provider of poll module  
+	- create folder shared and add shared folder into workspace of package.json lớn (tại sao cần tạo shared folder )
+Shared package chính là nơi chứa những thứ dùng chung giữa client và server 
+	- add package.json and tsconfig.json into  folder shared 
+	- npm install in big project 
+	- add poll-types.ts 
+(poll types này được dùng cho cả server và client nên để trong package shared)
+	- to export polltypes (create index.ts) 
+	- comback folder server 
+	- update types.ts in module polls 
+	- declare repository type 
+	- use redis json model to work with redis db 
+	- add 3 method into poll repository ( createPoll, getPoll, addParticipant) 
+	- update pollservice 
+	- test with post man and redis insight app 
+Ở đây thấy có những cái hay: 
+	- Tách riêng repo đúng với cấu trúc mà mình đã làm bên spring boot (làm theo)
+	- Dùng logger để log các hoạt động và error của cả repo và service (dễ nhìn trong terminal khi chạy và thấy được flow chạy)
+	- Dùng type riêng cho repo , service cũng như là dto của controller chứ không dùng chung cái nào
+	- Syntax để crud với redis trong repo 
+	- Cách gọi repo hay trong service thay vì return luôn thì gán trước cho một biến rồi return sau 
+
+6. Configuring NestJS JWT module to sign access tokens 
+	- file module.config.ts là file mà dùng để config các module cần dùng (khá hay nên học)
+	ví dụ jwt có thể config trong file cần dùng nó tuy nhiên tách ra để dễ quản lí code hơn sau đó export const đã config ra 
+	module cần dùng thì chỉ việc import const đó vào mà không cần config 
+	- update module.config.ts 
+		+ export const JwtModule = JwtModule.registerAsync(), config jwt secret, expiresIn (config cho nó)
+	- import JwtModule trong PollsModule ( module cần dùng mà không cần config )
+	- inject JwtService into PollsService ( Service cần dùng Jwtservice)
+	- update createPoll method PollService to sign  access token in 
+
+7. Create authorize route guard 
+	- Tạo ra accesstoken này dùng để 
+		+ Để sau đó có thể lấy access token sau đó verify nó có valid hay không và extract payload 
+		+ User nếu close browser có thể rejoin the poll mà họ đã đi nếu nó vẫn còn tồn tại (nhờ vào accesstoken) 
+	- Create guard to authorize (controller-auth.guard.ts)
+		+ get accessToken from httprequest.getbody 
+		+ verify token 
+		+ append user and poll to socket ( append to the request )
+		+ handler canActivate thuộc guard là một promise nếu trả về true thì nó cho thông qua , false nó block route
+		+ context: ExecutionContext 
+		+ context.switchToHttp().getRequest() tell nestjs this guard used on http controller 
+		cũng có thể set context.switchtoWebSocket (nếu muốn chỉ định là guard dùng trên websocket controller) 
+		+ Định nghĩa shape của request được dùng bởi controller trong file types.ts (nó là dto của auth controller)
+		+ Dùng @UseGuard to set guard for controller 
+		(có thể set global guard for all route if Declare AuthGuard in appmodule but here not do that) 
+		only use on rejoin post method 
+		+ rejoin method do: 
+			* param is the RequestWithAuth (dto định nghĩa in types.ts) 
+		(dto này gồm Request thuộc nestjs/common, và AuthPayload) 
+			* dùng kĩ thuật destruct to get value from request (that appended before in auth guard) 
+			* use method rejoin of pollsService to rejoin 
+8. Setting up a Socket.io Gateway in NestJS (để connect với WebSocket)
+	- Cơ chế hoạt động của WebSocket cả 2 phía client và server (về cơ bản)
+		+ Ở phía server 
+			* import {Server} from "socket.io" 
+			* create basic server on port 3000 (const io = new Server(3000))  
+			* handler io.on (có một cái connection register a socket ) socket lúc này đóng vai trò là client 
+			* socket.emit là gửi về phía client 
+			* socket.on là nhận từ client 
+		+ Ở phía client 
+			* import {io} from "socket.io-client" 
+			* const socket = io ("http:local3000) (connect tới server ở cổng 3000) 
+			* socket.on (nhận từ server) 
+			* socket.emit là gửi về server 
+	- Nó không dùng REST Http mà dùng cơ chế Websockets (Socket.io) 
+	- Tạo ra một cái WebSocketgateway (tên là PollsGateWay) nó cùng cấp với Polls controller 
+		( hoạt động giống controller là gửi và nhận request rồi chuyển data lên hoặc xuống)
+	- PollsGateWay sẽ làm việc tương tự PollController là gọi đến PollService rồi Pollrepository
+	- Cụ thể polls.gateway.ts có:  
+		+ Dùng decorator @WebSocketGateway
+		+ export class PollsGateway implements OnGatewayInit 
+		+ Inject pollsService into PollGateway 
+		--> ở đây chỉ mới initialized gateway chứ chưa định nghĩa cụ thể 
+	- Declare PollsGateway in PollsModule trong provider 
+		(mặc dù cùng cấp controller nhưng framework không build sẵn tên cho nó nên bỏ vào provider)
+	- Set up cors in PollsGateway (để gửi request qua lại giữa 2 cổng)
+		+ Do biến môi trường không dùng được (do cái biến đó nó không forward onto the web sockets  hay socket io server instance )
+		+ Có thể dùng cors trong decorator @WebSocketGateway config cors tuy nhiên chỉ có thể set cứng giá trị port,... mà k dùng được env 
+		+ Có thể dùng dotenv, tuy nhiên nó không phù hợp với kiến trúc của nestjs  (
+	- Pass a dynamic port to the websockets-gateway in NestJS 
+		+ Giải pháp là tạo ra một class SocketIoAdapter extends IoAdapter để tạo ra IOServer config port cũng như là core mà IoAdapter
+		 thì dùng được ConfigService nên dùng được biến môi trường 
+		+ create file socket.io.adapter.ts in folder src the same level as polls folder 
+		+ app.useWebSocketAdapter(new SocketIOAdapter(app, configService)); trong file main.ts để chỉ định dùng websocket adapter 
+9. Handling Socket.io connections in nestjs and postman for socket.io 
+	(check có thể connect và request đến PollsGateWay)
+	- implment handleConnection and disconnection in PollsGateWay 
+	- test with postman socket.io request ( set up socket.io request và test thành công)
+26/7//2023
+10. Authorizing Socket.io Connections in nestjs 
+	- Ổng đã thử cách là build một cái là wsguard rồi @UseGuard trong PollsGateway tuy nhiên nó không chặn được hàm handleConnection. 
+	- Để dùng được guard cho socket.io connections thì sẽ config trong socket-io-adapter.ts 
+	- Adapter này lúc trước dùng để config và createioserver với cors , nó gọi trong main.ts
+		app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
+	- Cụ thể sẽ jwtguard for socket.io connections sẽ được config: 
+		+ hàm createTokenMiddleWare ( outside class SocketIOAdapter)
+Note: Sửa lại request trong type.ts từ thuộc nestjs/common thành express 
+		+ Tạo socketwithauth type trong type.ts (đây là type của socket auth guard)
+	- Tiếp tục config để sử dụng jwt guard cho socket.io 
+		+ Sau khi tạo hàm createTokenMiddleWare để verify token được gửi, extract payload và gán nó cho socket 
+		+ - Import jwtmodule trong appmodule
+		+ Dùng JWTService ở dạng global sẽ không phải inject nó vào mà (đây không phải inject global mà cơ bản là get từ app module và dùng) 
+	vì apdapter không có module nên không import được (trung gian)
+		constructor(
+        		private app: INestApplicationContext,
+        	)
+		const jwtService = this.app.get(JwtService);
+		+ Thay vì hàm createIOServer sẽ return luôn server thì ở đây tạo nó và gán 1 const trước 
+		+ Sử dụng hàm createTokenMiddleWare để check nếu cho qua thì mới return server (Apply cho namespace cụ thể đã định nghĩa ở GateWay)
+			server.of('polls').use(createTokenMiddleware(jwtService, this.logger));
+	- Để SocketGateWay được auth thì ở PollsGateWay trong hàm handleConnection không dùng tham số Type Socket của Socket.io mà
+	dùng SocketWithAuth type mà mình đã định nghĩa  ở types.ts
+	- Tới đây dính 1 lỗi là không có JWTModule trong PollModule nên không dùng được JwtService trong PollService (phải import vào mới chuẩn)
+	- const token = socket.handshake.auth.token || socket.handshake.headers['token']; trong createTokenMiddleWare có nghĩa là
+		+ get token từ auth của socket nếu gửi từ react client 
+		+ hoặc get token từ headers của socket nếu gửi từ postman (do postman k gửi được kiểu kia , dùng để test)
+	- Test với post man để xem connection có được protect chưa
+
+11. Validation And Advanced Exceptions In NestJS
+	11.1. Validate data in dto  
+	-Class Vadilator được import và sử dụng decorator của nó trong dto tuy nhiên vẫn chưa hoạt động bởi vì 
+	Cách 1: chưa có dòng app.useGlobalPipes(new ValidationPipe()); trong hàm main.ts (chỉ định global use)
+	Cách 2: chỉ định dùng pipe cụ thể cho 1 vài controller bằng : 
+		@UsePipes(new ValidationPipe())
+		@Controller('polls')
+	- Tương tự thêm UsePipes cho PollsGateWay
+	11.2. Exception in nestjs (validate dto by validator class , customize wsException, exception filters 
+	- Builtin exception (dùng được nhưng nó đều trả về http response ) 
+	- Vậy làm cách nào để handle exception websocket ? (Dùng ws exception)
+	- Dùng event handler 
+	- Subcribe Message và dùng builtexception thuộc socket.io để test 
+	- Nếu dùng throw new Error('aha') thì socket.io request sẽ k trả về message mình set mà trả về default error message 
+	- Nên giờ sẽ custom một wsexception 
+		+ create exceptions folder in src folder 
+		+ create file ws-exceptions in folder exceptions 
+		+ declare type of exceptions 	
+		+ export class wstypeexception extends WsExceptions of nestjs websockets
+			* have constructor 
+		+ out side class above 
+		+ export class with the type tuong ung extends class wstypesexception above 
+			* in each class just have the constructor and use super constructor 
+			* define the message of exception 
+	- Exception filters 
+		+ Filter này là dùng để catch trường hợp nếu client trả về http exception thì chuyển đổi nó thành websocket exception 
+	để nhận được message mình set thay vì default message mà socket.io sinh ra. 
+		+ Bản chất là nó sẽ bắt http exception lấy data sau đó dùng socket.emit để gửi đi 
+		+ export class WsCatchAllFilter implement ExceptionFilter thuộc nestjs/common 
+	--> implement xong muốn dùng trong gateway thì dùng @UseFilter 
+
+12. Adding Poll Participants to Redis and Joining Socket.io rooms 
+	- Implement Join and leave poll 
+		+ Join --> handleconnection join room (polls gateway) --> addParticipant (polls service) --> addParticipant(polls repository)
+		+ disconnect (send request to disconnect) --> handleDisconnect (polls gateway)--> removeParticipant (polls service) 
+												--> removeParticipant (polls repository)
+	- What is room in web socket 
+		+ make sure data is only sent via websockets to user participating in a particular poll and not to all the websockets that may belong 
+	to a server. 
+	- Update PollsRepository (Implement removeParticipant method)
+		+ async function return Promise , type Poll data
+		+ create path to the participant that want to remove 
+		+ use redisclient. send command JSON.DEL(key: pollID, participant path) 
+		+ return getPoll(pollid)
+	- Update PollsService (Implement remove and add participant 
+		+ update types.ts (add type createPart and removePart, type for service)
+		+ vẫn giữ user data trong db nếu họ đã vote poll (chỉ xóa khi họ chưa vote)
+		+ hạn chế gửi quá nhiều payload do websocket sẽ gửi cho tất cả client (app lớn cần quan tâm vấn đề payload được return về)
+	- hanlde add and remove parti in PollsGateway 
+		+ make sure that from a socket standpoint that sockets connect to a certain poll only communicate with each other. 
+		+ use rooms in socket.io 
+		+ HandleConnection
+			* declare roomname = client.pollId
+			* client.join roomname 
+			* connectedClients = room.size (nếu về 0 nó sẽ bị undefined nên có set default 0) 
+			* addParticipant (pollserivce) 
+			* this.io.to(roomName).emit (only comunicate in room) ( return updated poll sau khi add)
+		--> When new user connect to poll then call function handleConnection
+			 ( nhờ vào việc implments  OnGateWayConnection interface socket sẽ hoạt động auto)
+		+ HandleDisconnect
+			* removeParticipant (PollsService)
+			* tương tự với handleConnect , xong sẽ gửi về client updatedPoll (sau khi remove)
+			* Gửi bằng cách dùng room set và gửi cho những socket đang ở trong room thôi
+	- Test with postman 
+	Thấy được cái luồng là mỗi khi một client mới connect vào nó gửi một message mới đến tất client đã connect tới room socket đó
+13. Creating Admin-Only Gateway Handler 
+	- Thêm cái GateWay AdminGuard 
+	- Lúc này luồng sẽ là request gửi về đi qua AdminGuard 
+	--> AdminGuard sẽ 
+		+ extract user and poll id from token 
+		+ get poll from db 
+		+ compare poll admin id with userid in token 
+		+ chỉ admin mới được phép removeParticipant khác ra khỏi poll 	
+	- implement gateway-admin-guard
+	- Update pollgateway to use gateway-admin-guard
+		+ Trong gate way ngoài 2 hàm handleConnection và handledisConnection 
+		(nó không thể dùng @UseGuard mà phải apply guard bằng cách gắn guard vào ngay lúc tạo socker server ở file socket.io.adapter) 
+		+ Ngoài ra trong gate còn có các hàm handle Message (sử dụng giống các method của controller ) 
+		Với từ khóa @SubcribeMessage('message_name')
+		+ Đối với các hàm handle message ta có thể sử dụng @UseGuard()
+		+ Cụ thể ở đây là message 'remove-picipantant' dùng UseGuard(GatewayAdminGuard) cho nó để chỉ mỗi admin mới được phép xóa 
+		các participant khác 
+14. adding nomination events 
+	- nominations là cái câu trả lời cho poll
+	- Cần implement 
+		+addNomination và removeNomination (Polls Repository)
+		+addNomination và removeNomination (Polls Service)
+		+nominate và removeNomination (Polls Gateway)
+	- Create type Nomination and Nominations trong file poll-types.ts thuộc package Shared (có thể dùng cho cả Server và client)
+	- Create type AddNominationtData in file types.ts (used on addNomination repo )
+	- Create add and remove Nomination method in Repository the same as add and remove participant or poll 
+	- Create type AddNominationField in file types.ts (used on addNomination service)
+	- Use createNominationID to create random ID for Nomination (on PollService)
+	- Create add and remove Nomination method in Service (same same the other method on PollsService)
+	- Create Nomination.dto (used on PollController)
+	- Create message to Nominate and Remove nomination on PollGateway (only admin can remove nomination)
+	- Test with message client socket postman 
+15.  (Submit ranking / Voting) nominations
+	-Luồng của app lúc này: 
+	 	Admin create poll(http request)
+		 --> Participantts Join poll(http request)
+		 --> Participant add Nominations (web socket)
+		--> admin sends "Start_Poll" message --> (websocket)
+		Participants vote (Submit rankings) (web socket)
+		--> admin sends "close_poll" message
+		--> Server Computes Results 
+		--> Server sends "results_computed" message 
+		--> Participants Receive Results 
+	Implement Start Poll Event: 
+	- Update type Poll in shared folder (un cmt rankings fields )
+	- create Rankings type (in poll-types.ts shared folder)
+	- Implement startPoll method (Poll repository)
+		+ update flag hasStarted of Poll to be true 
+	- Implment start poll method (poll service) 
+	- Implment start poll method (poll gateway) (use GatewayAdminGuard to set only admin can start poll)
+	Implement submit ranking/voting nominations event
+	- create AddParticipantRankingsData type (in types.ts in folder Polls) (used on repository)
+	- create addParticipantRankings method (Polls Repository)
+	- create SubmitRankingsFields type in types.ts in folder Polls (used on service) 
+	- create submitRankings method (Polls Repository)
+	- create submit_rankings message (Polls Gateway) 
+	Test with post man
+	- Create Poll 
+	- JoinPoll to get access token 
+	- Connect to poll with socket.io request (use access token for each client) 
+	- add nominations in each client (use nominate message)
+--> Bị dính 1 bug chỗ voting (flag hasStarted = false nó vẫn cho vote mà debug thì không thể chạy vào break point để xem)
+
+16. Compute results (after voting)/ Closing Poll and Tallying Votes
+	- Create Results type in poll-types.ts in folder shared 
+	- Add results field to Poll type , update initialPoll in createPoll method in PollsRepository
+	- create addResults and deletePoll method in PollRepository
+	- create computeresults and cancel Poll method in PollService
+	- implement file getResults.ts (chưa biết tại sao cần tách riêng ra thành file mà không để chung với PollService)
+		+ File này sẽ export default là 1 hàm gồm các param(rankings, nominations, votePerVoter)
+		+ Chỗ thuật toán tính result này chưa hiểu cần xem lại 	(tạm thời lướt để học kiến thức mới để nắm được cách websocket implement
+	phía client ) 
+	- implement closePoll message (PollGateway)
+	- implement unit test for getResults method (xem sau tạm thời lướt, chưa implement)
+
+17. React client intro
+	- React use type script 
+	- Luồng chạy đi App.tsx file return Welcome component
+	- Welcome component thuộc file Welcome.tsx trong folder src/pages return homepage 
+	- create component Pages.tsx in folder src (where we connect animate when go from one page to the next)
+		+ return welcome component
+	- return Pages component in app component
+	Create Create and Join component then config router (use wouter , just set key)
+	- create state.ts (use for wouter )
+	- use devtool redux to see the change of state (chưa cài được extention này vào chrome do mạng yếu)
+	- create Create and Join component in folder src/pages 
+	- Config router in Pages.tsx (có nghĩa là tạo ra file Pages.tsx để config cái router chứ k config trong component App nó bị loạn
+	- Use css-transition from react-transition-group to animate or slide down the component 
+		+ define page and suffix (page-enter, page-enter-active,page-exit...) tranform set css tương ứng
+		+ Bọc bên ngoài css transition cho thẻ div return về của Pages.tsx 
+
+18. Creating a poll from react application 
+	- Update create.tsx in folder pages to complete create poll UI 
+	- Use components of tailwinds css in story book (có sẵn chỉ việc bốc bỏ vào thôi) import vào xài 
+	- validate data input (disbale button create if chưa đủ data)
+	- start over used to return to welcome page
+	- call rest request api to create poll (use file apt.ts và hàm makerequest trong folder src) \
+	- Làm sao lấy được các file của tailwindcss cũng như là api.ts để xài ? (cài bằng cách nào có hay lấy ở đâu)
+	- update file state.ts (create some actions 
+	- create waiting room.tsx in folder pages 
+	- add config route for waiting room in pages.tsx x`
+	- set some loader in file app.tsx
+
+19. Joining a Poll from react App + Valtio Derived State 
+	- Creating a Join Existing Poll UI (in Join.tsx file folder pages)
+		+ add some useState
+		+ validate some fields 
+		+ update some UI (chú ý 1 vài thuộc tính CSS hay và cách bắt error với usestate)
+		+ handler use to handle event join poll 
+	- Implement some Valtio Derived State(cần xem lại để nắm rõ giờ lướt để học cách sử web socket)
+		+ chỗ này để extract payload accesstoken ra , rồi dựa vào payload để set state tương ứng 
+		+ update state.ts và util.ts (chỗ getTokenPayload)
+
+20. Connecting React to NestJS with socket.io 
+
+	- Có thể connect the socket io server nestjs mà không cần storing hoặc sử dụng state 
+	- giving our client or giving our socket.io client access to the app state and actions có ích (mà ích chỗ nào xem rồi biết)
+	- add socket to the AppState 
+		export type AppState = {
+    			isLoading: boolean;
+    			me?: Me;
+    			currentPage: AppPage;
+    			poll?: Poll;
+    			accessToken?: string;
+    			socket?: Socket;
+		};
+	- add some actions to initialize socket , then call this action from one of react pages via an effect 
+	- ref of valtio dùng để holding objects in state without tracking them (theo dõi chúng)
+		+ ở đây k muốn track all of nested properties inside socket io client (để cho socket io xử lí)
+		+ muốn socket được định nghĩa trong state để access to it (nên dùng ref)
+	Creating the socket - connecting
+	- tạo file socket-io.ts trong folder src 
+		+ export socketio url ( kết nối đến server)	
+
+20. 
+	Cụ thể là làm việc với state để giữ objects chứa một vài properties của socket io client để thực hiện connect và request server 
+	Không giữ tất cả properties bởi phần lớn được xử lí ở socket io server 
+	Để làm được việc giữ một vài properties của một object trong state mà không tracking nó thì dùng ref of valtio react 
+	
+	- App State thêm fields socket 
+	- actions thêm initializeSocket
+		+ hàm này sẽ kiểm tra nếu state.socket chưua tồn tại thì thực hiện tạo một state.socket mới 
+		+ nếu tồn tại rồi thì thực hiện connect 
+
+	- defineFunction createSocketWithHandlers in file socket-io.ts
+		+ define type tra ve 
+		+ define function and export 
+		+ use accesstoken and create new socket 
+		+ connect successfull return a log and return socket 
+	- call connect socket in wating room with use effect 
+	- received updated poll, put it in the state  
+
+21. Reconnecting to a poll and leaving poll 
+22. Displaying Socket Errors 
+23. Nomination UI and Socket.io events on UI 
+24. Add voting/ranking page and events 
+25. Add results page and events 
+	
+	
+	
+
+
+
+ 
+	
+	
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		  
+
+
+
+
+
+ 
+	

@@ -1,0 +1,19 @@
+1. Support content negotiation 
+	- Hỗ trợ tùy chọn content trả về cho api tùy vào yêu cầu của người dùng 
+	- (ví dụ trả ảnh có options jpg, png,... để client yêu cầu)  
+2. Avoid side-effects
+	- Tránh các hành vi không liên quan khi làm một API, nó chỉ nên làm đúng với những gì nó cần làm. 
+	VD: Cập nhật customer mà cập nhật luôn cả hóa đơn là tầm bậy 
+3. Exception handling 
+	- Nên thực hiện try catch và tìm cách master exception handling 
+	- Việc này giúp dễ dàng biết được bug khi lên product hoặc ngay cả trong quá trình dev 
+	- Ví dụ dùng logger để bắt lỗi nestjs/logger 
+4. Caching, Cache-Control, Etags 
+	- Cache-Control có nghĩa là thông báo cho client biết caching trong vòng bao lâu và caching những gì 
+	- Etags dùng để truyền theo server để xử lí nhiều thứ ở log 
+5. Postel's law 
+	- conservative vs liberal 
+	- be conservative in what you do (conservative: chủ nghĩa bảo thủ) 
+	- be liberal in what you accept order (liberal: rộng rãi, hào phóng)
+	- Có nghĩa là return phải đúng format (đúng những gì yêu cầu đề ra)
+	- input có thể là nhiều thứ , nhưng out put luôn phải đúng với yêu cầu đưa ra (cố định như vậy không được thay đổi bởi điều kiện)  

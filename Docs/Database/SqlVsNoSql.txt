@@ -1,0 +1,102 @@
+1. Khác nhau về cách tạo ra db (schema design) 
+	- Đối với SQL sẽ bắt buộc phải có schema design trước thì mới có thể tạo db
+		+ table, column, datatype, relationship, constraint,....
+		+ Sẽ bị báo lỗi khi không đúng format đã thiết kế, không đúng datatype, độ dài datatype  
+	- Đối với NoSQL thì sẽ là dynamic schema 
+		+ Lưu theo mọi structure mình muốn vô cùng một collection , tùy ý 
+
+2. Khác nhau về relationship 
+	- Đối với SQL sẽ bắt buộc phải có relationship giữa các table và entity 
+		+ Nếu không có relationship thì data sẽ thiếu integrity (thiếu đúng đắn) 
+		+ Validate data ngay trong database (kĩ thì validate 2 lớp ở cả tầng app và db) 
+	- Đối với NoSQL thì sẽ không bao giờ làm relationship trong table 
+		+ Validate data ngay trong code của app 
+		+ Nếu không có validate sẽ dính các lỗi null pointer, null,... --> crash app  
+		+ Validate ở chỗ insert, get,....
+		 
+3. Khác nhau về performance , scaling 
+	Quan tâm đến việc lưu trữ cái gì, bao lâu, data lớn như thế nào,...
+	
+	- SQL: 
+		+ Độ scaling giới hạn ở phần cứng (scale up), scale vertically  
+			* Muốn tăng chịu tải thì tăng CPU 
+			* Muốn tăng thời gian lưu trữ thì gắn thêm ổ đĩa  
+		+ Có kĩ thuật là replication để tăng performance: 
+		VD: 	* Nhiều instance dùng để read 
+			* Một instance dùng để write 
+	- NoSQL: 
+		+ Scale by cluster, sharding (scale horizontally), unlimited scaling (scale out) 
+			* Cần thì deploy thêm server mới 
+			* Có nhiều server lưu cùng dữ liệu hoặc khác dữ liệu (tùy) 
+			VD: từ a --> b lưu server 1 , từ c--> e lưu server 2 
+		+ Vấn đề gặp phải một server ít data , server nhiều data 
+		Dùng partition key để giải quyết vấn đề trên 
+	VD: Vấn đề về tính đúng đắn của NOSQL (consistency)
+		- Giả sử có hóa đơn thuộc về customer mà do k validate trong db và k có relationship giữa chúng sẽ có trường hợp 
+			hóa đơn mà không thuộc customer nào (query vào không thấy do bị xóa hay gì đó) 
+		--> Vì vậy phải validate ở tầng app
+4. Khác nhau về lưu trữ 
+	- SQL: lưu trữ theo dạng table, column,
+	- NoSQL: lưu trữ theo dạng collection 
+		+ Lưu document (json) dạng key:  value 
+		+ Hoặc có thể lưu dạng tree (graph) 
+		+ Hoặc lưu dạng wide column
+
+5. Sử dụng khi nào: 
+	- NoSQL: 
+		+ khi dữ liệu ứng dụng được cập nhật thường xuyên , do tốc độ ghi nhanh hơn so với SQL, bởi không có cấu trúc (Đối với lượng data lớn) 
+			Nếu cần ghi nhanh thì dùng NoSQL 
+		+ Lưu trữ dữ liệu khối lượng lớn (volumn) 
+		+ Lưu trữ dữ liệu thô, đa dạng cấu trúc (chưa biết dự án lưu cái gì , kiểu dữ liệu gì ) (data less) 
+		+ Tính linh hoạt trong lưu và xử lí dữ liệu (lưu kiểu gì cũng được) , linh hoạt validate ở code thôi 
+	- SQL: 
+		+ Muốn toàn vẹn dữ liệu, muốn có relationship , tránh trùng lặp 
+		+ Khi đã biết rõ cấu trúc (có bao nhiêu entity, bao nhiêu column) và cấu trúc đó ít bị thay đổi 
+		(Nếu thay đổi thường xuyên, thêm cột, xóa cột thường xuyên là một pain point rất lớn khi làm SQL) 
+		+ Muốn xử lí logic ngay trên db (procedure , tranformation trên chính db không cần viết code thêm) 
+		Oracle rất mạnh trong việc xử lí logic ngay trên db (có thể viết cả call back , gọi api request từ db server qua server khác) 
+		Không cần viết server bên ngoài 
+		+ Có nhu cầu muốn join nhiều table với nhau (join nhiều nguồn dữ liệu khác nhau), muốn query một view mới có đầy đủ thông tin để xem được
+			thì bắt buộc phải dùng SQL 
+			(Một câu query thì có đầy đủ dữ liệu luôn thì chỉ có SQL mới làm được còn NoSQL phải query riêng lẻ rồi map lại với nhau) 
+	
+	--> Trong một project có thể kết hợp cả hai
+		- Dữ liệu nào thay đổi thường xuyên cần performance ghi cao thì có thể chọn NoSQL 
+		- Dữ liệu ít thay đổi có có cấu trúc thì dùng SQL 
+	
+	VD: microservice thì mỗi microservice có một db riêng, có thể service này dùng mySQL, cái khác dùng mongodb, cái khác lại dùng graph 
+
+SQL: mysql, msql server, sql lite, postgressql
+NoSQL: 
+Cloud thì tìm hiểu thêm,...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

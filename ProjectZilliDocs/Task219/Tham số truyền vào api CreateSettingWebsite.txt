@@ -1,0 +1,5 @@
+Tìm ra tham số truyền vào api CreateSettingWebsite
+	
+	Thứ nhất: Trong service SettingWebsiteGroup.create(request)
+		(name, website, type, status)
+	Thứ hai: website_id 

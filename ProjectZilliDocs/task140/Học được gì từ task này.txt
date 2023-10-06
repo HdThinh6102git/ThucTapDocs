@@ -1,0 +1,50 @@
+1. Với vai trò là một team member 
+	- Khi nhận được task: 
+		B1: Đọc kĩ yêu cầu task đưa ra, phân tích kĩ ra output data, input và cần làm những gì để ra được output đó. 
+		B2: Gửi người giao task xem và check lại cẩn thận từng tí một 
+		B3: Nếu người giao chưa hiểu rõ vấn đề thì bình tĩnh bàn luận và tìm ra chính xác ý họ muốn (vận dụng kĩ năng BA) 
+		B4: Nhận được lời đồng ý chính xác thì bắt đầu code 
+		B5: Phân tích kĩ từng bước cần làm trước khi code(db gì, table nào, module nào,file nào,....) 
+		B6: Code xong khi gặp thắc mắc về output cũng như là vấn đề phát sinh với output hỏi ngay người giao 
+		
+	- Học được thêm các bước tự review code, bỏ các thứ thay đổi dư thừa,...
+	- Sau khi code xong: 
+		+ Tạo nhánh mới 
+		+ Dùng git desktop mở repo local của project đã làm 
+		+ Xem các thay đổi và bỏ nhưng thay đổi dư thừa (dấu cách, xuống dòng,...) 
+		+ Check xem mình đã thay đổi những gì và note lại (note theo cách này dễ hơn là đi tìm dò , dò trong git desktop sẽ chuẩn hơn) 
+		+ Check xong vừa ý thì add và commit với message theo commit rule 
+		+ push -u lên nhánh mới được tạo 
+		+ Tiếp check lần 2 ở commit vừa push lên nhánh mới, kiểm tra các (dấu cách, xuống dòng, console.log, syntax,...) 
+		+ Check vừa ý lần 2, thì tạo merge request và gửi leader review 
+		+ Leader yêu cầu sửa thì check lại có thực sự cần sửa, phản biện nếu cần (với tinh thần hòa nhã) 
+		+ Nhắn tin phải check kĩ câu từ và cảm xúc trong câu từ không để phản cảm. 
+		+ Nếu cần thay đổi thì sửa code (và check tương tự như trên), thực hiện add rồi git commit --amend sau đó git push --force 
+		+ Check kĩ lần nữa sự thay đổi trên merge request rồi báo leader  đã sửa 
+
+2. Với vai trò là một lập trình viên 
+	- Học được đó là validate data cẩn thận, 
+		+ data được lấy về từ db hoặc param được gửi về từ client đều phải validate có rỗng hay không rồi mới xử lí tiếp 
+		nếu không sẽ tung lỗi, không được phép để tung lỗi default chỉ tung theo đúng ý mình muốn những gì cần trả về mà thôi
+		(Tránh các lỗi default) 
+		+ Nếu client truyền thiếu param cho api thì check và throw exception có kiểm soát chứ không để nó tung default 
+	
+	- Đặt tên hàm có ý nghĩa chính xác và theo chuẩn với các hàm khác có trong hệ thống 
+	- Đặt tên url api tham khảo theo chuẩn tên của các hàm khác đã có trong hệ thống và theo chuẩn REST
+	- API chỉ làm đúng những gì được yêu cầu và cần, không có hành vi ngoài lề (sort,..., không được phép) , tránh side effect 
+	- Các hàm JSON.PARSE sẽ ảnh hưởng đến performance của hệ thống, nên nếu lượng data trả về lớn thì hạn chế dùng 
+		thay vào đó: data : any = {} thôi 
+	- JSON.PARSE chính là dùng để bỏ các data thừa sau khi gọi hàm từ db trả về như : dataValues,....
+	- Check các param trả về của API đối với từng role có phù hợp hay không
+
+3. Với vai trò là một leader 
+	- Khi muốn giao task thì luôn phải phân tích kĩ task cần làm, outputdata là gì (càng cụ thể càng tốt) 
+		để không tốn thời gian giải thích lại và research rườm rà
+	- Nếu chưa phân tích và nắm rõ không giao task đó. 
+
+
+
+
+
+
+

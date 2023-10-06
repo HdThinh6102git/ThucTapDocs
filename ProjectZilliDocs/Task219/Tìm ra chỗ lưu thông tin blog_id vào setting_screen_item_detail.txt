@@ -1,0 +1,18 @@
+Câu hỏi 1: lưu blog_id vào table setting_screen_item_detail ở api nào ?? Khi lưu xuống phải validate trước ??? 
+	Câu hỏi 1.1: Vậy setting_screen_item_detail được thêm data vào khi nào ??  
+		- 
+	 
+	Yêu cầu: Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	
+	Câu hỏi 1.2: Vậy thông tin của blog_id sẽ được lưu vào bảng setting_screen_item_detail khi nào? 
+
+
+
+Có 2 option: 
+	1. Option 1: Nghiên cứu các api tìm ra nơi lưu thông tin vào bảng setting_screen_item_detail 
+		
+
+
+
+
+	2. Option 2: Nghiên cứu business logic của việc setting ở admin site

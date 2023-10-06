@@ -1,0 +1,7 @@
+1. Bổ sung filter chính là bổ sung cho api cũ chứ không phải viết một api mới 
+
+2. API mới thì yêu cầu sẽ là tạo api mới 
+
+3. Array text thì check null bằng cách where column name is not null hoặc is null 
+qua sequelize thì dùng 
+where.images = {[Sequelize.Op.not]: null}

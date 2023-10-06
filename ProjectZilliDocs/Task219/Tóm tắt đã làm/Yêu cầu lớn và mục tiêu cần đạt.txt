@@ -1,0 +1,26 @@
+----------------------------------------------------------------------------------------------------------------------------------------
+Xác định yêu cầu của task 
+Yêu cầu lớn: 
+	- Bổ sung API lấy ra danh sách các bài tin tức(blog) nổi bật
+	(Bổ sung api để lấy ra các bài blog nổi bật hiển thị lên trang chủ)
+Các phần cần làm: 
+	1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+	3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+	4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Mục tiêu cần đạt được sau khi hoàn thành task:  
+	Login với adminZilliAccount 
+	B1: Tạo ra danh sách các blog (được thêm bằng api hoặc UI )
+Khi muốn set một bài viết nào đó là đặc trưng (featured blog)
+(Đối với test thì cần phải gọi hàm createSettingWebsite để có thể tạo ra setting-Screen_item là home_featured_blog)
+	B2: Gọi api updateSettingScreen ( truyền vào các blog_id tương ứng muốn set)
+	(Chỗ này có thể là UI tick chọn hoặc call api và điền vào req.body)
+		--> Lưu thông tin các blog_id muốn set đặc trưng
+	B3: Admin nhấn nút Tải lên ở màn hình setting (nút này sẽ call api publish) 
+		- Sẽ reset giá trị của  các trường is_blog_featured và position về default nếu blog tuple đó is_blog_featured = true 
+		- Sau đó set is_blog_feature = true và position = item_detail.position (với item_detail.blog_id = blog.id) 
+
+	B4: Ở Giao diện client call api get danh sách featured blog (lấy ra danh sách blog có is_blog_featured = true và sort theo position tăng dần)

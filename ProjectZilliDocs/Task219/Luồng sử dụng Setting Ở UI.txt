@@ -1,0 +1,48 @@
+Mình dùng 2 table: 
+
+Table setting_screen_item_detail(blog_id) 
+Table blog(id, is_blog_featured, position )
+
+Table setting_screen_item_detail có quan hệ với Table blog (có khóa ngoại là blog_id tham chiếu từ id của table Blog) 
+
+I/ API get featured_blog 
+	B1: tìm kiếm các blog có giá trị của trường is_blog_featured = true 
+	B2: sort các bài blog theo  giá trị trường position 
+
+II/ Tạo ra blog 
+	1. url
+		http://localhost:3600/api/v1/admin/blog
+	2. Controller 
+		const data = await BlogService.createBlog(req.body)
+	3. Service 
+		B1: Nhận về các thuộc tính cần có 
+		B2: Tìm kiếm blog với các thuộc tính cần có 
+		Nếu có thì tung error AlreadyExistError 
+		B3: Nếu blog chưa tồn tại thì tạo ra một blog mới 
+
+III/ Nếu chỉ với logic của API get featured_blog ở trên thì 
+	- Chỉ việc lưu thông tin của 2 trường là is_blog_featured và position vào table blog 
+	
+	- Theo như chỉ định là lưu vào ở api update setting 
+
+	- Giả sử nếu mình thêm vào ở chỗ publishSettingWebsiteAction 
+		+ Sẽ thêm ở hàm updateDataWithHomeScreen
+		+ Check nếu item.setting_screen === PAGE_ENUM.home_featured_blog
+		+ gọi hàm từ blog.service updateBlogFeatured
+		+ position này là gì (set position như thế nào) 
+	- Giả sử nếu mình thêm vào ở chỗ updateSettingScreen 
+		+ 
+
+
+Trong bảng setting_Item_detail có blog_id 
+Muốn tạo quan hệ giữa blog và setting_item_detail với blog_id là khóa ngoại tham chiếu đến id của bảng blog 
+
+
+
+
+
+
+
+
+
+

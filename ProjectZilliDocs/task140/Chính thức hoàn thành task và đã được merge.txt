@@ -1,0 +1,57 @@
+1. Tạo setting screen 
+	1.1. Update code
+		- File page-constant.ts
+			+ product_list_screen: 'product_list_screen'
+			+ product_list
+		- File setting_landing.ts 
+			+ Trong array shopping_screens thêm {name: 'product_list_screen'}
+		- File setting_screen.service.ts 
+			+ Trong hàm createSettingScreen thêm else if trong vòng lặp for 
+				setting_screen = PAGE_ENUM.product_list[i-1].name
+
+2. Get 
+	Output data cuối cùng 
+	data{
+		....
+		items: [
+			{
+				item_details:[	
+					{
+						...
+						category_id:...
+						...
+						category:{.....}
+					},
+				]
+				item_products:[
+					{
+						...
+						product:{
+						...
+						}
+					},
+					{
+					...
+					}
+						
+				] 
+			},
+			{
+			...
+			},
+			{
+			...
+			}
+		]
+	}
+
+
+	Với 
+		1. data là setting_screen.findOne (screen, website) 
+		2. items là setting_screen_item.findAll(screen_id == data.id) 
+		3. item_details là setting_screen_item_detail.findAll(screen_item_id == item.id) 
+		4. category là category.findOne(id == item_detail.category_id) 
+		5. item_products là setting_screen_item_product.findAll(screen_item_id == item.id) 
+		6. product là product.findOne(id == item_product.product_id) 
+		
+Chưa sắp xếp được theo thứ tự position 

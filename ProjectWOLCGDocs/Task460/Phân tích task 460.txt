@@ -1,0 +1,49 @@
+API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+http://localhost:3200/api/v1/transaction/detail/filter?type=TRANSFER_POINTS
+
+	- Thêm type filter Transfer points ở api get lịch sử giao dịch
+	- Trả thêm lí do ở api get lịch sử giao dịch
+
+1. Thêm type filter Transfer points
+Những chỗ liên quan đến type (transaction_type) 
+(1)	- param của service filter: TransactionDetailFilter (Được truyền về từ controller) 
+(2)	- if (filter.type) { query += `and t.type iLike '${filter.type}'`; }
+	- for (const value of transactions) 
+	(Với const transactions = await this.transactionRepo.createQueryBuilder)
+		+ Chỗ này duyệt qua các transaction tìm được sau đó check type và thực hiện các logic tương ứng 
+		+ Trong đó còn có switch case TRANSACTION_TYPE thực hiện các logic tương ứng 
+	- this.checkOperatorWithStatus(transaction);  
+     	(Duyệt vòng lặp qua array output thực hiện transaction.operator = this.checkOperatorWithStatus(transaction);)
+		+ Trong hàm checkOperatorWithStatus có check transactionType và xử lí các logic 
+	
+	1.1.  param của service filter: TransactionDetailFilter (Được truyền về từ controller)
+		- Có các trường: (type: TRANSACTION_TYPE, status: TRANSACTION_STATUS, start: Date, end: Date)
+		(Trong enum TRANSACTION_TYPE thuộc file transaction.entity.ts đã có TRANSFER_POINTS = 'TRANSFER_POINTS', ) 
+		(1) và (2) là giúp 
+		Hiện tại có thể filter được các transaction có type == 'TRANSFER_POINTS'
+	1.2. for (const value of transactions) và this.checkOperatorWithStatus(transaction);  có cần check và set điều gì không 
+
+2. Trả thêm lí do ở api get lịch sử giao dịch
+Những chỗ liên quan đến data trả về ở get lịch sử giao dịch 
+	2.1. Kiểu trả về: TransactionDetailOutput
+		(id, amount, status, note: string;,...) 
+	Vậy đã trả về được lịch sử giao dịch 
+Dạ chị, em có 2 task cần thực hiện ở api API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+	- Thêm type filter Transfer points ở api get lịch sử giao dịch
+	- Trả thêm lí do ở api get lịch sử giao dịch
+Em đã đọc qua api detailTransaction
+	1. Đối với task Thêm type filter Transfer points thì em thấy có một param của service là  filter: TransactionDetailFilter
+		- Trong filter có một cái filter type và nó sẽ get theo enum TRANSACTION_TYPE
+		--> Vậy nên em nghĩ chỉ cần thêm enum TRANSFER_POINTS = 'TRANSFER_POINTS' vào là có thể filter được 
+		mà ở task tách api em đã thêm rồi.  
+	2. Đối với task Trả thêm lí do ở api get lịch sử giao dịch
+		- Em thấy để trả thêm thì tạo thêm trường mới ở kiểu dữ liệu trả về TransactionDetailOutput
+		mà em thấy đã được thêm vào rồi note: string;
+Dạ chị cho em hỏi có cần làm gì thêm ở task này không vậy chị.
+
+	
+
+   
+
+
+

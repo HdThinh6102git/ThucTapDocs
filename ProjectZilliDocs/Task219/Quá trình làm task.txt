@@ -1,0 +1,64 @@
+Bắt đầu làm task 
+1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail (15 phút) (done, tầm 10 phút)
+2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail (thêm ở blog và setting_screen_item_detail khoảng 15 phút) 
+	- Thêm ở model  
+	- belongsto là quan hệ findOne 
+	- hasMany là quan hệ findAll 
+	SettingScreenItemDetail.hasMany(Blog, { as: 'blogs', foreignKey: 'blog_id' });
+	(done mà chưa chắc cần hỏi lại chị Liễu chỗ này là belong hay hasMany) (15 phút) 
+3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item (khoảng 15 phút) 
+	- folder enum/setting/setting-landing.ts (chưa tìm thấy chỗ thêm ) 
+	- folder enum/page/page-constants.ts,  homes{name: 'home_featured_blog'},
+	(done mà chưa chắc cần hỏi lại chị Liễu) 15 phút 
+4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog (migration khoảng 15 phút) 
+	(done mà hỏi lại chỗ position là string phải không) 10 phút , phair laf integer , muốn sửa lại thì bỏ quan hệ giữa blog và setting item_detail đi 
+	rồi mới migrate down và up lại đc 
+	(oki done) 
+5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	Dự đoán 30 phút (30 phút trôi qua chưa biét làm ) 
+	- api update setting	
+		+ Code mẫu ở setting sản phẩm (home_product_more)
+	- setting_screen_service.ts  updateDataWithHomeScreen dòng 502 
+	Xác định cái luồng việc check này là gì 
+		+ Có 2 hàm update (updateDataWithHomeScreen, updateSettingScreen) 
+Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+Dạ chị cho em hỏi api update setting là update setting screen và xem mẫu là ở service updateDataWithHomeScreen đúng không chị 
+
+--> Vậy sau khi đã đọc qua code mẫu thì xác định sẽ làm 
+Có 2 chỗ là controller updateSettingScreen và service của nó 
+Nếu ở controller: 
+	- Sau khi settingScreen.findSettingScreen
+Nếu ở service 
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+	(Khoảng 30 phút)
+

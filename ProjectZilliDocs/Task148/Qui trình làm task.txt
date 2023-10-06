@@ -1,0 +1,40 @@
+1. Xác định task requirement 
+	Bổ sung trường lưu thông tin nguồn gốc và hình ảnh vùng trồng của từng sản phẩm 
+		- origin_url: lưu hình ảnh vị trí trồng sản phẩm
+		- origin_address: địa chỉ sản xuất sản phẩm
+		- elevation: thông tin độ cao sản phẩm
+		- type_bean: loại hạt sản phẩm
+		- processing_method: phương pháp chế biến sản phẩm
+	VD: 
+		- origin_url: hình ảnh cái map 
+		- origin_address: Cầu Đất - Lâm Đồng 
+		- elevation: 1515 - 1560 m 
+		- type_bean: Arabica Blend 
+		- processing_method: Natural 
+Cụ thể sẽ update các vị trí sau: 
+	- Bỏ auth cho updateproduct controller 
+		middleware.authentication(),
+	- cmt lại updateproductaction controller 
+	- Test thử data gửi về controller ổn chưa , test từ postman --> controller --> service --> db
+	Sửa db cuối cùng do phải hỏi lại là nếu thêm các trường đó có bị lỗi api khác hay không 
+	- Database (Bổ sung trường cho từng sản phẩm) do đó sẽ thêm trường cho bảng product 
+		+ origin_url:
+			* varchar(255) ở ngoài 
+			* ở trong product media 
+		+ origin_address: text hoặc varchar(255) 
+		+ elevation: varchar(255) 
+		+ type_bean: varchar(255) 
+		+ processing_method: varchar(255)
+	- .env thay đổi connection string to db dev 
+	- tạm thời gỡ mấy cái guard để k có jwt vẫn access được endpoint
+	- Model --> product --> product.model.ts 
+		+ origin_address,elevation, type_bean, processing_method (STring)
+		+ trường hình ảnh từ từ 
+	- Service --> product --> product.service.ts 
+		+ updateProduct 
+			* destructoring để lấy trường từ request bổ sung các trường cần thiết
+			* chưa thấy chỗ thêm trường brand 
+	- Controller --> product --> product.controller.ts 
+		+ updateProductAction
+	
+			

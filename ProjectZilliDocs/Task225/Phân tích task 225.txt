@@ -1,0 +1,19 @@
+Yêu cầu: Chỉnh sửa sort mặc định của API get danh sách đánh giá sản phẩm theo id của sản phẩm
+
+Hiện tại mặc định API này đang để sort theo tổng số sao đánh giá từ thấp đến cao
+
+Cần chỉnh lại: mặc định API này sort theo đánh giá từ mới đến cũ (theo thời gian tạo)
+
+API: /review/product/filter/:productId
+
+1. index 
+2. controller 
+
+        if (!sort) {
+            sort = 'desc'
+        }
+        let orderBy = ['createdAt', sort]
+3. service 
+
+bỏ luôn cái sort ở order chỉ để ở service 
+

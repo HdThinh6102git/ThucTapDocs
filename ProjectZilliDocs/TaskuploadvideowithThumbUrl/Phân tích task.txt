@@ -1,0 +1,147 @@
+1. upload video action 	
+	- generate 1 cái file uuid 
+	- tạo ra đường dẫn dùng để upload file (với file vừa được generate ở trên (video) 
+	- upload video lên đường dẫn với hàm service 
+	- hàm upload video trả về multer 
+	- dùng multer vừa trả về truyền vào  (req, res, error) 	
+		+ Nếu có error thì return 
+		+ let data = {}  
+		+ gán vài trường data = mimetype, originalname, filename, url
+		+ return res.send data 
+2. upload blob action 
+	- generate 1 cái file uuid 
+	- tạo ra đường dẫn dùng để upload file (với file vừa được generate ở trên (video thumb) 
+	- uploadImageWithName (file) ( file này định dạng là gì ) 
+	- hàm uploadImageWithName trả về multer 
+	- dùng multer vừa trả về truyền vào req, res, async (error:any) 
+		+ nếu có error thì return 
+		+ let data = {}  
+		+ gán vài trường data mimetype, originalname, filename, url
+
+3.Mong muốn của task này là:
+	- input: user sẽ truyền xuống cái file video
+	- output: BE dựa vào file truyền xuống đó upload video và cái thumb_url lên s3, rồi trả về data:
+		url: url gốc của video đã upload lên s3 (giống với cái url hiện tại api upload/video trả về)
+		thumb_url: cái hình thumb của video đã upload lên s3 (giống với cái url hiện tại api upload/blob trả về
+
+4. 
+	api upload/video => truyền xuống file video => api trả về url
+	api upload/blob => truyền xuống file video => api trả về url (url này là thumb_url)
+
+	bây giờ mong muốn là thay vì FE phải call 2 api để lấy đủ data (url và thumb_url)
+	 thì FE chỉ cần call 1 cái api upload/video (api sẽ trả về cả 2 trường url và thumb_url luôn)
+
+5. 
+	- index 
+	- controller 
+	- service 
+
+Phân tích kĩ 2 service upload 
+1. uploadS3video 
+	- Khai báo limit size of file 
+	- Khai báo các thuộc tính storage: multerS3 
+		+ public-read 
+		+ client (s3) 
+		+ bucketName 
+		+ contentType: auto_content_type 
+		+ metadata ( fieldName: file.fieldname ) 
+		+ key (filePath + '/' + file.originalname) 
+2. uploadS3ImageWithName
+	- Khai báo limit size of file 
+	- Khai báo các thuộc tính storage: multerS3 
+		+ public-read 
+		+ client (s3)
+		+ bucketName 
+		+ contentType: auto_content_type 
+		+ metadata ( fieldName: fileName + '.jpg') 
+		+ key tùy vào loại file mà key tương ứng 
+
+--> 2 service này sẽ làm 2 việc là upload video và thumb_url rồi trả về multer chứa key cho từng multer 
+
+Vậy để làm được thì phải đứng ở controller upload/video gọi đến 2 service trên và tìm cách kết hợp 2 output trả ra 
+
+Sau hàm này const blobUpload = await uploadService.uploadS3ImageWithName thì req.file vẫn là undefined 
+
+Cannot read properties of undefined (reading 'transfer-encoding') không phải file 
+copy qua nhưng 2 request không giống nhau 
+
+tìm cách coppy all value of express request 
+
+
+
+
+1. Sau khi upload
+	- IncommingMessage 
+	- Client: socket 
+	- Server 
+	- params 
+	- query
+	- res
+	- body 
+	- route  
+	- file 
+	- __onFinished: null,
+	
+2. Trước khi upload 	
+	- 
+
+Cơ chế upload của 
+
+
+------------------------------------------------------------------------------------
+
+1. Copy request ( giải pháp này không thể thực hiện do copy request sẽ không copy được transferring-encoding) 
+2. Không cho 2 service chạy song song được 
+3. Điều mình muốn hiện tại 
+	- Cho chạy service upload video return data (video url) 
+	- Sau đó cho chạy service upload thumbnail và trả về thumb_url 
+	- Lấy 2 data này ghép lại trả về cho user 
+4. Vấn đề gặp phải: 
+	- Chạy từng service riêng biệt chưa biết cách nhận data nó trả về 
+		+ Giải pháp dùng promise 
+	- Khi dùng promise gặp 1 vấn đề khác là cả 2 promise dùng chung 1 request thế nên dẫn đến data của promise sau trùng với data của promise trước 
+		+ do sau khi thực hiện upload thì file sẽ được lưu vào request hiện tại 
+5. Việc cần thử 
+	- Chạy riêng biệt từng service và console log ra data trả về (chưa dùng promise ) 
+		--> data trả về chính xác 
+	- Vấn đề phát sinh là gán data trong hàm thực hiện service bên dưới thì là undefined bởi vì nó chạy trước khi hàm call back được thực hiện 
+	- Thử bằng cách gọi hàm service thứ 2 nằm trong service 1 thì bị trùng request như promise  
+	- Giờ tìm cách để lấy được 2 data từ call back và ghép chúng lại 
+	
+	- Nếu để service tách riêng ra nó chạy đúng giá trị, mà phát hiện ra một cái là 
+		service nào để ở dưới thì sẽ được in ra trước rồi đến cái ở trên 
+		nếu để return ở cái service phía dưới nó sẽ return service phía dưới service còn lại sẽ k return được và bị lỗi 
+
+	- Dựa vào điều vừa phát hiện được ta tạo ra biến global và gán cho nó giá trị ở service phía dưới rồi cộng với data ở service trên và return về 
+
+	okiii giải quyết được và tí nữa phải ngồi note lại những vấn đề gặp phải , kiến thức bị hổng và hiểu biết về call back và promise 
+		học được gì từ điều này 
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+

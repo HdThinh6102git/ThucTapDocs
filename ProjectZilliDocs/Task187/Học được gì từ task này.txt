@@ -1,0 +1,20 @@
+1. Đầu tiên trước khi code: 
+	B1: Mở project , switch qua nhánh develop 
+	B2: Code phần mình muốn 
+	Xong check lại trên git desktop đã thay đổi những gì, bỏ các dư thừa nếu cần 
+	B3: git checkout -b feature/WOWI-111
+	B4: git status 
+	B5: git add 
+	B6: git commit -m"message following commit rule" 
+	B7: git push 
+	B8: xem commit trên remote repo 
+	check lại nếu cần sửa thì 
+		- Đứng ở nhánh feature/WOWI vừa tạo, sửa code 
+		- git add --> git commit --amend , git push --force 
+	B9: Tạo merge request 
+	check lại lần nữa --> gửi link merge request cho leader 
+
+Sau khi làm xong một task muốn làm task tiếp theo thì 
+	git checkout về develop tiếp tục làm 
+	git pull code mà leader vừa merge 
+		tránh việc code ngay trên nhánh hiện tại feature 

@@ -1,0 +1,70 @@
+3. Chi tiết về data trả về của api setting screen trang chủ admin 
+	- Api này nhận vào param là 
+		+ screen 
+		+ website 
+		+ group_id 
+	- Api này gọi đến hàm: findSettingItemByScreenAction của setting controller 
+		+ nhận các param trên và set nó cho where 
+		+ truyền where cho findSettingScreen của settingService
+	--> service trả về data {items và validate} 
+		+ đem sort items 
+		+ thêm status = true cho validate
+	--> response 
+	- Cụ thể hàm findSettingScreen của service có:
+		+ select * from 
+		setting_screen 
+		left join
+			setting_screen_item as items
+			 	left join 
+					settingscreenItemdetail as item_details 
+						left join 
+							settingscreenItemdetailProduct as item_detail_product 
+							wardrobe as wardrobe 	
+							category as category 
+							gallery as gallery 
+								left join 
+									customer  
+					item_products 
+						leftjoin 
+							product 
+								leftjoin 
+									media 
+		where 
+		screen = home_screen 
+		and website = zili_website 
+		and  group_id = 24
+		order position asc   
+	- Level 1: data{} 
+	- Level 2: thông tin của setting_screen + items 
+	- Level 3: item_details 
+		item_products 
+	- Level 4: (của item_details) item_detail_products 
+		wardrobe 
+		category 
+		gallery 
+	- Level 4: (của item_products) 
+		product 
+	- Level 5: (của gallery) 
+		customer 
+	- Level 5: (của product) 
+		media 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		

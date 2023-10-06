@@ -1,0 +1,136 @@
+I/ Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	1. Lí do cần làm: 
+(2)		- Lưu vào để dùng cho việc (lưu thông tin cho các trường is_blog_featured, position) 
+	2. Nơi implement 
+		- knex/migrations/update_setting_screen_item_detail_table.js 
+		- Xác định blog_id là một foreign_key của table setting_screen_item_detail references (id) của table blog 
+	3. Các bước thực hiện 
+		B1: Đọc qua các lệnh hướng dẫn dùng knex ở README 
+		B2: Dùng lệnh tạo để tạo ra một file update mới 
+		B3: Tham khảo format của các file update khác và tạo migrate up and down 
+		B4: Thêm trường blog_id vào src/models/setting/setting-website/screen/detail/setting-screen-item-detail.model.ts 
+	4. Tiến độ  
+ 		- Done
+
+	5. Lưu ý: 
+		- Sau khi tạo file migrate mới và migrate up thì cần refresh db , tắt table và mở lại để nó refresh 
+(1)		- Thực chất có cần thiết để nó là foreign key hay không (để foreign key bởi vì muốn fix bug chỗ get feature blog) 
+	6. Giải pháp: 
+		- (1) Không để foreignkey nó vẫn không bị sao, thế nên tạm thời không để 
+
+
+II/ Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+	1. Lí do cần làm 
+(3)		- Dùng quan hệ belongsTo vừa fix được bug, vừa hợp lí 
+	2. Nơi implement 
+		src/models/setting/setting-website/screen/detail/setting-screen-item-detail.model.ts
+	3. Các bước thực hiện 
+		B1: thêm quan hệ ở cuối file 
+	4. Tiến độ 
+		- Done 
+	5. Lưu ý 
+
+(4)		- Chỗ foreign key nếu để là "blog_id" và hasMany  thì sẽ bị tung bug là blog_id does not exist 
+		- Chỗ foreign key hiện tại để là "id" có thể là chưa đúng??? 
+(12)		- Cơ chế hoạt động của việc set quan hệ sequelize 
+	6. Giải pháp: 
+		- (3),(4) Đổi hasMany thành belongs to và test thử (work tốt ) 
+			và dùng findOne cũng là hợp lí bởi 1 setting_screen_item_detail sẽ có 1 blog là hợp lí  
+
+III/ Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+	1. Lí do cần làm 
+(5)		- Nó là một enum dùng được thêm vào để check và thực hiện lưu thông tin cho trường is_blog_featured, position trong bảng blog 
+	2. Nơi implement 
+		- src/enums/page/page-constants.ts 
+	3. Các bước thực hiện 
+		B1: Thêm vào const PAGE_ENUM
+		B2: Thêm vào array homes[{name: 'home_featured_blog'},] 
+		B3: Thêm enum mới trong PAGE_ENUM ở cuối file là  home_featured_blog: 'home_featured_blog',
+	4. Tiến độ 
+		- Done 
+	5. Lưu ý 
+		
+IV/ Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	1. Lí do cần làm 
+(6)		- Cần có thông tin của 2 trường này để xác định các blog nào là featured blog và get ra 
+	2. Nơi implement 
+		- knex/migrations/update_blog_table.ts (tạo mới) 
+		- src/models/setting/setting-blog/blog.model.ts
+	3. Các bước thực hiện 
+		B1: Tạo file update_blog_table.ts 
+		B2: dùng format cũ để migrate up and down 
+		B3: Trong blog.model.ts thêm 2 trường 
+			- is_blog_featured: Sequelize.BOOLEAN
+			- position: Sequelize.INTEGER
+	4. Tiến độ 
+		- done 
+	5. Lưu ý 
+(7)		- is_blog_featured (boolean), position (integer) default(0) , kiểu dữ liệu position tham khảo từ các bảng setting khác 
+
+	
+V/ Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	1. Lí do cần làm 
+(8) 		- Lưu thông tin vào để xác định nó là featured blog và get ra các bài viết nổi bật 
+	2. Nơi implement 
+		- src/services/setting/setting-website/screen/setting-screen.service.ts 
+		- src/services/setting/setting-blog/blog.service.ts 
+
+	3. Các bước thực hiện 
+(10)		B1: Trong blog.service viết hàm updateBlogFeatured (blogId, position) , blog.is_blog_featured = true;
+			và blog.position = position;
+		B2: Trong hàm updateDataWithHomeScreen check trường hợp item.setting_screen === PAGE_ENUM.home_featured_blog
+		B3: Duyệt qua các setting_screen_item_detail(item_details) có screen_item_id == screen_item.id 
+		B4: gọi hàm updateBlogFeatured(setting_screen_item_detail.blogId) 
+				Vậy position sẽ là giá trị như thế nào (hiện tại để nó là i (duyệt theo vòng lặp) 
+	4. Tiến độ 
+		- done nhưng chưa chắc 
+	5. Lưu ý 
+(9)		- Chỗ position nó là thông tin gì lưu vào ????? 
+(13)		- Chỗ lưu thông tin  để ở trong api PublishScreenSetting là đúng chưa???? (Ở service updateHomescreenData là đúng chưa) 
+(14)		- Chỗ hàm updateBlogFeatured (blogId, position) có cần sửa lại thành truyền vào is_blog_featured để set true hoặc false hay không
+	6. Giải pháp: 
+		- (9) (position FE truyền xuống) 
+VI/ Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+	1. Lí do cần làm 
+(11)		- Để get ra danh sách bài viết nổi bật
+	2. Nơi implement 
+		- src/controllers/setting/setting-blog/index.ts
+		- src/controllers/setting/setting-blog/blog.controller.ts
+		- src/services/setting/setting-blog/blog.service.ts 
+	3. Các bước thực hiện 
+		B1: Ở index.ts viết hàm get urlDefault + '/feature' và sử dụng hàm fetchFeatureBlog ở controller 
+			Note swagger ở index 
+		B2: Ở blog.controller.ts viết hàm fetchFeatureBlogsAction 
+		B3: Ở blog.service.ts viết hàm fetchFeatureBlogs
+	4. Tiến độ 
+		- Done 
+	5. Lưu ý 
+		- 
+
+
+Yêu cầu: Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+
+Dạ, chị cho em hỏi yêu cầu sort theo position là 
+	- Option 1: Mình sẽ set cứng nó là sort tăng dần hoặc giảm dần sau khi get ra danh sách featured blog 
+	(Nếu là option này thì sẽ set cứng là tăng hay giảm vậy ạ) 
+	- Option 2: Mình sẽ truyền về tham số là sort tăng dần hoặc giảm dần rồi sort theo nó 
+	(Nếu là option này thì default sẽ là sort tăng hay giảm) 
+
+Trả lời: Set cứng sort the position tăng dần (1,2,3...) và đã có paging 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

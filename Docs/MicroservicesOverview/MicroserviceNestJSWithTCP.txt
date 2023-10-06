@@ -1,0 +1,30 @@
+NestJS sp 3 kiến trúc: 
+	- HTTP-based platforms 
+	- Websockets 
+	- Microservices 
+I. Một project monolithic: (Nest Application)
+	- Tạo ra một project
+	- File Main sẽ tạo ra một NestApplication (Listen một cái cổng nào đó) 
+	- Tạo ra các module (mỗi module có nhiệm vụ thực hiện một service nào đó ) 
+		+ Service được viết với chuẩn REST API 
+		+ Các tầng Controller, Service, Repo,...
+		+ Nhờ vào các decorator @Controller, @Post,...và cung cấp đường dẫn tương ứng Nest app nhận biết được 
+		từ đó ta request để nhận kết quả của service thông qua đường dẫn và cổng tương ứng của Nest app
+		(Client request to api dùng cơ chế http request hoặc websocket)   
+II. Một project microservice (TCP transporter) 
+	- Tạo ra một project 
+	- File Main sẽ tạo ra một Nest Application (Listen một cái cổng nào đó)
+	- Tạo một microservice 
+	- File main tạo một NestMicroservice (Không list cổng nào) Trasporter TCP    
+	- Tương tự grpc tạo ra 2 project một bên microservice (dùng @MessagePattern, @EventPattern ) thay vì @GRPCMethod 
+		chỉ định param @Payload() 
+	- Đối với NestApplication 
+	Cách 1: 
+		+ import ClientsModule register 
+		+ Inject ClientProxy into Controller 
+		+ import Service vào provider useFactory để config (custom provider)
+	Cách 2: 
+		+ Dùng @Client () trong controller 
+		+ client: ClientProxy 
+		+ onApplicationBootstrap : client.connect 
+	Vậy là kết nối thành công this.client. hàm gọi đến thôi 

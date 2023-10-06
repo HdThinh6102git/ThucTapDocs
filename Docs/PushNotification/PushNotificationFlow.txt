@@ -1,0 +1,158 @@
+Ngày 21/7/2023 
+Implement in-app push notifications (NestJS, MySQL, Firebase)
+	App này cơ bản có controller user cho phép client tạo và update profile 
+	Tuy nhiên sau khi update profile sẽ có hiện notification được push từ server dựa vào data user 
+	Người dùng cũng có thể enable hoặc disable push notifcation (để muốn cho phép hoặc không cho phép app push notifcation)
+Flow chính sẽ là 
+	Save và update user thì cơ bản là gọi từ controller --> service --> repository và entity để thực hiện thay đổi db 
+	Việc send Push Notifcation sau khi update user (tham số truyền vào user object, notifiTitle, notifiBody) 
+		- Sẽ thực hiện tìm notificationtoken có user id trùng với user được update và kiểm tra nó có được active hay không 
+		- Nếu không active thì bỏ qua chỉ update user mà không thông báo 
+		- Nếu có active thì thực hiện 
+			+ Lưu notification mới vào db 
+			+ dùng firebase (FCM) để send push notification về thiết bị tương ứng với token 
+Hiện tại thì đang bị lỗi là chưa biết làm sao để lấy token của device tương ứng mà gửi 
+
+1. Push notifications là gì? 
+	- Đây là dạng notifications được push từ server (VD: notifi thay đổi số dư của banking, notifi khi người khác cmt trên fb,...)
+	- Có một loại nữa là local notifications được push từ local không cần mạng. 
+2. Tạo Firebase project với CloudMessaging service enabled 
+	- Tạo project mới trên firebase console 
+	- Nhấn vào setting --> cloud messaging 
+	- Enable FCM API (Vào setting --> cloud messaging --> cloud messaging API --> nhấn nút 3 chấm để manage và enable )
+	Có được cái server key (chưa biết để làm gì) 
+	- Create a service account và download private key file (đổi tên nó thành firebase-admin-sdk.json)
+		+ Vào setting --> service accounts --> generate new private key (sau đó đổi tên)
+	
+->  Gửi request qua post man với tham số body : 
+		{to: device token, notification muốn send (body, title, subtile)}
+		header của request này là authorization là key = serverkey (đã lấy được ở trên) (chỗ này chưa biết để làm gì)
+
+3. Implement code 
+	3.1. Install firebase-admin package (package này dùng để initialize firebase app )
+	3.2. Tạo ra các resources (bao gồm module, controller, service) notification và users 
+		nest g res notification --no-spec
+		nest g res users --no-spec
+	3.3. Config app để kết với db MySQL
+		- Tạo db trong mysql
+		- Cài đặt Mysql2 và TypeORM để quản lí và connect db 
+		npm install --save mysql2 typeorm @nestjs/typeorm @nestjs/config
+		- Update app.module.ts 
+			+ import typeormModule và dùng hàm forRoot để config (typedb, host, port, username, entities,...)
+	3.4. Tạo ra các entities và connection cho từng module 
+		- Tạo entity user (dùng các decorator @Entity, @Column thuộc package typeorm ) 
+		Entity này nằm trong folder entities của module users 
+		- Update usersmodule 
+			+ import TypeOrmModule.forFeature([UserEntity])  để chỉ định dùng  Entity này
+			+ import NotificationModule (để làm gì chưa biết)
+		- Tạo entity notification 
+		Entity này nằm trong folder entities của module notification
+		- Tạo entity notification token
+		Entity này nằm trong folder entities của module notification
+		- Update notification module 
+			+ import TypeOrmModule.forFeature([Notifications, NotificationToken])  để chỉ định dùng  Entity này
+			+ exports: [NotificationService]
+	3.5. implement notification service để thực hiện push notification 
+	Trong notification.service.ts có: 
+		- firebase.initializeApp() (firebase thuộc firebase-admin package)
+		Sẽ tạo một firebaseApp dùng service account key trong file firebase-adminsdk.json (config đường dẫn đến file)
+		- export class NotificationService (với decorator @Injectable)
+		Trong class này có: 
+			+ constructor: dùng decorator @InjectRepository để inject vào 2 repository và tham số truyền vào là tương ứng 2 entity 
+			Notifications và NotificationToken
+			@InjectRepository(Notifications) private readonly notificationsRepo: Repository<Notifications>,
+				->>Sẽ tạo ra NotificationRepository và NotificationTokenRepo
+		Class này có 4 hàm: 
+			- Hàm acceptPushNotification
+				+ update status tất cả notification token của một user thành INACTIVE  (dùng notificationTokenRepo.update)
+				+ Tạo notification token object mới với các param truyền vào(user object, token, device type, Status:ACTIVE)
+				+ Save notification token mới này vào db (dùng notificationTokenRepo.save)
+			- Hàm disablePushNotification 
+				+ update status một notification token cụ thể nào đó của một user thành INACTIVE (dùng notificationTokenRepo.update)
+					 với Argument là UpdateDTO(userId, device type)
+			- Hàm getNotifications
+				+ get tất cả notifications từ db (dùng notificationRepo.find()
+			- Hàm sendPush
+				+ param là user object, title, body
+				+ Tìm một active notification token của một user (dùng notificationTokenRepo.findOne) argument là (userId, Status:active)
+				+ Nếu notification token được tìm thấy, lưu notification vào db (dùng notificationRepo.save) (Tham số truyền vào từ request
+					 là thông tin notification: title, body, status)
+				+ push notification đến user's device dùng FCM (dùng firebase.messaging().send())  (với argument là: notification's title, 
+					body, user's notification token, priority set to high for android 
+				Ở đây ta dùng hàm sendPush của firebase-admin package để push notification từ server environment 
+
+	--> Đã thiết lập xong FCM và MySQL, bây giờ có thể dùng để push notifications đến users dựa vào data trên Mysql. 
+		Nhờ vào FirebaseService , giờ chỉ cần cập nhật User Service để kích hoạt, truy xuất notifications từ db và gửi đi 	
+	3.6. Implmemt user service		
+	File users.service.ts có 
+		- Decorator @Injectable() chỉ định service 
+		- export class UserService 	
+		- constructor (Inject userRepository với tham số truyền vào là UserEntity và notificationservice)
+	Class UserService có 5 hàm: 
+		- create 
+			+ argument là CreateUserDto
+			+ tạo user account mới và save vào db (dùng userRepository.save)
+		- updateProfile 
+			+ argument là userID: numbum, update_dto: any
+			+ tìm user có id = userID (dùng userRepository.findOne)
+			+ update user info theo update_dto sau đó dùng user.Repository.save (Syntax update chỗ này hay cần xem làm theo)
+			+ check nếu lưu user 
+				* Thành công thì gọi notificationService.sendPush, argument là updated_user object và title, body của notifi.
+				* Ngược lại console.log (error sending push notification, e)
+			+ return saved_user.
+	
+		- enablePush 
+			+ Hàm này dùng để user cho phép app push notification ( khi ấn nút enable notification)
+			+ param là user_id: number, update_dto: NotificationDTO
+			+ async function do bất đồng bộ dùng repo làm việc với db
+			+ tìm user có id = user_id (dùng userRepository.findOne) và lưu vào user object
+			+ return notificationService.acceptPushNotification() với argument là user object, updateDTO )
+		- disablePush 
+			+ Hàm này dùng để user không cho phép app push notification (khi ấn nút disbale notifcation)
+			+ Tương tự hàm enablePush nó cũng tìm user theo id sau đó dùng notificationService.disablePushNotification()
+		- getPushNotifications
+			+ Hàm này để get tất cả notifications 
+			+ return notificationService.getNotifications() 
+	3.7. Cuối cùng là implement UsersController (API)
+		- Controller ('User) 
+			+ Post() method createUser với param là CreateUserDto
+				* Hàm này dùng để tạo user mới vào db 
+				* return  userservice.create(CreateUserDto)
+			+ Put() method updateProfile với param là user_id: number, update_dto:any
+				* hàm này dùng để update profile user 
+				* return userService.updateProfile
+			+ Put('push/enable') method với param là NotifcationDto, user_id
+				* hàm này dùng để user enable push notifications
+				* return userService.enablePush
+			+ Put('push/disable) tương tự enable 
+			+ Get('push/notifications') method fetchPushNotifcations() get tất cả notifcation 	
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+
+	
+	

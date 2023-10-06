@@ -1,0 +1,10 @@
+1. Module của một chức năng (API User, API Auth,...) 
+Từ khóa @Module(Khai báo trong này ) 
+Module là file dùng để khai báo 
+	- Import[]: Các module khác cần dùng trong chức năng này 
+	- Providers[]: Các provider, controller cần dùng 
+Sau đó export ra thành một class để nơi khác import vào dùng 
+
+2. Provider 
+Provider dùng để chỉ chung cho các thành phần như (services, repositories, factories,
+helpers,...) 

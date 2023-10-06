@@ -1,0 +1,27 @@
+1. Thêm trường blog_id trong table setting_screen_item_detail
+	- (Vậy blog_id sẽ được add vào khi nào) 
+
+2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail
+(Dựa trên blog_id) 
+	- Vậy quan hệ này để làm gì 
+
+3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+	- cái enum này sẽ được thêm vào trường setting_screen trong table khi nào 
+
+4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	- 2 trường này sẽ được thêm data khi nào 
+
+5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	- Chỗ này là chỗ thêm data cho 2 trường mục 4 
+
+6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+
+Flow test 
+	1. Get ra: 
+		- Duyệt lấy tất cả bài viết có is_blog_featured = true và sort theo position 
+	2. Thêm vào 
+		Dùng api updateSettingScreen 
+		B1: SettingScreenItem.update
+		B2: Xóa các SettingScreenItemDetailProduct cũ có screen_item_detail_id: item_detail.id
+		B3: Xóa SettingScreenItemDetail có screen_item_id: settingScreenOld.id
+		B4: Xóa SettingScreenItemProduct có screen_item_id: settingScreenOld.id

@@ -1,0 +1,17 @@
+Hoàn thành task: 
+Các việc đã làm: 
+	1. Folder models/product/product.model.ts (ok)
+		origin_url: Sequelize.STRING,
+  		origin_address: Sequelize.STRING,
+  		elevation: Sequelize.STRING,
+  		type_bean: Sequelize.STRING,
+  		processing_method: Sequelize.STRING
+	2. Folder controller/product/product.controller.ts
+		- createProductAction (không sửa) 
+		- updateProductAction (sửa 2 chỗ) 
+	3. Folder service/product/product.service.ts 
+		- createProduct (sửa chỗ destructing và chỗ hàm create của model)
+		- updateProduct (sửa chỗ destructing và chỗ hàm update của model) 
+	4. Sửa database 
+		add column 
+	Tạo file knex 

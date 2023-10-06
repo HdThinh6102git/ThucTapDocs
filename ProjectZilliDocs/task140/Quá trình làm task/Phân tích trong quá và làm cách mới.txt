@@ -1,0 +1,93 @@
+Phân tích 
+
+- Setting_Screen chứa items 
+- items chứa nhiều item 
+- trong từng item chứa item_details 
+
+lisstcategory_id(category_id1, 2 ) 
+item_details 
+		
+	
+	item 1 categry_id 1
+	item 2	cateegory_id 2
+--------------------------------------------------------------------------------------------------------------
+
+Đổi phương pháp: 
+	Lấy riêng từng cái lắp lại
+		- Level 1: data{} (instance SettingScreen 
+			with screen == product_list_screen
+			website == zili_website
+			group_id == 24)
+		- Level 2: items [] (array of SettingScreenItem with screen_id == id instance SettingScreen) 
+		- Level 3: item_details{}: có list categories mà admin chọn 
+			 - item_details_array:[] 
+			 - categories[]
+		- Level 4: item_detail nằm trong item_details_array
+		- Level 5: item_detail_product nằm trong item_detail (tìm tất cả product có category_id == category_id của item_detail 
+
+1. data{} SettingScreen.findOne where group_id, screen, website 
+2. items[] SettingScreenItem where screen_id == id của SettingScreen đã lấy được ở trên 
+3. Chạy vòng lặp item_details: SettingScreenItemDetail where screen_item_id == id của SettingScreenItem (map từng cái vào) 
+4. Để có được list categories thì dùng service của nó get theo id (có thể chạy vòng lặp)
+5. Item detail sẽ được get ra rồi chạy vòng lặp bỏ vào đúng cấu trúc 
+6. tìm product cho từng item detail hoặc select theo item_detail_products (nhờ vào category_id
+
+
+
+
+	
+
+
+
+
+
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

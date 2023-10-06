@@ -1,0 +1,65 @@
+Muốn làm một api setting trang sản phẩm
+1. Ví dụ minh họa: 
+	- Trong một trang 
+		+ Một cái ô hiện thông tin category 
+		+ Dưới cái ô đó sẽ hiện thông của các sản phẩm theo category đó 
+	- Đã có một trang tương tự: (trang chủ) 
+		+ api setting trang sản phẩm sẽ giống với api setting trang chủ 
+	
+2. Data trả về mong muốn: 
+	- Ở màn hình sản phẩm nó sẽ trả về: 
+		Level 1: data{}
+		- Level 2: items [] 
+			- Level 3: item_details[]: có list categories mà admin chọn (đã chọn hay có thể chọn)  
+				- Level 4: item_detail (là các category thuộc list categories ở trên đúng không) 
+					- Level 5: item_detail_products (list of products của category mà admin setting ở trên)  
+3. Cần làm gì: 
+	- api setting screen của admin đã có đủ các trường ở trên 
+	- Cần bổ sung 1 api cho user để mobile dev lấy lên hiển thị trên UI 
+	
+4. Cần tìm hiểu những gì để làm được việc trên: 
+	- Làm sao để thêm screen cho màn hình danh sách sản phẩm 
+	(Tương tự trang chủ screen là home_screen)
+	- Đứng ở admin web sẽ call api 
+	https://api.zilicoffee.vn/api/v1/admin/screen?screen=home_screen&website=zili_website&group_id=24
+	- Thay vào đó quá product web (user) 
+	thay vì screen = home_screen thì nó sẽ là screen = product_list_screen
+
+
+5. Cụ thể cần làm 
+
+
+	1. Viết url api (param: screen, website, group_id)
+	2. findSettingItemProductsByScreenAction ở controller 
+	3. findSettingProductsScreen ở service
+	4. Trong database tạo một kiểu screen là product_list_screen  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

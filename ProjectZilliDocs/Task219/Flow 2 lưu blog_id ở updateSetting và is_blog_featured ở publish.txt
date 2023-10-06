@@ -1,0 +1,13 @@
+Lưu is_blog_featured, position ở publishSettingWebsite 
+	 và blog_id ở updateSettingScreen 
+
+Flow từ lúc tạo ra blog đến khi get ra được các featured blog 
+
+	B1: Tạo blog (chưa có thông tin cho 2 trường is_blog_featured, position) 
+	B2: Update Setting_Screen để lưu thông tin blog_id trong bảng setting_screen_item_detail 			(Service) 
+	B3: Publish SettingWebsite để lưu thông tin của is_blog_featured và position 					(Service) 
+	(blog.position = item_detail.position (where item_detail.blog_id === blog.id))
+	B4: Get Featured Blog với is_blog_featured = true và  sort theo position tăng dần (ASC) 
+
+
+-------------------------------------------------------------------------------------------------------------------------------------

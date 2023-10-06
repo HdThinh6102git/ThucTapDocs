@@ -1,0 +1,73 @@
+1. API là gì? 
+	- Nhiệm vụ chuyển dữ liệu và giao tiếp giữa các application 
+2. Http API là gì? 
+	- Là API dùng http protocol (gọi qua TCP layer) 
+3. Restful API là gì? 
+	- Rest là chuẩn, để đạt được chuẩn đó thì thỏa mãn 6 principle 
+	- Restful API = http API + chuẩn rest 
+
+Các chuẩn của REST
+		Uniform interfaces
+		Client and server 
+		Stateless
+		Cacheable
+		Layered system 
+		Code on demand (optional )  
+	1. Uniform interfaces (Đồng bộ các interfaces) 
+		- HATEOAS
+			+ Trả về data mà có thể navigate bên trong data đó 
+			+ Từ data trả về có thể truy ra data tiếp theo
+		- Naming conventions (đặt tên url  theo chuẩn) 
+		- Data format (JSON/XML) 
+		- Common method (Get, post,...)
+	
+	2. Client and server 
+		- Request and response 
+		- pull/time based trigger(not streaming, real time)
+		- Separation (tách biệt giữa client và server) 
+	
+	3. Stateless 
+		- No server-side sessions (trên server không lưu lại history) 
+		- No cookies 
+		- No history 
+		- Independent  
+		(Request thứ nhất và request thứ hai độc lập) 
+		No client context (request gì trả lời đó ) 
+		Client có nhiệm vụ quản lí state của app 
+	
+	4. Cacheable 
+	Có nghĩa có thể sử dụng một số công cụ để caching lại data mà không cần gọi lại 
+		- Partially 
+		- Completely 
+		- Less interactions (giảm việc tương tác giữa server và client) , server không cần gọi quá nhiều lần tới db 
+		- Caching ở server or caching ở client 
+	--> Giúp tăng performance của hệ thống 
+	Muốn đạt được performance tốt phải biết cách sử dụng caching đúng lúc 
+	Principle này sẽ giúp ta làm được db chịu tải lớn (vd: redis cache,... ) 
+	
+	5. Layered System
+	Hệ thống gồm nhiều layer (phân tầng
+	(Controller, Service, Repo, DAO,...) 
+	(API ở server A, Data ở server B,...)
+	Tầng trên abstraction --> càng xuống dưới các tầng đó càng specific 
+	
+	6. Code on demand (optional, có thể áp dụng hoặc không) 
+		- Thay vì trả về xml/Json 
+		- Trả về executable code (js code chẳng hạn) 
+		Đây thực sự là khái niệm ban đầu mình hiểu về API (nó kiểu sẽ cung cấp API và họ gọi đến nó sẽ làm một việc gì đó chứ k phải trả data) 
+		- Hành vi đó có thể là alter or extend the client behavior 
+	(Có thể đây chính là event-based ) 
+	  
+	Trong 5 principle trên mình thiếu Cacheable 
+
+
+
+
+
+
+
+
+
+
+
+

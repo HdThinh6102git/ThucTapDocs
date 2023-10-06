@@ -1,0 +1,42 @@
+Cách 1: 
+	1. Project A cần service B 
+	2. Implement Service B (Có thể riêng biệt và hoặc chung một project mà tách ra mono repo)
+		- Service B gồm: Controller , Service, Repo,... 
+Note: Có thể tạo project trước rồi config connect sau hoặc cũng có thể từ đầu đã định hướng microservice thì tạo theo cú pháp ngay từ đầu 	
+	3. Cài một vài thư viện, chuẩn bị .proto file và interface để connect service B và project A 
+		- Cài một vài thư viện sp microservice, grpc và ts-proto 
+		- Tạo .proto file khai báo message và service, các hàm rpc trong service có tên và cấu trúc tương tự những gì đã implement ở service B  
+		và message cũng có shape tương ứng với dto hay entity có trong service B 
+		- Dùng library ts-proto để dùng .proto file --> generate thành file tương ứng ở code typescript 
+		- Chuyển .proto file vào folder dist 
+	4. Config ở project B để connect 
+		- Ở main.ts, nestfactory.createMicroservice 	
+			+ Chỉ định module,
+			+ Transporter:GRPC
+			+ protoPath: (đườn dẫn đến file proto sẽ dùng) 
+			+ package 
+			+ Không listen cổng nào (vậy làm sao bên project kia gọi được) 
+		--> Tạo thành công microservice dùng transporter GRPC 
+		
+		- Dùng dto, entity là interface được generate ra cho controller và service (để đồng nhất)
+		(Cái đích của .proto file là gì có phải chỉ là generate ra và dùng hay không, chỉ định dùng nó trong file main.ts để làm gì)
+		- Controller implement interface ServiceController 
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

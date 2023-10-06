@@ -1,0 +1,30 @@
+1. WorkFlow 
+	B1: Tạo nhánh master (nhánh này không được có thay đổi gì nó chỉ là nơi giữ kết quả từ các nhánh khác là các tag)
+	B2: Tạo các issue 
+	B3: Tạo nhánh develop 
+2. Các bước thực hiện cụ thể
+
+	B1: Leader set up dự án (Tạo repo, push initial commit) 
+		- Tạo nhánh master 
+		- Tạo nhánh develop  
+	B2: Leader giao việc bằng cách
+		- Tạo ra issue (chỉ định công việc và label) 
+	B3: Team member Pull (hay clone chỗ này chưa rõ) 
+		- git checkout develop 
+		- git checkout -b feature_name_STT (STT trùng với stt issue ) -- tạo ra một nhánh mới tên là feature 
+		- Sau đó code 
+		- Sau đó add và commit (đứng ở nhánh feature ) 
+		(git commit -m '#STT - message') 
+		- Git push 
+		- push lên nhánh feature và nó sẽ được reference ở issue 
+	B4: Leader sẽ review tạo pull request và pull cái team member vừa push lên feature  về develop 
+	(Chỗ này chưa biết team member hay leader làm ) 
+	B5: Leader sẽ xem pull request và tiến hành merge về develop 
+	B6: Sẽ có người checkout ở develop pull tất cả về (chưa biết là ai) 
+		- Tiến hành xóa branch feature ở cả local và remote 
+		Local: git branch -d branch_name 
+		Remote: git push origin -d branch_name
+	B7: Một người nào đó check out -b release-v1.0.0 
+	 
+	
+	

@@ -1,0 +1,71 @@
+Khi thêm quan hệ vào setting_item_detail.model thì 
+	Get blog lại bị báo lỗi là không tìm thấy blog_id 
+
+Do chưa set trường blog_id là foreign_key 
+
+Còn chỗ migrate mà chưa load là do chưa refresh db tốt nhất tắt table đó mở lại 
+
+
+
+exports.up = function(knex) {
+    return knex.schema
+        .table('setting_screen_item_detail', t => {
+            t.integer('blog_id')
+                .unsigned()
+                .index()
+                .references('id')
+                .inTable('blog');
+        })
+};
+
+exports.down = function(knex) {
+    return knex.schema
+        .table('setting_screen_item_detail', t => {
+            t.dropColumn('blog_id')
+        })
+};
+
+---------------------------------------------------------------------
+Tại sao 
+get blog 
+SettingScreenItemDetail.hasMany(Blog, { as: 'blogs', foreignKey: 'blog_id' });
+--> tung ra lỗi blog_id does not exist 
+
+Lí do là gì 
+
+
+
+SettingScreenItemDetail.hasMany(Blog, { as: 'blogs', foreignKey: 'id' });
+thì không bị nữa 
+
+Kiểm tra nếu setting_screen 
+B1: Kiểm tra trong setting_screen_item_detail có những blog_id nào 
+B2: Gọi hàm updateFeaturedBlog (blog_id) để lưu is_blog_featured = true và position = ??? 
+Vậy position được lưu như thế nào 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

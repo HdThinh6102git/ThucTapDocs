@@ -1,0 +1,46 @@
+2. createTransferPoints
+	- param (userId, input: TransferPointsInput dto (amount, pin_code, work_type) 
+	- Kiểu trả về TransactionOutput
+	- Nếu input.work_type == 'AMOUNT' thì trả về exception WRONG_WORK_TYPE (thêm vào) 
+	- const user = userRepo.findOne(id: userId)
+	- Nếu !user thì trả về UnauthorizedException
+	- Nếu user.pin_code != input.pin_code thì trả về exception INCORRECT_PIN_CODE
+
+(1)(2) 	- const withdraw = transactionRepo.findOne(user.id = userId, TRANSACTION_STATUS.NEW_REQUEST, TRANSACTION_TYPE.WITHDRAW) (Cần xem)
+
+	- const verification_code = makeId(6); (create random)
+	- const verification_time = Date.now() + convertMilliseconds(VERIFICATION_TIME);
+	- Nếu withdraw và withdraw.verification_time và withdraw.verification_code và verifi_time hết hạn thì trả về 
+		exception REVERIFICATION_TIME
+	- mailService.sendVerificationEmailTransaction(TRANSACTION_TYPE.TRANSFER_POINTS, user.email, verification_code)
+
+(3) 	- Nếu withdraw và withdraw.status = TRANSACTION_STATUS.NEW_REQUEST thì (Cần xem) 
+		+ withdraw.verification_code = verification_code
+		+ withdraw.verification_time = verification_time
+		+ transactionRepo.save(withdraw)
+		+ const output = plainToClass(TransactionOutput, withdraw,
+		+ return {status: RESULT_STATUS.SUCCEED, status: RESULT_STATUS.SUCCEED,}
+
+	- const transaction = new Transaction();
+(4)	- transaction.type = TRANSACTION_TYPE.WITHDRAW; (Cần xem) 
+	- transaction.status = TRANSACTION_STATUS.NEW_REQUEST;
+	- transaction.amount = input.amount;
+	- transaction.user = user;
+	- transaction.verification_code = verification_code;
+	- transaction.verification_time = verification_time;
+	- transaction.mail = user.email;
+	- transaction.work_type = input.work_type; (Khác) 
+	- transactionRepo.save(transaction);
+	- output = plainToClass(TransactionOutput, transaction,
+	- return {status: RESULT_STATUS.SUCCEED, data: output,}
+
+
+Change: 
+	-(1)  đổi tên chỗ withdraw thành transferPoints 
+	-(2)  TRANSACTION_TYPE.WITHDRAW thành TRANSACTION_TYPE.TRANSFER_POINTS
+	-(3) bỏ withdraw.status = TRANSACTION_STATUS.NEW_REQUEST chỉ nếu transferPoints thôi 
+	-(4) TRANSACTION_TYPE.WITHDRAW thành thành TRANSACTION_TYPE.TRANSFER_POINTS
+	
+
+Và cho tui hỏi tiếp là chỗ const withdraw = await this.transactionRepo.findOne khi đổi qua transfer point sẽ chuyển sang type: TRANSACTION_TYPE.TRANSFER_POINTS,
+Chỗ if sẽ giữ logic tương tự với rút tiền ha 

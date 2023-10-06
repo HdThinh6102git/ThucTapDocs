@@ -1,0 +1,94 @@
+1. RPC là gì ? 
+Remote Procedure Call 
+	- Phương pháp sử dụng trong việc giải quyết các vấn đề liên quan đến quá trình truyền tin trong những tiến trình riêng biệt. 
+	- Mô hình kỹ thuật mạng 
+	- Phương thức giao tiếp phần mềm mà chương trình này yêu cầu dịch vụ từ chương trình khác trong máy tính. 
+	- Áp dụng mô hình máy khách và máy chủ. (máy khách yêu cầu, máy chủ cung cấp)	
+	- Một quá trình mang tính đồng bộ (chương trình tạm dừng cho đến khi trả về data)
+	- Nhiều RPC được quyền hoạt động cùng lúc 
+	
+2. RPC làm nhiệm vụ gì? 
+	- Local Call Function (gọi hàm của service khác để làm việc ở local trên cùng một máy) 
+	- Thế nhưng nhu cầu lúc này là cần gọi hàm của service khác ở máy khác để phục vụ service ở máy hiện tại 
+	- RPC ra đời là cơ chế để làm việc này 
+	- gRPC là framework của google để thực hiện RPC 
+	- Nhiều tổ chức dùng framework này (Google, Netflix , slack, Square, Cisco, CockroachLabs,...)
+	- Dùng để connect lượng lớn microservices chạy trên các data centers khác nhau 
+3. Tại sao nên dùng gRPC 
+	- Nó phổ biến , có nhiều library, tool được hỗ trợ bởi nhiều ngôn ngữ (ecoSystem) 
+	C/C++, NodeJS, Python, Java, C#,..., type safe APIs that scale well 
+	- Core của ecoSystem này là Protocol Buffers dùng để interchange format of data 
+	- Protocol buffer là một language- agnostic and platform - agnostic mechanism for encoding structured data 
+	- gRPC dùng Protocol Buffer để encode và send data qua mạng (default) 
+		+ Ngoài gRPC còn cung cấp các encoding format khác (JSON ) 
+	- Protocol buffer hỗ trợ mạnh việc định nghĩa schema để truyền qua lại giữa các service (được định nghĩa trong proto file) 
+	- Protocol buffer cung cấp tool để chuyển đổi từ schema định nghĩa trong proto file thành data access classes cho nhiều ngôn ngữ khác nhau. 
+	- gRPC service cũng có thể được định nghĩa trong .proto file (cụ thể như là RPC method, param và return types.) 
+	- Nó cũng dùng tool chuyển đổi schema để chuyển đổi code từ proto file sinh ra client và server code cho nhiều ngôn ngữ khác nhau. 
+	- Dùng class client để make RPC calls 
+	- Dùng class server để fulfill RPC request
+	- Nhờ vào việc sp nhiều ngôn ngữ nên dev có thể dùng mọi ngôn ngữ tùy thích để phù hợp với yêu cầu service 
+	- gRPC có high performance out of the box 
+		+ Protocol Buffer dùng binary encoding format nhanh hơn nhiều so với JSON 
+		+ gRPC được built dựa trên HTTP/2 cung cấp high-performance foundation at scale 
+ 		+ http2 có lợi gì: 
+			* Multiplexing 
+			* Stream prioritization 
+			* Binary protocol 
+			* Server push 
+		+ gRPC dùng http2 stream cho phép chạy multiple stream of message thông qua một single long-lived TCP connection. 
+			* điều này cho phép gRPC framework có thể handle nhiều RPC calls thông qua một số ít TCP connections giữa client và server 
+4. Cơ chế hoạt động call của gRPC 
+	(Đây chính là cơ chế getService và call gRPC ) 
+	(Việc này mình không implement mà đã có clientGrpc của nestJS làm dùm) 
+	VD:gRPC Client (Order Service) --> gRPC Server (Payment Service) 	
+	
+	Qui trình OrderService thực hiện (gRPC call) đến PaymentService
+		- Sau khi implement 
+		--> Build --> sinh ra  Client stub (Client code) (code này chuyển từ code của .proto file)
+		--> Order service thực hiện (gRPC call) --> invoke client stub 
+		--> gRPC encodes the data passed to the client stub vào Protocol Buffer 
+		--> gửi đến low-level transport layer 
+		--> gửi data thông qua network như là một stream của http/2 data frames đến transport layer của gRPC Server 
+		(Nhờ vào binary encoding và network optimization gRPC nhanh hơn gấp 5 lần JSON ) 
+	Quy trình nhận của gRPC Server (PaymentService) 
+		- nhận packets từ network ở tầng transport --> decode them --> invoke server application (local call) 
+		--> return results --> encode into protocol buffers --> send to the transport layer 
+		--> gửi thông qua http2 
+	Quy trình nhận của gRPC Client 
+		- Nhận packet từ network --> decode them --> send result to client app 
+
+5. Tại sao không nên sử dụng gRPC giữa web client và web server 
+	- gRPC relies on lower-level access to HTTP/2 primitiive, không có browser nào hiện tại cung cấp level of control required over web request 
+	để support a gRPC client 
+	- Có thể make gRPC call từ browser với a proxy (được gọi là gRPC web), tuy nhiên cách cài đặt này nó sẽ dẫn đến hiệu suất không tốt như 
+	gRPC gốc
+6. Dùng trong trường hợp cụ thể nào? 
+	- gRPC là cơ chế inter-service giao tiếp giữa các microservice trong các data centers 
+	- REST API --> http request --> API gateway 
+		+ đứng tại api gate way ta sẽ gọi đến các service phục vụ việc ta cần (giữ các service với nhau sẽ gọi nhau nhờ vào gRPC)
+	
+
+		
+
+
+
+		  
+		
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

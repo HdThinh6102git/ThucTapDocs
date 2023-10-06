@@ -1,0 +1,172 @@
+Task name: Tạo api setting cho màn hình sản phẩm: 
+
+	- Bổ sung api setting trang danh sách sản phẩm:
+	- data api trả về bao gồm danh sách sản phẩm theo từng category
+	[
+
+  		{
+
+     		…<Thông tin category>,
+
+     		products: [<danh sách sản phẩm thuộc category muốn hiển thị>]
+
+  		}, 
+
+		…
+
+	]
+	
+1. Xác định làm product 
+2. Check trong db có các thông tin liên quan giữa product và category 
+	- category 
+	- category_code 
+	- category_id
+3. Xác định cách query data from table 
+	select 
+	p.*  
+	from 
+	product as p inner join category as c 
+	on  
+	p.category_code = 'PGN00019' and p.category_code = c.category_code 
+4. Phân tích yêu cầu: 
+	- Tạo api setting cho màn hình sản phẩm
+	- Bổ sung api setting trang danh sách sản phẩm
+	- data api trả về bao gồm danh sách sản phẩm theo từng category
+Theo mình quan sát được ở trang admin: 
+	Có một trang là productlist 
+		- Ở đó có một cái nút là select là scroll bar 
+		- nhấn vào nó sẽ hiện ra danh sách category 
+		- chọn vào một category bất kì sẽ hiển thị danh sách sản phẩm có category đã chọn 
+Vậy xác định được : 
+	Out put: 
+		- danh sách sản phẩm theo từng category
+	vd: 
+	[
+  		{
+
+     		…<Thông tin category>,
+
+     		products: [<danh sách sản phẩm thuộc category muốn hiển thị>]
+
+  		}, 
+
+		…
+	]
+	
+	Input: category_code/category_id
+	
+5. Xác định nơi cần tạo controller 
+	- product controller 
+		index
+		getProductsByCategoryAction
+		/api/v1/categories/:categoryId/products
+		const data: any = {}
+    		const id = req.params.categoryId;
+	- product service 
+		getProductsByCategory
+	- Có một cái tương tự 
+		https://api.zilicoffee.vn/api/v1/admin/product/paging?page=1&perPage=10&category=&status=temp&q=
+	api thuộc productController pagingAdminProductsAction 
+
+
+Cải tạo lại paging 
+	thêm trường trả về là thông tin category 
+
+
+	Tại sao trong db có 5 mà trả về có 3 thôi 
+	Phải tìm hiểu kĩ chỗ đó khá nhiều thứ phức tạp 
+	Lamf xong nho chỉnh lại những url đã bỏ authorize 
+
+	- perPage : (số lượng tối đa trên 1 trang)
+	- page: (số lượng trang)
+	- category: category_id (dùng để find by) / gán cho where category_id
+	- sort_name: (có thể dùng để sort theo tên sản phẩm)
+	- keyword: dùng để tìm kiếm tên với sql like / gán cho where.name like 
+	- total_quantity: dùng để tìm kiếm sản phầm có total_quantity tương ứng / gán cho where.total_quantity 
+	- status: dùng để tìm kiếm sản phẩm có status tương ứng / gán cho where.status,  active, inactive, temp (findby status) 
+	- is_gift: true / false (find by is_gift) / where.is_gift
+	- is_thumb: true/false 
+		+ nếu is_thumb == true , get tất cả productThumb 
+		+ set điều kiện where.id ={[Op.notIn]:ids} (id của product phải khác tất cả productthumb) , productThumb là unique
+	- const data = service pagingProductWithVariants
+		+ offset = page 
+		+ limit = perPage
+		+ where với các điều kiện đã set ở trên 
+		+ order = appUtil.createSortProduct
+			* promotion_price, is_product_new, is_product_first, is_product_second, price_display : asc 
+			set order by column asc (tăng dần)
+	--> Có nghĩa sẽ thực hiện select và sắp xếp tăng dần theo các thuộc tính trên 
+	
+	- join 3 bảng: product_option, product_with_promotion và product_variant 
+	- limit: chỉ định số rows được trả về sau khi query 
+	- offset: chỉ ra vị trí đầu tiên muốn lấy phần tử 
+
+	--> select * from product as p where p.name like %keyword% and p.category_id = category
+					and p.total_quantity = total_quantity and p.status = status 
+					and p.is_gift = is_gift and p.id != ids[]
+					order by 
+			promotion_price, is_product_new, is_product_first, is_product_second, price_display 
+					asc 
+					limit perpage 
+					offset page 
+	--> oki xong 
+
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

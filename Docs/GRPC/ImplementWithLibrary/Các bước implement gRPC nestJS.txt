@@ -1,0 +1,256 @@
+Quá trình mình làm: 
+1. Cài đặt nestjs/cli 
+2. Tạo nest project 
+3. Chạy và test chương trình hello world 
+4. Add một cái microservice để app can talk to  
+	- Create new authentication microservice (dùng để host users ) 
+	- Generate bằng cách convert Nest project into a mono repo bằng lệnh: 
+		nest generate app auth 
+	Lệnh này sẽ cấu trúc lại project thành mono repo 
+		- chuyển project lớn thành project nhỏ và đưa vào folder lớn là apps 
+		- Đồng thời tạo ra thêm một app auth có cấu trúc tương tự một nest app cũng nằm trong folder apps 
+		- update file nest-cli.json 
+			+ project nestjs bth nó chỉ có cái schema, collection, sourceRoot, compilerOptions for root 
+			+ thêm monorepo: true, root, projects(các project nhỏ được khai báo trong này) 
+5. Hiện tại gồm 2 project ApiGateway và Auth 
+	- Auth app (Authentication microservice) dùng để host users 
+	- ApiGateway app sẽ nhận tất cả http traffic in app và proxy những call đó onto auth microservice dùng gRPC 
+6. Generate users resource 
+	Bằng lệnh: nest g resource users 
+	- Trong Auth app 
+	- Transport layer: Microservice (non-HTTP) 
+	- generate CRUD entry points 
+	Lệnh này làm: 
+	- Tạo ra một users module nằm trong folder src của folder auth 
+	- Folder users có: (module, controller, service, entities, dto)
+		+ controller có cấu trúc của microservice project (@MessagePattern() )
+7. Install package nestjs/microservices 
+	- Bằng lệnh: npm i --save @nestjs/microservices 
+	- Nestjs microservices là một abstraction layer (được dùng trong việc giao tiếp giữa các microservices)
+		+ Giúp ta dễ dàng swap out các transport layers khác nhau ( để ta dễ dàng chỉ định cách các microservices giao tiếp)
+		+ Transport layer (transporter): TCP default, gRPC, rabbitMQ,...
+
+8. Install some supporting libraries for gRPC 
+	- npm i --save @grpc/grpc-js @grpc/proto-loader
+	nestjs microservices sẽ dùng 
+	- npm i --save ts-proto 
+	Thư viện này cho phép generate ts code từ protobuf definitions (.proto file) 
+9. Định nghĩa .proto file  
+	- Proto file sẽ define shape of data dùng trong service, services dùng grpc (giúp dễ dàng integrate grpc với nestJs )
+	(Tại sao phải định nghĩa data, services trong file này, hoặc trong file generated)  
+	- Tạo folder proto trong root folder 
+	- Tạo file auth.proto trong folder proto 
+	- file auth.proto định nghĩa: 
+		+ syntax: định nghĩa dùng proto3 
+		+ package: chỉ định package name dùng .proto file này (auth)
+		+ message: định nghĩa data (Entity, dto,...) dùng cho các hàm rpc định nghĩa trong service 
+			* các kiểu dữ liệu sẽ được plugin(extention) gợi ý 
+			* optional: chỉ định field đó có thể có hoặc không (chuyển qua ts là :? | undefined  
+			* repeated: chỉ định convert thành array 
+		+ service: định nghĩa service chứa các hàm rpc (remote procedure call)
+			* Các hàm có prefix rpc 
+			* các hàm sẽ được chỉ định argument , return data type 
+			* argument không được để trống, nếu muốn để trống phải bỏ vào message empty 
+10. Dùng TS-Proto package để generate file ts từ .proto file đã định nghĩa ở trên 
+	- Tiết kiệm time (chắc chắn đúng) 
+	- Cài đặt protoc trong window và set nó trong system environment variable 
+	- Bằng lệnh 
+	protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
+	- Cụ thể chỉ định 
+		+ plugin = đường dẫn đến file ts-proto trong file .bin (target file sẽ được thực thi protocol bufer)
+		+ --ts_proto_out= path ( chỉ định đường dẫn chứa file được sinh ra) 
+		+ --ts_proto_opt=nestJs=true (chỉ định sinh ra code nestJs)
+		+ đường dẫn cuối cùng là đường dẫn của .proto file cần dùng để generate 
+	- Chưa generate được lệnh trên không dùng được trên máy mình mà dùng được máy os 
+11. File auth.ts được sinh ra: 
+	- Package thành export const protodufPackage  và export const AUTH_PACKAGE_NAME 
+	(AUTH_PACKAGE_NAME là được generate hay định nghĩa? )
+	- message thành export interface (chưa biết dùng chỗ nào)
+	- service thành: (chưa biết dùng mấy cái này chỗ nào)
+		+ export interface ServiceClient (chưa biết dùng chỗ nào)
+		+ export interface ServiceController (cấu trúc của hàm khác ở trên)(Chưa biết dùng chỗ nào?)
+		+ export function ServiceControllerMethods() (chưa biết dùng chỗ nào)
+			* return function (constructor)	
+			* const grpcMethods: array declare name của các hàm CRUD có trong service 
+			* vòng lặp for duyệt các method có trong array grpcMethods (không hiểu nó để làm gì ) 
+			* const grpcStreamMethods: array declare name của các hàm Stream có trong service 
+			* Cũng vòng lặp for duyệt tương tự (chưa biét để làm gì ) 
+		+ export const SERVICE_NAME 
+12. Move file auth.ts sinh ra vào apps
+	- Để có thể reference tới nó 
+	- Generate lib common 
+	nest g lib common 
+	--> Sinh ra folder common 
+	--> update nest-cli.json (thêm project mới trong projects: common type: library) 
+	- Xóa mấy cái common module, service không cần thiết 
+	- Add folder types in folder src 
+	- move file auth.ts vào folder types 
+	- create file index.ts trong folder types và export * from './types'
+--> có được generated type auth.ts 
+
+13. Refactor auth microservice 
+	- Để dùng type auth.ts và biến nó thực sự thành grpc microservice 
+	- Refactor nest-cli.json 
+		+ Để chỉ định nó copy .proto file trong folder Proto từ app sang out project folder dist (folder được sinh ra sau khi build app) 
+		+ thay cái sourceRoot của các project thành "./" , entryfile
+		+ thêm cái compilerOptions (asset: "proto/*.proto" lấy tất cả file proto từ folder Proto )
+		+ watchAsset: true để copy ngay khi file proto thay đổi 
+	- run npm run start:dev auth sẽ copy file proto vào trong folder dist 
+--> Giờ có thể dùng nó khi chạy chương trình, cần khi start up các microservices 
+--> Giờ có Proto available trong compiled app 
+	
+	- Refactor main.ts của auth app để dùng grpc 
+		+ Thay vì nestctoryry.create thì dùng nestfactory.createMicroService 
+		(create dùng để tạo ra một restapi bình thường)
+		+ Chỉ định Module dùng để tạo (AuthModule) 
+		+ Chỉ định transporter: gRPC 
+		+ Chỉ định protoPath: đường dẫn đến .proto file (đường dẫn đối với folder dist - out project) 
+		+ Chỉ định package: auth
+		+ Không listen tới bất kì cổng nào (Vì sao)
+--> Run sẽ báo microservice successfully started 
+
+	- Refactor folder Users (users resource trong folder auth)
+		+ Để làm gì 
+		+ Xóa các dto và entities được tạo tự động thay vào đó dùng của auth.ts được generate ra 
+		+ Refactor UserController 
+			* Dùng các dto được định nghĩa trong auth.ts (Tại sao phải làm thế) 
+			* implement UsersServiceController (Để làm gì?)
+			(Là một interface được export từ auth.ts)   
+				- Để chỉ các hàm trong controller này sẽ là định nghĩa của các rpc trong service kia 
+				- Với điều kiện tên hàm (proto là FindOne thì ở đây là findOne)
+				(Cái tên này cần giống, bởi vì như vậy thì nestjs grpc có thể biết được nơi mà những messages này cần đi đến)
+			* Decorate với @UsersServiceControllerMethods() (Để làm gì) 
+			(Là một function được export từ auth.ts) 
+				- Cái decorator này nó sẽ go through tất method trong controller này và decorate với grpc decorators của nestjs 
+				- Nhờ đó ta không cần quan tâm các config bên dưới 
+			--> Nhờ vào decorator này ta chỉ cần implement controller và ts-proto library sẽ làm việc của nó. 
+			* Xóa các decorator @MessagePattern() 
+			(Là decorator mặc định của method trong controller microservice, được auto tạo)
+				- Không cần thiết nữa do @UserServiceControllerMethods() đã decorate hết rồi (TS proto) 
+			* Xóa các decorator @Payload trong param của method 
+			(TS Proto /auth.ts sẽ cung cấp các param này) 
+		+ Refactor UserService 
+			* Define private read-only users 
+			(Là in-memory array của tất cả users trong hệ thống)
+			(User là interface được export từ auth.ts) 
+			* Implment OnModuleInit 
+				- để dùng OnModuleInit() , này linh tinh để auto tạo ra 100 user 
+			* Thay các dto và dùng của auth.ts (Tại sao) 	
+			* Implement logic crud (logic của hàm queryUsers lạ cần xem lại) 
+
+--> refactor auth microservice, implement grpc và  định nghĩa method xong 
+Bây giờ cần expose những method đã định nghĩa trong auth (cụ thể là usercontroller của auth) để có thể gọi chúng từ một rest API 
+	Chính là API GateWay sẽ làm việc đó 
+	- API Gateway sẽ expose một HTTP server (nơi mà ta có thể call auth microservice dùng grpc) \
+
+14. Implement API Gateway 
+	- Generate users resource bằng lệnh 
+	nest g resource users 
+		+ Trong folder apigateway 
+		+ Transport layer: REST API 
+		+ generate CRUD endpoint: yes 
+	- move folder Users vừa mới tạo vào folder apps/apigateway/src
+	(Để phù hợp với config trong file nest-cli.json 
+	- Update app.module của API Gateway app 
+		+ add users module 
+	- Xóa app.service (không cần thiết)
+	- Delete dto và entities được tạo tự động trong user resource 
+	- Refactor User Controller 
+		+ Thay các dto thành dto của auth.ts (ts proto) 
+	- Tất cả method của UserController ở APIgateway sẽ là proxy auth microservice 
+	- Implement proxy
+		+ Refactor UserModule (Set up the connection to the auth microservice ) 
+			* Import ClientModule from sestjs/microservice 
+			* ClientModule.register 
+				- service name
+				- transporter: GRPC
+				- options: (packagename: auth, protoPath) 
+		+ Refactor UserService 
+			* Thay các dto thành dùng của auth.ts 
+			* Declare private usersService có data type là UsersServiceClient (tại sao là nó và để làm gi)
+			(Đây là interface export từ auth.ts)
+	--> Tới đây mình thấy được trong file proto được sinh ra sẽ có 2 loại service và dùng riêng cho từng nơi 
+		+ ServiceController interface này dùng cho Controller sẽ định nghĩa các method đó implement 
+		+ ServiceClient interface sẽ được Service của phía client (proxy) nơi mà sẽ gọi các service này đến và dùng
+		(nơi này sẽ gọi các RPC service 
+			*Trong UserService sẽ inject ClientGrpc của nestjs /microservices 
+			* implement OnModuleInit để dùng hook của nó và set cho việc khi vào module này sẽ get ServiceClient 
+			* các hàm trong này chỉ việc return về kết quả của các hàm trong ServiceClient 
+			* Chỉ có chỗ emailUser là hơi khác 
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

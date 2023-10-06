@@ -1,0 +1,132 @@
+Vậy giờ làm gì 
+
+1. Test thử cái hàm cũ được sử dụng như thế nào và nó lưu những gì vào db 
+	- Sử dụng được hàm login và dùng được token 
+	- get được lịch sử giao dịch 
+	- chạy hàm createWithdraw thì tung lỗi Setting does not exist 
+		+ Có nghĩa là vừa vào hàm createWithdraw ở service sharedService.getSetting thì đã chết rồi 
+	Giải pháp: 
+		+ Thử debug với start không được dính lỗi ở auth.controller 
+		+ Chạy src system là get được setting 
+	- chạy hàm createWithdraw thì tung lỗi Wallet doesn't exist
+		- Do tài khoản tanhai không có wallet 
+	Giải pháp:	
+		+ Tạo ra một tài khoản mới hoặc tạo một wallet mới cho tài khoản tanhai 
+			với điều kiện ( status của wallet = 1 và active = 1 ) 
+		+ Tìm api tạo wallet (src/user/controllers/wallet.controller)
+		+ tạo ra được wallet của tài khoan tanhai 
+	- chạy hàm createWithdraw và trả về 201 created  với status NEW_QUEST 
+	
+Thấy được chạy 
+	API rút tiền: {{api_url}}/transaction/withdraw
+	- Lần thứ nhất sẽ tạo một transaction mới trong db với type WITHDRAW và status.NEW_REQUEST 
+	- Lần thứ 2 nó sẽ tìm transaction với user.ID, status= NEW_REQUEST, type = WITHDRAW thì trả về 
+		ở lần 2 nếu không tìm thấy transaction như trên sẽ tạo ra một transaction mới tương tự lần 1  
+
+Trả lời cho câu hỏi chuyển điểm chỗ nào, rút tiền chỗ nào 
+Rút tiền là gì và chuyển điểm là gì?
+	- Rút tiền ở đây là rút từ ví tổng (amount) ra ví bên ngoài (ví của user đã set cờ is_active=true)
+	- Còn chuyển điểm là rút từ ví phụ (leader, direct, level, reback) về ví tổng (amount)
+
+API hiện tại làm 2 việc đó chỗ nào? 
+	- Cái api  hiện tại đang gộp chung 2 trường hợp: rút tiền và chuyển điểm luôn ấy
+	- Hiện tại đang dựa vào cái work_type để check chỗ này ấy
+	- Nếu work_type là amount thì là rút tiền còn ngược lại thì nó là chuyển điểm á (work_type là được truyền về khi make request) 
+	- Giờ cần phải tách 2 cái này ra riêng, vì sau này có thêm cái rút tiền ra bank nữa á. Nên cần phải tách		
+
+2. Khai báo và implement 2 hàm mới trong controller 
+	- Tách code cũ ra 
+	- Vậy thực ra không phải là tách code mà chỉ tạo ra một api mới giống với api nhưng với đường dẫn khác để làm việc khác. 
+	- Tên mới của url và controller method  
+		+ Tên cũ @Post('withdraw') createWithdraw
+		+ Tên mới 
+			* Chuyển điểm  @Post('transfer-points')
+			* Rút tiền @Post('withdrawal')
+		+ Tên hàm cũ ở controller: createWithdraw
+		+ Tên hàm mới ở controller 
+			* Chuyển điểm  createTransferPoints
+			* Rút tiền createWithdraw
+	- param requestContext giữ nguyên (oki)
+	- param 
+		* rút tiền:  dto WithdrawInput thì không có work_type (do mặc định là ví amount rồi á) 
+		* chuyển điểm: dto sửa tên thành TransferPointsInput bên trong giữ nguyên như WithdrawInput cũ 
+	(oki)
+
+	- Kiểu trả về giữ nguyên 
+	- Tách ra riêng 2 hàm service cho việc rút tiền và chuyển điểm 
+	- Tên mới của hàm ở service 
+		+ Tên cũ:  createWithdraw
+		+ Tên mới: 
+			* Chuyển điểm  createTransferPoints
+			* Rút tiền createWithdraw
+	
+	- param 
+		* rút tiền:  dto WithdrawInput thì không có work_type (do mặc định là ví amount rồi á) 
+		* chuyển điểm: dto sửa tên thành TransferPointsInput bên trong giữ nguyên như WithdrawInput cũ
+	(oki)
+
+	- Logic bên trong service có sửa vài chỗ  
+		+ rút tiền (createWithdraw) 
+			* transaction.work_type = WORK_TYPE.AMOUNT (thay vì như cũ là lấy từ dto input truyền vào ) 
+			* bỏ chỗ check if (input.worktype == WORK_TYPE.AMOUNT) 
+			(Vì worktype của transaction mặc định là amount nên sẽ chạy luôn đoạn lệnh bên trong if luôn mà không phải check) 
+		(Oki)
+		+ chuyển điểm (createTransferPoints)
+			* không tìm setting từ sharedService nữa (comment nó lại) (do không dùng nữa) 
+			* chỉnh sửa chỗ template send mail 
+			* bỏ code chỗ check if (input.worktype == WORK_TYPE.AMOUNT) (bỏ code trong khối if luôn) do không có trường hợp amount nữa 
+			* nếu truyền xuống work_type = amount thì sao (check và return là không chính xác worktype ) 
+	- Chỉnh sửa title template send mail khi gửi mã xác nhận chuyển điểm: WITHDRAW thành TRANSFER POINTS
+		+ Dự đoán 
+			Trong service của chuyển điểm thì 
+			* Ngay chỗ this.mailService.sendVerificationEmailTransaction
+					sửa param TRANSACTION_TYPE.WITHDRAW thành TRANSACTION_TYPE.TRANSFER_POINTS 
+			Trong service của rút tiền thì
+			* Ngay chỗ this.mailService.sendVerificationEmailTransaction
+					giữ nguyên param TRANSACTION_TYPE.WITHDRAW 
+		
+		+ Phân tích cụ thể hàm sendVerificationEmailTransaction có gì 
+			* Param truyền về (type, email, verification_code) 
+			* Argument truyền về 
+				TRANSACTION_TYPE.WITHDRAW nếu là rút tiền 
+				TRANSACTION_TYPE.TRANSFER nếu là chuyển điểm 
+			user.email, verification_code
+			* Kiểu trả về BaseApiResponse
+			B1: Nhờ vào provider của nestJS mailerService.sendMail
+				- to email (đến email nào) 
+				- from (emailAdress hệ thống, email name ) 
+				- subject của email là Verification email 
+				- context của email là verification_code 
+				- template MAIL_TEMPLATE.VERIFICATION_EMAIL_TEMPLATE
+			B2: return (status: 1, error: false, data: result được trả về từ mailerService.sendMail , code: 0. message.OK 
+			Nếu bị lỗi trong quá trình sendmail sẽ đi vào catch 
+			return (status: 0, error: true, data: e, code: 1, message.SEND_MAIL_FAILED 
+	---> Vậy dự đoán đúng 
+
+
+
+
+
+3. Test thử hoạt động ổn chưa
+	- Vậy test truyền vào transferPoints với worktype = 'RE_BACK' 
+	- check thấy oki 
+4. comment controller và service lại 
+5. check git desktop 
+6. Tạo nhánh mới, commit và push lên 
+7. Tạo merge request 
+
+
+bị conflict , giờ qua nhánh develop sửa lại 
+
+
+
+
+
+
+
+
+
+
+
+
+

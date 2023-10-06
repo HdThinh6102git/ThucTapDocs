@@ -1,0 +1,82 @@
+Yêu cầu: Điều chỉnh API: get reviews
+	API: /review/product/85840138?page=1&perPage=10&star=4&type=video
+
+	Hiện tại: api đang get danh sách các reviews có message.
+
+	Chỉnh sửa: api trả ra 
+
+	ds reviews không bắt buộc có message
+
+	khi filter theo star hoặc theo type thì totalStar1, totalStar2, totalStar3, totalStar4, totalStar5, avgStart, 
+		total phải đúng với giá trị ban đầu (khi chưa filter)
+
+1. Chỉnh sửa: api trả ra 
+
+	1.1. ds reviews không bắt buộc có message(done) 
+
+		- Do dòng where not like in controller (done) 
+	
+	1.2.  Trả về đúng 
+	Tại sao chúng lại sai 
+		- total : là tổng số record nếu không có filter 
+		- totalStar1, totalStar2, totalStar3,... : là số lượng 1 sao, 2 sao, 3 sao,...
+		- avgStar: số lượng sao trung bình 
+
+		- total record: là tổng số record thực tế trả về khi có filter 
+			+ sai bởi vì ở hàm countReviews chỉ truyền theo where trong khi đó ở hàm get thì truyền where và offset, limit, orderby 
+			
+		Thử 3 cách giải quyết: 
+			+ C1: thêm tham số cho hàm countReviews , truyền theo offset, limit (có thể truyền optional ) 
+			- Cách này không được do select count(*) không truyền offset, limit được 
+			+ C2: Thử select count(*) ngay trong lúc select data (nhưng cũng không được do nó cần groupby có review.id gì đó) 
+			+ C3: chạy vòng lặp trong data trả về và tính record
+		
+		Giải quyết bằng cách 3 
+
+		Hàm countReviews hiện tại đang bị sai , nó bị select luôn các record có reply_review có id khác nhau thành các record khác nhau 
+			- Sửa bằng cách không join với reply_review nữa 
+		--> total : là tổng số record nếu không có filter sửa được hàm countReviews là total trả đúng rồi 
+-------
+Kết quả: 
+	1. Đã sửa  api  get ds reviews không bắt buộc có message
+	2. Đã sửa api get ra đúng số lượng totalRecord và total 
+	3. Trước khi filter và khi có filter theo star hoặc theo type thì
+		 totalStar1, totalStar2, totalStar3, totalStar4, totalStar5, avgStart, total phải đúng với giá trị ban đầu (khi chưa filter)
+	4. Bị dính một bug là không có perpage hoặc page thì cũng chết tung lỗi 500 bởi vì không có limit và offset có cần sửa không 
+	(Đây là tính năng bắt buộc phải có perpage và page ) 
+------
+Code sửa liên quan đến từng kết quả thu được 
+	1. Đã sửa  api  get danh sách review không cần check phải có message mới trả về data
+		cmt dòng // where.message = { [Op.notLike]: `` };
+	2. Đã sửa api get ra đúng số lượng totalRecord và total
+		- totalRecord: số lượng record thực tế được get ra (khi có filter type and star) 
+		Viết một hàm mới là countReviewWithFilter (duyệt qua kết quả data trả về và count) 
+		- total: số lượng record khi không có filter type and star 
+		Sửa hàm countReview bỏ join với table replyReview 
+	3. Sửa vài lỗi chính tả 
+	
+	(Mục 2 bây giờ thay đổi thành task khác) 
+	Làm thêm một mục nữa 
+
+	4. Chỉ trả về danh sách review theo filter 
+		(không có mấy cái thông số tổng)
+			avgStar, total, totalStar1, totalStar2, totalStar3, totalStar4, totalStar5
+	cmt lại đoạn tính các thông số trên 
+	Còn totalRecord thì 
+		totalRecord: số lượng record thực tế được get ra (khi có filter type and star) mà không có perpage (không limit)
+	Giải pháp: 
+		- Dùng hàm countReviews đã sửa thành không join với replyReview 
+		Truyền theo where với các filter, type, star
+		Không truyền theo perpage và page 
+	Done 
+
+Done task 199  
+
+
+
+
+
+
+
+
+

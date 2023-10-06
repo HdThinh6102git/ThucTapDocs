@@ -1,0 +1,118 @@
+GRPC sẽ bị nhược điểm scale TCP 
+GRPC nhanh hơn so với kafka hoặc rabbitmq 
+
+1 api chuyển điểm
+1 api rút tiền
+
+Dịch nghĩa code: 
+	- getSetting (là setting cái gì ) 
+	- tìm user dựa vào userId truyền về từ request (user đang đăng nhập)
+		Nếu không có user tung unauthorized 
+	- Nếu user.pin_code khác với input.pin_code 
+		tung lỗi incorrect_pin_code
+	- Tìm transaction với user.id = userId, status, type 
+		và gán cho const withdraw 
+	- Khai báo verifCode = randomCode, verifTime 
+	- Kiểm tra verifTime của transaction vừa tìm được, nếu hết hạn 
+		tung lỗi httpException PLEASE_TRY_AGAIN
+	- Gửi một verficationEmailTransaction 
+	- Nếu transaction có status = NEW_REQUEST
+		+ gán verifCode, verfTime mới cho transaction 
+		+ save transaction này vào db 
+		+ khai báo output = plainToClass(TransactionOutput, withdraw,)
+		+ return status: RESULT_STATUS.SUCCEED và data: output
+	- Khai báo const transaction 
+		+ gán transaction.type = TRANSACTION_TYPE.WITHDRAW
+		+ transaction.status = TRANSACTION_STATUS.NEW_REQUEST
+		+ transaction.amount = input.amount
+		+ transaction.user = user
+		+ transaction.verification_code = verification_code
+		+ transaction.verification_time = verification_time
+		+ transaction.mail = user.email
+		+ transaction.work_type = input.work_type
+		Nếu input.work_type input.work_type == WORK_TYPE.AMOUNT 
+			* Tìm wallet where 
+			(user.id: userId, status: WALLET_STATUS.VERIFIED,
+			active: WALLET_ACTIVE.ACTIVE)
+			* Nếu !wallet thì 
+			throw new NotFoundException(MESSAGES.WALLET_NOT_FOUND);
+			* transaction.address = wallet.address
+			* transaction.fee = setting.withdrawal_fee_percentage;
+	- Lưu const transaction xuống db 
+	- khai báo output = plainToClass(TransactionOutput, transaction,)
+	- return status: RESULT_STATUS.SUCCEED và data: output 
+	
+
+chuyển điểm chỗ nào 
+rút tiền chỗ nào 
+---------------------------------------------------------------------------------------------------------------------------------------------
+1. Trả lời cho câu hỏi chuyển điểm chỗ nào, rút tiền chỗ nào 
+Rút tiền là gì và chuyển điểm là gì?
+	- Rút tiền ở đây là rút từ ví tổng (amount) ra ví bên ngoài (ví của user đã set cờ is_active=true)
+	- Còn chuyển điểm là rút từ ví phụ (leader, direct, level, reback) về ví tổng (amount)
+
+API hiện tại làm 2 việc đó chỗ nào? 
+	- Cái api  hiện tại đang gộp chung 2 trường hợp: rút tiền và chuyển điểm luôn ấy
+	- Hiện tại đang dựa vào cái work_type để check chỗ này ấy
+	- Nếu work_type là amount thì là rút tiền còn ngược lại thì nó là chuyển điểm á (work_type là được truyền về khi make request) 
+	- Giờ cần phải tách 2 cái này ra riêng, vì sau này có thêm cái rút tiền ra bank nữa á. Nên cần phải tách
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

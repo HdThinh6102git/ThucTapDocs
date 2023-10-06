@@ -1,0 +1,30 @@
+Yêu cầu: Bổ sung API lấy ra danh sách các bài tin tức(blog) nổi bật
+	- Bổ sung api để lấy ra các bài blog nổi bật hiển thị lên trang chủ.
+	
+
+Các phần cần làm:
+
+	- Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail (15 phút) 
+
+	- Thêm quan hệ giữa bảng blog và setting_screen_item_detail 
+
+	- Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item
+
+	- Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+
+	- Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+
+	- Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+1. Estimate time 
+	1.1. Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail (thêm ở migration update khoảng 15 phút) 
+	1.2. Thêm quan hệ giữa bảng blog và setting_screen_item_detail (thêm ở blog và setting_screen_item_detail khoảng 15 phút) 
+	1.3. Thêm enum home_featured_blog ở trường setting_screen trong bảng setting_screen_item (khoảng 15 phút) 
+	1.4. Thêm trường is_blog_featured (boolean) và trường position trong bảng blog (migration khoảng 15 phút) 
+	1.5. Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+	(Chưa nắm rõ nó làm gì Khoảng 30 phút) 
+	1.6. Thêm API get danh sách bài viết nổi bật (dựa theo trường is_blog_featured để check) và sort theo position
+	(Khoảng 30 phút) 
+	
+	Tổng 2 tiếng , vậy estimate tính cả thời gian gửi merge fix bug, note  là tầm 6 tiếng trừ hao là 8 tiếng 
+	
+	

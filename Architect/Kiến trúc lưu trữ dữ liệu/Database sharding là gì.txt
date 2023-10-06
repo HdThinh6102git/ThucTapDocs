@@ -1,0 +1,1 @@
+phân đoạn db chứ k phải phân tán 

@@ -1,0 +1,63 @@
+1. Gồm 3 folder lớn (knex, src, test) 
+2. knex , tương tự prisma (chưa biết được cách chạy)
+3. test (không có gì ) 
+4. src 
+	4.1. index.ts 
+		- Công dụng tương tự file main.ts 
+		- set up Port 
+		- const app = express (create express app) 
+		- app.use(cors) 
+		- chỉ định bodyParser (json) 
+		- routes(app) - hàm dùng để chỉ định route đến các service khác trong project 
+		(export từ routes.ts) 
+		- useHandleError (util) 
+	4.2. routes.ts 
+		- export function routes dùng trong index.ts
+		- config route đến các controller khác 
+	4.3. module.Alias.ts (để code clean hơn chỗ  import) 
+	4.4. typing.d.ts 
+		- export type Request (user, token) 
+		- type global cho cả project 
+	4.5. Cấu trúc cách viết controller
+	Tạo 1 folder controllers 
+	Bên trong đó là các folder theo từng service 
+		- ecommerce (shoppe, tiktok) 
+		- operation 
+		- order 
+		- order-source 
+		- payment-method 
+		- product 
+		- promotion 
+		- purchase
+		- report 
+		- setting 
+		- shipping 
+		- user 
+		- utils 
+	4.6. Cấu trúc một folder nằm trong folder controllers 
+	Có thể có nhiều file controller trong 1 folder được chia ra một service 
+		- file titok.controller viết các hàm xử lí việc nhận và gửi data 
+		(gọi các hàm từ service để xử lí) 
+		- file index.ts sẽ làm nhiệm vụ chỉ định path cho các controller 
+		(expressApp.get('path', tiktokController.getItemAction) , .post,...)
+	4.7. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

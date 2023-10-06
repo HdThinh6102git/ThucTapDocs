@@ -1,0 +1,9 @@
+Dựa theo best practice restful api 
+	1. Đặt tên url 
+		Đúng:
+			- versioning: /api/v1/
+			 
+		Lỗi:  
+			- dùng verb ở cuối url (get) 
+			- đặt tên một vài chỗ không dùng danh từ số nhiều 
+			- dùng sai phương thức put (upsert) mà logic không upsert 

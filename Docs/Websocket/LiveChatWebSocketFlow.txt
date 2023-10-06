@@ -1,0 +1,83 @@
+1. Lí do cần dùng websocket 
+	- Khi build app có nhiều trường hợp cần update data từ server và hiển thị ngay lập tức 
+	VD: chat app cần hiển thị tin nhắn mới ngay lập tức, hoặc game cần hiển thị ngay lập tức những update 
+	hoặc cái register post của mình cũng cần hiển thị ngay lập tức 
+	- Với mô hình client/server khi muốn load data từ server thì phía client sẽ thực hiện trigger một request--> server sẽ pull latest dataset
+	 Vấn đề là nếu một người khác update data đó 
+		thì ngoài người add đã trigger một request còn lại không ai khác có thể thấy data thay đổi nếu họ không làm gì
+	--> Để giải quyết vấn đề trên ta cần check data thường xuyên để hiển thị ra mới nhất. 
+		+ Ta có thể giải quyết bằng cách set cứ 10 giây thì thực hiện một request load data, tuy nhiên cách này có 2 nhược điểm: 
+			* quá nhiều request không cần thiết gửi về server 
+			* thời gian delay lớn trước khi user nhìn thấy new data 
+	--> Cách tốt hơn để giải quyết là dùng cơ chế WebSocket 
+2. Websocket là gì? 
+	- WebSocket API là một cơ chế cho phép event-based two way communication giữa browser và server 
+	- Cụ thể client (React client) và server (Nest server) 
+	- Hay còn gọi là full-duplex systems.
+Nguyên lí hoạt động websocket 
+	- Giả sử việc gửi request load data sau 10 giây là việc ta gọi cho người khác nhờ họ update xong tắt cứ sau 10 giây gọi lại thì 
+	websocket sẽ gọi một lần duy nhất và không cúp máy, nó sẽ giữ cuộc gọi chạy ở background để ta có thể giao tiếp bất cứ khi nào
+	- Khi dùng websocket thì sẽ có một event được trigger ngay khi ai đó update data và mọi client đang listen đều sẽ được nhận thông báo. 
+	Một khi update data thì client sẽ nhận được hiển thị gần như ngay lập tức
+3. Ứng dụng websocket trong nestjs 
+	- Dùng socket.io package. ( là một node framework với websockets) 
+4. Tạo live chat server với nestjs và websocket 
+	4.1. Tạo project 
+	- Test helloworld 
+	- xóa controller, service app không cần thiết 
+	- install websocket package 
+	npm install --save @nestjs/websocket
+	- create chat module 
+	nest g module chat 
+	- create chat.gateway.ts in the module chat 
+	- file chat.gateway.ts have 
+		+ decorator @WebSocketGateway() (not know use for what)
+		+ export class ChatGateWay implements OnGateWayConnection and OnGateWayDisconnect
+		+ in class ChatGateWay have: 	
+			* @WebSocketServer() server 
+				- give us access to the server instance 
+				- dùng để trigger events và send data đến connected clients 
+			* users: number = 0 
+			* hàm handleConnection() update số lượng user + 1 , hiển thị số lượng user connected clients 
+			* hàm handleDisconnect() update số lượng user - 1 , hiển thị số lượng user connected clients
+			@SubcribeMessage('chat') 
+			* hàm onChat(client, message)
+			Với decorator @SubcribeMessage dùng để listenting to incoming messages
+			(Cụ thể là khi gửi một chat event từ client đến server, sau đó dùng @Subcribemessage để decorate function sẽ handle event đó)
+				Hai param của hàm onChat 
+				- client will be reference to the socket instance 
+				- message will be reference to the data sent by the client 
+				Muốn tất cả connected clients đều nhận được data khi update 
+				Thực hiện trigger một broadcast đến những client đó 
+				client.broadcast.emit('chat', message);
+				--> tất cả clients listening chat event đều sẽ nhận được updated data gần như tức thời. 
+	- add gateway vào provider của chat module 
+5. Tạo live chat client with angular ( tạo bằng react luôn, để quen do công ty cũng dùng react)
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

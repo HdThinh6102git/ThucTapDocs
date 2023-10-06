@@ -1,0 +1,45 @@
+Bổ sung filter lấy data của từng item trong setting screen
+
+Yêu cầu: 
+	Thêm param ở api get local screen để lấy data của từng item screen theo param đó
+
+	api: /screen/local?screen=product_list_screen&website=zili_website
+
+1. index.ts 
+	app.get(urlDefault + '/local', settingScreenController.findSettingScreenFromDBAction)
+2. controller 
+	findSettingScreenFromDBAction
+3. service 
+	findSettingScreenByCustomer
+	
+
+	- data = select * from settingScreen where dk truyền vào 
+	- items = SettingScreenItem.findAll where SettingScreenItem.screen_id = data.id 
+	- Trong từng item sẽ có item_details = SettingScreenItemDetail.findAll where SettingScreenItemDetail.screen_item_id = item.id 
+	- Trong từng item_detail sẽ có 	category =  category.findOne where item_detail.category_id = category.id 
+
+	Vậy bây giờ làm sao lấy data của từng item 
+	item_id ( FE không biết item_id để truyền xuống) 
+	filter theo screen_item
+Nếu có param thì out put data sẽ là 
+Data output: 
+{
+    "status": true,
+    "data": {
+        "id": 246,
+        "is_public": 1,
+        "screen": "product_list_screen",
+        "website": "zili_website",
+        .......
+        "items": [
+            {
+                "setting_screen": "product_category_3",
+		......
+                "item_details": [
+                    {
+                        .......
+                    }
+                ]
+            }
+        ]
+ 	},

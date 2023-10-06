@@ -1,0 +1,45 @@
+1. Rest API 
+	- Tập trung vào resources (noun) 
+	- Chỉ đặt tên bằng noun (users chứ không được getUsers) 
+	- Các hàm crud post, put, patch , get , delete 
+	- Có 2 loại url: cho collection và cho entity trong collection đó 
+	- json response type 
+	- endpoint 
+Điểm mạnh:
+	- Standard method name, argument và status code 
+	- Dùng http feature 	
+	- Dễ dàng maintain 
+Điểm yếu: 
+	- Payload lớn
+	- Multiple HTTP roundtrips 
+--> Dùng tốt nhất cho API CRUD 
+2. RPC API 
+	- Tập trung vào actions 
+	- get for read-only request 
+Điểm mạnh: 
+	- Dễ hiểu do tên action đi kèm với url 
+	- Payload nhẹ 
+	- High performance 
+Điểm yếu: 
+	- Discovery khó 
+	- standard bị giới hạn 
+	- Lead to function explosion 
+--> Dùng tốt khi build API exposing several actions 
+
+3. GraphQLAPIs 
+	- Là query language cho apis 
+	- API này cung cấp một endpoint sau đó client định nghĩa cấu trúc của data yêu cầu và server trả về chính xác cấu trúc đó 	
+	- Chỉ có Post và Get 
+	- VD: Định nghĩa Cấu trúc user và 2 trường username, password thì server sẽ trả về tất cả data với cấu trúc tương tự 
+Điểm mạnh: 
+	- Save multiple round trips 
+	- Avoids versioning 
+	- Smaller payload size 
+Điểm yếu: 
+	- Added complexity 
+	- Optimizing performance is difficult 
+	- Quá phức tạp cho các API đơn giản 
+--> Dùng tốt khi cần querying flexibility 
+
+
+

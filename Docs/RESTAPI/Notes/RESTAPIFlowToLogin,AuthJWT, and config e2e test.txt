@@ -1,0 +1,90 @@
+Ngày 19 tháng 7 năm 2023 
+
+1. Build login function 
+	- find the user by email (dùng prismaService.user.findByunique )
+	- throw exception nếu user không tồn tại 
+	- so sánh password ( dùng thư viện argon.verify(hash, password) 
+	- throw exception nếu password sai 
+	- Ở đây chỉ mới return về thông tin user 
+2. Tạo ra các đoạn script trong file package.json 
+	- Script automate postgres restart and prisma migrations
+		 (npm run db:dev:restart)
+3. Install @nestjs/config  và dùng module config của nó để sử dụng các biến môi trường trong file .env 
+	- Giúp code clean hơn (Không hard code bằng các magic string nữa)
+4. Làm Auth với framework passport và JWT module 
+	- passport là một auth framework của expressJS
+	- passport có thể là cũ rồi docs hiện tại của nestjs không dùng 
+	- Các bước cụ thể: 
+		+ Cài đặt một vài thư viện liên quan
+		+ import JWTModule.register(thuộc nestjs/jwt) trong auth.module 
+			Lúc trước mình làm thì chỗ register này sẽ set up expireday,...Tuy nhiên ở đây không làm thế mà để qua auth.service mình sẽ 
+				config sau , để config cả luôn cho refresh token nếu cần. 
+	- Cài đặt JWT Auth 
+	Authentication
+		+ Inject JwtService(thuộc nestjs/jwt) vào AuthService (sử dụng cơ chế Dependency Injection)
+		+ Viết một hàm dùng để sign token trong AuthService 
+		+ Hàm login sẽ return accesstoken được sinh ra từ hàm signToken. 
+	Authorization 
+		+ Verify token được gửi về kèm các route cần được protect 
+		+ Logic để verify token sẽ là Strategy và được hiện thực hóa là Strategy module 
+		+ Strategy sẽ extends PassPortStrategy , dùng constructor của super class để extract token với secret key đã chỉ định trong file .env 
+		+ Strategy đồng thời có hàm validate dùng để check token gửi về có khớp hay không và trả về data được custom theo ý muốn người code (payload)
+		+ Muốn controller hoặc method nào đó dùng guard thì @useguard (AuthGuard('jwt') (do chưa dùng global guard) 
+		+ Tuy nhiên để tránh việc sử dụng magic string thì Build 1 class tên là JWTGuard sau đó @Useguard(JWTGuard) 
+5. Custom decorator 
+	- Mục đích để tránh việc sử dụng @Req() là param của controller 
+	- Việc sử dụng @Req() sẽ khiến code không clean , đọc khó hiểu, và không thể chỉ định cụ thể các trường cần get 
+	- Tạo folder decorator trong module cần nó trả về các trường data mong muốn (cú pháp thì tham khảo docs của nestjs decorator custom) 
+6. Automated testing 
+	- Cách thứ nhất unit test 
+	Ví dụ: 	+ signup function mock any dependency mà function dùng 
+		+ argument, connection to db 
+		+ executing , call the right thing 
+	--> Tốn nhiều time,nên dùng cho project lớn 
+	- Cách thứ 2 end to end (e2e) testing và integration testing 
+	- Integration testing 
+	Ví dụ:	+ nestjs chia mọi thứ thành module nên sẽ tận dùng test theo từng cụm module 
+		Có nghĩa sẽ load cụm module liên quan (auth module và prisma module hoặc cái module nào đó rồi gom nhóm lại test)
+			 và khi thấy ok sẽ chuyển qua nhóm module khác 
+		+ Ở đây sẽ định nghĩa một vài segment của app và test cùng lúc 
+			test db (manual testing) hoặc test db trên docker compose
+	- End to end (e2e) testing 
+	Ví dụ:	+ verify a very high level user journey of app 
+		+ sign up, sign in , request profile 
+		+ mainly verify user sẽ tương tác với app như thế nào 	
+		+ Trong integration test sẽ test được nhiều thứ như lỗi throw đúng chưa, chạy đúng chỗ chưa. 
+		+ Itegration testing có thể tốn time bằng với time code ra cái app 
+7. Qui trình cụ thể làm e2e testing 
+	- Dùng một cái library của nestjs để test 
+	- Default thì nestjs sẽ dùng supertest (config mặc định trong file app.e2e-spec.ts)
+	- Dùng library pactum 
+	npm i pactum
+	- Bắt đầu Test DB 
+	- Qui trình set up db , prisma service to be cleaned up every time run test 
+		+ xóa hết file app.e2e-spec.ts và config lại từ đầu 
+		+ Sẽ tạo ra một app mô phỏng để test 
+		+ Tạo ra một test db giống hệt db dev để test thử (trên docker)
+		+ Dùng thư viện dotenv để config file .env cho test 
+			npm i dotenv
+			npm i dotenv-cli
+		+ Mặc định thì ConfigService thuộc nestjs/config sẽ chỉ có thể truy cấp env variable của file .env 
+		nếu muốn dùng env variable từ file khác thì cần config trong file app.module 
+		+ Thay vì làm việc đó thì có thể dùng thư viện dotenv cli
+		dotenv -e .env.test --
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

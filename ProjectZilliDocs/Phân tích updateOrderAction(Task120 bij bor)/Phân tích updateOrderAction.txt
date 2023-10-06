@@ -1,0 +1,87 @@
+Yêu cầu: 
+	response từ api update cart trả về sai userId
+	api: /order/customer/update
+
+1. Tìm cách test thử trước trả về có thực sự sai hay không 
+	1.1. index.ts: 
+		app.put(`${urlDefault}/customer/update`, orderController.updateOrderAction);
+	1.2. Controller
+		- updateOrderAction
+		Mục tiêu tìm được cách sử dụng api này truyền vào các param nào 
+		Có cách nào làm gọn lại code ở hàm này (vd: chia nhỏ thành nhiều hàm để dễ đọc hơn không) 
+		
+	Flow của updateOrderAction: 
+		B1: find customer 
+			TH1: Nếu có customer_id truyền về từ req.body (nếu có customer_id truyền về) thì findOneByCustomerId
+			TH2: Nếu có shipping_address?.phone thì find customer by phone và gán customer_id = customer.id 
+				TH 2.1: Nếu shipping_address?.email thì findUserByEmail có thì gán customer_id = customer.id
+				TH 2.2: Nếu không có  thì createNewCustomerInWebsite với shipping_address, referral_code của req.body 
+			TH3: Nếu ngoài 2 th lớn trên thì send response code 404  vui lòng cập nhật số điện thoại và email của bạn 
+		B2: find order nhờ vào id từ req.body 
+			Nếu order_status === 'request_payment' hoặc === 'warehouse' thì res.send(setResponse({ 'code': 0, 'order': order}));
+		B3: createOrderShippingAddress với shipping_address, id truyền về từ req.body 
+		B4: createOrderBillingAddressvới shipping_address, id truyền về từ req.body 
+		B5: Tính tiền 
+			total_amount = order.total_price - total_coin_amount - order.total_discount + total_shipping;
+		B6: removeOrderPaymentDetail với id truyền về từ req.body 
+		B7: Set phương thức thanh toán dựa vào payment_detail.payment_enum với payment_detail truyền vào req.body 
+		B8: 
+			TH1: Nếu set phương thức thanh toán không gặp lỗi 
+				B1: createOrderPaymentDetail với payment_detail, paymentResponse, total_amount, id truyền về từ req.body 
+				B2: updateOrder với email, phone, total_amount, total_shipping, total_coin_amount, customer_id, status, id  
+					truyền về từ req.body  
+					TH1: Nếu updateOrder thành công 
+						B1: 
+						 TH1.1: ORDER_STATUS là waiting_confirmation hoặc transfer
+							B1: createOrderTrackingStatus 
+							B2: updateSapoOrder
+							B3: createOrUpdateSapoAccount
+								Th1: Nếu tạo thành công SapoAccount
+									createOrderSapo
+									TH1: Nếu tạo ordersapo thành công 
+										B1: Duyệt qua sapo_order?.order?.prepayments
+										trong từng prepayment thì createRepayment
+										B2: Nếu có sapo_order?.order?.delivery_fee thì createDeliveryFee
+										B3: Nếu có sapo_order?.order?.order_line_items 
+											- Duyệt updateOrderLineItem
+										B4: updateSapoOrder
+								Th2: Nếu không tạo thành công 
+									createOrderFail
+						 TH1.2: Nếu không thì 
+							createOrderTrackingStatus
+						B2: Nếu order?.total_coin_amount > 0 
+							B1: updateCustomerInfo
+							B2: createCoinHistory
+						B3: getorderResult sau khi update thành công 
+							- orderService.getOrder(order?.id) 
+						B4: sentEmailOrderConfirm với orderResult 
+						B5: res.send(setResponse({ 'code': 0, 'order': orderResult}));
+					TH2: Nếu updateOrder lỗi 
+						- res.send(setResponse(code 1000, Không thể tạo đơn hàng ở thời điểm hiện tại) 
+			TH2: Nếu set phương thức thanh toán gặp lỗi thì 
+				- res.send(setResponse code 1000, phương thức thanh toán không hỗ trợ
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Sau khi đọc xong code 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

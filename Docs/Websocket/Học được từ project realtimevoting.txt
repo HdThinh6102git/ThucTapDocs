@@ -1,0 +1,84 @@
+1. Kiến trúc implement của rest api 
+	Controller --> DTO --> Service --> type Field --> Repository --> type data 
+2. Database with redis 
+	Docker Compose (Docker-compose.yml) --> Redis module (custom tương tự JWT module của nestjs- kĩ thuật custom provider)
+	--> modules.config.ts (file used to config module trước khi dùng, thay vì config trong module cần import nó) 
+	ta có thể config trước ngoài file này rồi export ra const 
+	--> import const vừa export ra vào module cần dùng. 
+	--> import redisclient from ioredis 
+	--> redisclient.sendcommand with key --> exec 
+3. Cách dùng JWT module 
+	Config in file module.config.ts (cú pháp config tham khảo code)
+	--> import const được export ra từ filde module.config 
+	--> Inject JWTService vào Service cần dùng this.jwtService.sign()
+4. Sử dụng logger để log ra các trạng thái làm việc của api để dễ nắm được luồng chương trình 
+import { Logger } from '@nestjs/common'; (logger tốt hơn console log và nó dùng trong quá trình run
+5. Sử dụng configmodule và configservice để dùng các biến môi trường trong file .env (clean code)
+	- Cách 1 inject config service vào provider cần dùng (phải import configmodule ở module của provider)
+	- Đối với file main.ts (const configService = app.get(ConfigService);)
+	host: configService.get('REDIS_HOST'),
+6. Implement guard for controller rest api 
+	- Tạo file guard 
+		+ @Injectable()
+		+  implements CanActivate
+		+ hàm canActivate sẽ cho qua nếu return true, false sẽ block 
+	- Trong controller dùng @UseGuard() để chỉ định guard dùng cho nó ( nếu muốn set cụ thể cho controller hoặc method thì để trên)
+	- Nếu muốn chỉ định dùng cho global mọi controller thì chỉ định ở file main.ts 
+	- tạo requestwithAuth (là một type dto để lấy được data từ http request )
+	import { Request } from 'express'
+7. Kiến trúc implement websocket 
+	- tạo file SocketIoAdapter 
+		+ extends IoAdapter 
+		+ createIOServer(port: number, options?: ServerOptions)
+	- tạo Socket Server in file main.ts 
+		app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
+	- Gateway 
+		+ @WebsocketGateway(namespace, cors ) 
+		+ implements OnGateWayInit, OnGateWayConnection, OnGateWayDisconnection
+			* after init, handleconnect, handleddisconnect 
+		- @SubscribeMessage('route')
+		method 
+	- Gateway --> type --> Service --> Field --> repo --> type data
+8. Implement guard cho socket.io connection 
+	- Không thể dùng @UseGuard cho hàm handleConnection 
+	- Trong file socket.io.adapter tạo hàm createTokenMiddleware, hàm này làm việc tương tự guard 
+	- Tạo type socketwithauth 
+	- Trong hàm createIOServer gọi hàm createTokenMiddleWare 
+	- Dùng socketwithauth type trong hàm handleConnection
+9. Custom WS exception 
+	- Do response của socket.io sẽ không hiểu http exception mà nó sẽ trả về default exception 
+	- tạo file wsexception 
+	- import ws-exception  from  '@nestjs/websockets';
+	- export ra exception tương ứng có type và cấu trúc 
+10. Tạo exception filter 
+	- để convert http exception qua ws exception nếu bắt được http exception 
+11. Ngoài các hàm connection không dùng được guard thì các message trong gateway vẫn áp dụng @Useguard được 
+
+
+Ở phía client 
+12. Có thể dùng tailwind css nó build sẵn các component chỉ việc import vào và custom lại thôi 
+13. Cách connect từ client react qua server nestjs (socket.io)
+	- tạo file socket.io.ts 
+		+ createSocketWithHandlers = ({socketIOUrl,state,actions, }: CreateSocketOptions): Socket
+	- Trong file state.ts 
+		+ tạo action initializeSocket
+		+ Lưu state socket vào AppState 
+	- Ở component cần connect dùng UseEffect gọi actions.initializeSocket();
+	- Component --> UseEffect (UseSnapshot, UseState) --> Define action with socket in state.ts --> call state.action--> 
+                                      
+                                             
+                                             
+                                        
+
+	
+	
+
+
+
+
+
+
+
+
+
+	

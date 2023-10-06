@@ -1,0 +1,104 @@
+ORON API  
+- Auth with JWT (user)
+- Get Profile posst (authorize ) 
+- Get all post
+
+Các bước làm một project REST API CRUD NESTJS  
+1. Tạo project
+nest new project_name 
+2. Run thử hello world
+	npm run start 
+Xóa các file app.controller, app.serivce không cần thiết ( Nó dùng để run hello world) 
+Chỉnh lại app.module (xóa các declaration của controller service đã bị xóa) 
+3. Tạo các module và controller , service cần cho app 
+nest g module module_name
+nest g controller controller_name --no-spec ( bỏ file spec không cần thiết) 
+	Auth
+	Post
+	User
+4. Test thử controller với (swagger hoặc postman) 
+	- Tạo các hàm cần thiết trong controller (method post, get, ...) 
+	- Test với đường dẫn controller đã đúng chưa 
+	- Tạo các hàm trong service và inject nó vào controller bằng constructor (Dependency Injection) 
+	- Test thử giá trị trả về từ service 
+--> Kết nối đến database để làm việc (dùng docker compose) 
+5. Chạy docker trên desktop window
+6. Set up postgres in docker 
+	Dùng docker compose để làm việc với database (Dễ dàng xóa, chỉ việc destroy contain) 
+	Cụ thể: 
+	- Dùng file docker-compose.yml config 
+		+ Tên db (dev-db) sẽ được tạo trên docker 
+		+ Tên image 
+		+ port mà db sẽ chạy (5434)
+		+ Environment: (config userName, password, tên database) 
+		+ networks 
+	Sau đó dùng lệnh để tạo ra container mới (với dev-db là tên db) 
+	- docker compose up dev-db -d 
+	- Để xem log hiện tại của container hoặc vào docker desktop click vào để xem 
+		docker logs container_ID
+	--> Đã có database run trên docker 
+
+7. model the tables (Tạo bảng trên db )
+	- Dùng trình truy vấn là prisma 
+		npm install prisma --save-dev 
+	- Khởi tạo prisma mới 
+		npx prisma init 
+	Kết quả sẽ tạo ra file .env (với connection string mặc định) và folder prisma (với file schema.prisma) 
+	- Tạo ra các bảng mới trong database bằng cách tạo các model trong file schema.prisma
+	Tham khảo link: https://www.prisma.io/docs/concepts/components/prisma-schema/data-model
+		User (id, email,hash, name, role, posts[])
+		Post, 
+		Category
+		Enum role 
+	- Sửa lại connection string đúng với database đã tạo trong docker và chạy lệnh để tạo migration (database)
+		npx prisma migrate dev 
+	- Tạo ra các model ở code typescript (để dùng trong code) bằng lệnh 
+		npx prisma generate 
+	- Xem data schema trên client bằng prisma client với lệnh 
+		npx prisma studio 
+	--> Ở đây chỉ mới có thể kết nối với database và tạo ra bảng mới tuy nhiên chưa thể connect với database để CRUD 
+	- Dùng module để làm việc đó 
+	- Tạo ra một module tên là prisma , tạo ra prisma service 
+		nest g module prisma 
+		nest g controller prisma --no-spec
+	- Trong class Prisma service 
+		+ extends class PrismaClient 
+			(Tuy nhiên có một vấn đề là import PrismaClient class từ @prisma/client, báo đỏ nhưng vẫn chạy được)
+		+ Dùng hàm contructor để config datasources connect với database 
+		+ Install nestjs/config để sử dụng các biến được định nghĩa trong file .env ( clean code hơn tránh các magic string)
+			npm i @nestjs/config 
+		+ Import configservice vào prismaservice và declare nó ở prismamodule 
+	- Trong prisma module dùng decorator @Global() để dùng được toàn cục (có nghĩa là không cần import module vẫn có thể import service của nó vào
+	dùng. 
+	
+8. Implement REST API 
+	-- Format implement Controller (tham khảo: https://www.prisma.io/blog/nestjs-prisma-rest-api-7D056s1BmOL0)
+	--> Kết nối database để crud thành công 
+	- implement auth controller 
+	- implement signup dto (email, password, name)
+	- test data send to controller 
+	- test data send to service with dto 
+	- implement logic signup 
+		+ generate hash password 
+		....
+		+ save user in db return user 
+			Thao tác lưu xuống db dùng prisma CRUD (Tham khảo: https://www.prisma.io/docs/concepts/components/prisma-client/crud)
+	- implement logic login 
+		+ find user by email 
+		+ compare password 
+		+ implement sign token function 
+			param (userid, email) 
+			set các tham số payload, secret, rồi dùng hàm signAsync của jwt để sinh token 
+			send back the token
+	- Viết api cho user 
+		+ test api call service successfully 
+		+ custom decorator 
+	- Authorize with JWT Guard (tham khảo: https://docs.nestjs.com/security/authentication#jwt-token sửa lại)
+		+ create folder guard in auth module 
+		+ create file jwt.guard.ts (implement guard ) 
+		+ in app module declare provider guard for all route 
+		+ any route(controller) want not be protected by guard Use @Global()
+	- CRUD User 
+
+9. e2e testing  
+10. Kết thúc push lên github 

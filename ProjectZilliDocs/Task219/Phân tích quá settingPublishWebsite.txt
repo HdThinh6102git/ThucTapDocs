@@ -1,0 +1,30 @@
+Mục đích là để biết được 
+	- blog_id sẽ được add vào setting_screen_item_detail khi nào
+	- quan hệ giữa bảng blog và setting_screen_item_detail là để làm gì 
+
+src/controllers/setting/setting-website/publish/setting-publish.controller.ts 
+
+1. index 
+	/api/v1/admin/setting/website/publish/:group_id
+2. controller 
+publishSettingWebsiteAction
+	B1: Tìm SettingWebsite (findSettingWebsiteById(group_id)) và gán cho const websiteGroup 
+	(Với group_id được truyền về từ param -------- params.group_id)
+	B2: Nếu tìm thấy websiteGroup 
+		- const settingScreens =  settingScreenWebsiteService.findSettingScreens có group_id == group_id truyền về 
+		- Nếu có settingScreens thì duyệt qua các settingScreens
+			+ Nếu settingScreen.screen === PAGE_ENUM.home_screen thì 
+				* let homeScreen = settingScreenWebsiteService.findSettingScreen
+				(với website = settingScreen.website, screen = settingScreen.screen, group_id: +group_id) 
+				* settingScreenWebsiteService.updateDataWithHomeScreen(homeScreen)
+			+ settingScreenWebsiteService.publishSettingScreen(settingScreen.id, settingScreen.screen, settingScreen.website)
+		- const menuData = menuService.fetchMenus({status: 0})
+		- Nếu menuData thì 
+			+ const menus
+			+ Nếu menus và menus.length > 0 thì 
+				* const menusReturns = []
+				* Duyệt qua các menus thì 
+					- menuReturns.push (settingMenu.updateDataWithMenu(menu))
+					- menuService.publishMenu(menu.id, menu.type, menu.website)
+		- settingWebsiteService.publishSettingWebsite(websiteGroup.id, websiteGroup.website)
+	B3: Return 

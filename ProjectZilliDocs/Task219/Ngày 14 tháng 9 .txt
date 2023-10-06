@@ -1,0 +1,67 @@
+https://admin.zilicoffee.vn/landing/home/1
+
+tài khoản admin ... 
+mk: 123456
+
+vô setting để test 
+
+
+
+Câu hỏi 1: lưu blog_id vào table setting_screen_item_detail ở api nào ?? Khi lưu xuống phải validate trước ??? 
+	Câu hỏi 1.1: Vậy setting_screen_item_detail được thêm data vào khi nào ??  
+		- 
+	 
+	Yêu cầu: Thêm file migrate thêm trường blog_id trong bảng setting_screen_item_detail
+	Câu hỏi 2: Vậy thông tin của blog_id sẽ được lưu vào bảng setting_screen_item_detail khi nào? 
+
+
+
+Có 2 option: 
+	Option 1: Nghiên cứu các api tìm ra nơi lưu thông tin vào bảng setting_screen_item_detail 
+	Option 2: Nghiên cứu business logic của việc setting ở admin site 
+
+
+
+
+
+
+
+
+
+
+Câu hỏi 2: Giá trị của position là gì ???? 
+(3)	- Trường hợp 1: Giả sử position 
+
+Yêu cầu: 
+	- Thêm trường is_blog_featured (boolean) và trường position trong bảng blog
+	- Check điều kiện lưu data của trường is_blog_featured và position ở api update setting (xem mẫu code phần setting sản phẩm (home_product_more))
+
+Câu hỏi 4: Dạ, chị cho em hỏi giá trị position có trường hợp nào giá trị của chúng bằng nhau không chị, 
+		hay nó là sẽ là những giá trị unique và tăng dần (Có nghĩa blog nào được update sau thì nó sẽ có giá trị lớn hơn)
+Trả lời: 
+	- Giá trị position có thể bằng nhau (khi blog được tạo thì không cần set position cho nó) 
+	- Giá trị position chỉ được set ở màn hình setting 
+Vậy thì : lưu dạng i cũng ổn , có nghĩa mỗi lần update để tạo ra một seri postion 
+
+
+Câu hỏi 3: Chỗ hàm updateBlogFeatured (blogId, position) có cần sửa lại thành truyền vào is_blog_featured để set true hoặc false hay không
+	- Truyền về luôn is_blog_featured thì sẽ hay hơn bởi vì trường hợp muốn update về false thì vẫn có chỗ để update 
+(1)	- Có cần truyền về position luôn hay không 
+(2) 		+ Nếu không truyền về position thì sao (để auto increment được không) --> Không được bởi vì 2 trường này không được thêm vào ở tạo mới
+		Nó được update sau 
+	- Chỗ check trước khi lưu thông tin is_blog_featured và position 
+		B1: Yêu cầu bắt buộc có blog_id, postion, is_blog_featured được truyền về (null cũng được những phải có truyền về) 
+		B2: blog.findOne Kiểm tra có tìm được blog hay khong thì mới thực hiện lưu 
+		Lưu ý không cần tung lỗi chỉ check để lưu hoặc không bởi vì nó nằm trong vòng lặp và nếu không lưu được thì cũng k ảnh hưởng gì 
+		Khi nó sai thì logger nó ra để biết mà bắt lỗi thôi là được 
+	Trả lời: 
+		- (1) vẫn truyền về position và truyền thêm is_blog_featured 
+
+
+
+Kết luận 
+(9), (13), (14) (Đã trả lời 9, 14) 
+
+Câu (13) thì đợi commit lên rồi hỏi tiếp 
+
+Câu hỏi 1: lưu blog_id vào table setting_screen_item_detail ở api nào ?? Khi lưu xuống phải validate trước ??? chưa được trả lời 

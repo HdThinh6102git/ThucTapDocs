@@ -1,0 +1,78 @@
+1. Đưa code đọc 
+2. Hiểu cấu trúc 
+3. Hiểu flow 
+4. Phải có tài khoản vpn để connect được vào db 
+5. Cài đặt OpenVPN GUI
+6. Import file vào 
+7. Dùng tài khoản được cấp để connect với vpn 
+8. Connect database được 
+9. Clone project (mở project và checkout develop branche) 
+10.Cài đặt thư viện và chạy thử chương trình 
+
+-----------------------------------------------------------------------
+1. Src Product 
+	- checkout develop 
+	- npm i
+	(npm ci là để chạy lại sau khi đã cài xong)
+	- npm run start:dev 
+--> Dính lỗi chưa cài một vài thư viện
+Giải pháp: npm một vài thư viện con thiếu nữa 
+	- npm run start:dev 
+--> dính lỗi không connect được db 
+	username = "username" --> authen của db sai 
+copy .env.dev thành file .env thì mới đọc được đúng 
+
+2. Src User 
+	- clone về checkout develop
+	- copy file .env.dev thành .env  
+	- npm i 
+	- npm run start:dev 
+--> dính lỗi không tìm thấy user-summary-output
+Giải pháp: ở src/auth/controllers/auth.controller.ts sửa ở hàm VerificationUser
+không dùng dto UserSummaryOutput nữa mà dùng any 
+	- npm run start:dev 
+--> dính lỗi crawl không có data 
+Giải pháp: npm run migrate:up
+	- npm run start:dev là được 
+
+3. Src auth 
+	- clone về checkout develop 
+	- npm i 
+	(npm ci là để chạy lại sau khi đã cài xong) 
+	- copy .env.dev thành .env 
+	- npm run start:dev
+
+4. src system 
+	- clone project checkout develop 
+	- copy .env.dev thành .env 
+	- npm i 
+	- npm run start:dev
+5. src payment 
+	- clone về checkout develop
+	- copy .env.dev thành .env 
+	- npm i 
+	- npm run start:dev
+--> dính lỗi Cannot find module history-coin-payment-pagination-output.dto 
+Giải pháp: src/coin-payment/controller/admin.controller 
+comment hàm sử dụng dto đó 
+	
+6. src enterprise 
+	- clone project checkout develop 
+	- copy .env.dev thành .env 
+	- npm i 
+	- npm run start:dev
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+

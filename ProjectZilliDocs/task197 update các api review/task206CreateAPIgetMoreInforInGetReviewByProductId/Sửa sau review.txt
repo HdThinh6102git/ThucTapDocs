@@ -1,0 +1,13 @@
+1. 2 cái api này chỉnh lại url cho chị xíu nha
+cái filter thì: product/filter/:productId
+cái get total: product/total/:productId
+
+Đồng thời phải sửa postman 
+cái api em mới tạo thì thêm thông tin để hiển thị trên swagger nữa nha, như mấy cái api trước đó đã có rồi ấy, dựa theo đó em thêm vào nha
+
+2. 
+if (!productId) {
+            throw new NotFoundError('Not found product reviews');
+        }
+
+thay bằng not found product 

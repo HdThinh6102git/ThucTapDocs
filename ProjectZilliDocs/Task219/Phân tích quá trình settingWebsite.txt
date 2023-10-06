@@ -1,0 +1,126 @@
+Mục đích là để biết được 
+	- home_featured_blog enum được thêm vào khi nào (Đã tìm ra ở Mục 4)
+	- blog_id sẽ được add vào setting_screen_item_detail khi nào
+	- quan hệ giữa bảng blog và setting_screen_item_detail là để làm gì 
+B1: Tạo 
+B2: Update 
+B3: Get 
+B4: Get những cái liên quan 
+
+
+I> Tạo 
+1. Controller 
+	/api/v1/admin/setting-website (Post) 
+	B1: Gọi đến settingWebsiteService.createSettingWebsite(req.body)
+	B2: Response 
+2. Service 
+createSettingWebsite
+	B1: Tạo SettingWebsiteGroup với data truyền về từ request 
+	B2: Tìm DataSettingWebsiteGroup với website_id được truyền về từ request 
+	B3: Nếu mà tìm được DataSettingWebsiteGroup thì tạo SettingScreenTemp và SettingMenuTemp
+		Ngược lại thì tạo SettingScreen và SettingMenu
+	B4: return settingWebsiteGroup
+
+(Quá khái quát chưa thấy được) 
+
+Chi tiết hơn chút xíu 
+3. createSettingScreenTemp
+	Param (settingScreenTemp: any, groupId?: any) 
+	(Argument là screen, groupId) 
+	B1: Tạo SettingScreen với (settingScreenTemp.screen, settingScreenTemp.website, groupId) 
+	B2: Duyệt qua các settingScreenTemp.SettingScreenItem
+		- Xóa id của item hiện 
+		- Tạo ra SettingScreenItem mới 
+		- Nếu có screen_item.item_details và độ dài array > 0 thì duyệt qua array này 
+			+ Xóa id của item_detail hiện tại 
+			+ Gán item_detail.screen_item_id = screenItemId của cái chứa nó 
+			+ Tạo ra SettingScreenItemDetail mới 
+			+ Tương tự nếu có item_detail_product thì làm tương tự 
+		- Nếu có screen_item.item_products và độ dài array > 0 thì duyệt qua array 
+			+ Xóa id của item_product 
+			+ Gán item_product.screen_item_id = screenItemId của Screen Item chứa nó 
+			+ Đồng loạt tạo ra các SettingScreenItemProduct sau khi đã gán 
+	B3: Return về findSettingScreen vừa được tạo ra 
+
+(Ở đây mình chỉ thấy 
+		- nó lấy về settingScreen và những chi tiết của nó đã có sẵn trong db 
+		- rồi xóa id , gán screen_item_id hiện tại và tạo ra một cái mới trong db 
+
+4. createSettingScreen
+	Param (screen: string, website: string, groupId?: any)
+	(Argument là: screen.name, request.website, groupId)  
+	B1: Tạo SettingScreen với (screen: screen, website: website, is_public: 0, group_id: groupId)
+	B2: const screenItems = []
+	B3: Chạy vòng lặp từ i = 1 đến i = PAGE_ENUM.max 
+		+ const screen_detail = PAGE_ENUM.screen_item + i
+		+ let setting_screen = PAGE_ENUM.screen_item + i
+	
+(1)		+ Nếu screen === PAGE_ENUM.home_screen thì 
+			* Nếu screen_detail !== null và PAGE_ENUM.homes[i-1] thì gán setting_screen = PAGE_ENUM.homes[i-1].name
+		+ Nếu screen ===.... thì .... 
+		....
+		+ screenItems.push({position: i, screen: screen_detail, setting_screen: setting_screen, status: status, screen_id: get(settingScreen, 'id')})
+	B4: SettingScreenItem.bulkCreate(screenItems)
+	(Cùng lúc tạo các screen item trong db với data trong screenItems array) 
+	B5: Return về findSettingScreen vừa được tạo ra
+
+Kết quả của hàm này: (Chỗ này nó sẽ tạo ra SettingScreen mới và cá SettingScreenItem )
+
+(Ở đây thấy được enum home_featured_blog được thêm vào khi nào ) 
+	- (1) Nó sẽ được gán setting_screen = PAGE_ENUM.homes[i-1].name 
+	với PAGE_ENUM.homes là một array 
+		+ {name: 'home_top_banner'}
+		..
+		+ {name: 'home_product_more'},
+		...
+		+ {name: 'home_featured_blog'}, 
+
+II/Update 
+1. Controller 
+	/api/v1/admin/setting-website/:id (Put) 
+	updateWebsiteAction
+	B1: gọi đến settingWebsiteService.updateSettingWebsite(id)
+	(Với id được truyền về từ param) 
+	B2: Response 
+2. Service 
+	Param id: any
+	(Argument req.params.id) 
+	B1: Tìm SettingWebsiteGroup với id == id truyền về 
+	B2: Tìm tất cả SettingScreen có group_id == id truyền về 
+	B3: Nếu có tồn tại array các SettingScreen và độ dài array > 0 thì duyệt qua array 
+		- settingScreenService.publishSettingScreen((settingScreen.id, settingScreen.screen, settingScreen.website))
+	B4: Tương tự với SettingMenu giống với B2, B3 
+	B5: Update SettingWebsiteGroup( chuyển status: false) nếu  website ==  settingWebsite.website (settingWebsite được tìm thấy ở B1)  
+	B6: Update SettingWebsiteGroup( chuyển status: true) nếu id == id truyền về 
+
+(Ở đây khá khái quát chưa thấy được gì ) 
+publishSettingScreen chỉ đơn giản là update SettingScreen và chuyển 
+	- Nếu screen ==  screen, website ==  website được truyền về  thì set is_public = -1 
+	- Nếu id == id truyền về thì set is_public = 1 
+Kết quả của hàm này là thay đổi status của SettingWebsiteGroup và thay đổi is_public của SettingScreen
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

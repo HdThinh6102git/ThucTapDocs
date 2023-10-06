@@ -1,0 +1,22 @@
+1. Thay vì push từ system.center.notification lên user.notification theo schedule định sẵn nhờ vào (cron job) 
+https://viblo.asia/p/cron-job-la-gi-huong-dan-su-dung-cron-tab-E375zLo2ZGW
+Các hệ thống lớn sẽ thực hiện đứng từ phía user.notification muốn thì yêu cầu pull data từ system.center.notification 
+
+2. Các hệ thống như youtube sử dụng cách 2 
+	- Khi đăng nhập hoặc làm thao tác gì đó nó mới cho user.notification pull về 
+	- Chứ không phải push hàng loạt 
+	- Cần thì mới pull (do lượng user lớn nhưng chưa chắc tất cả đều hoạt động) 
+
+3. Vì sao youtube hay facebook lại có hiệu suất cao
+	- Nó thực hiện đo lường hành vi người dùng 
+	- Nó sẽ đo lường giả sử user 1 ít khi hoạt động, user 2 hoạt động bình thường, user 3 hoạt động thường xuyên 
+		+ Lúc này thay vì giống như các user khác sẽ thực hiện pull notification thì 
+		facebook sẽ thực hiện push notification cho user 3 
+	- Kết hợp cả hai cách dựa vào số liệu đo lường hành vi người dùng.
+	- Trường hợp 3: ít hoạt động nhưng đăng kí nhận khuyến mãi thì ưu tiên push khi có tin khuyến mãi, tin thường thì pull 
+Video về pull và push  
+https://www.youtube.com/watch?v=qu3Lc2evkTw&ab_channel=TipsJavascript
+4. Cách khác ngoài push và pull (Cách 3) 
+	- Dùng message queue chèn vào quá trình push và pull 
+	- Message queue sẽ thực hiện đánh dấu các notification đã được user đó pull hoặc push để lần sau không push nữa  
+	 

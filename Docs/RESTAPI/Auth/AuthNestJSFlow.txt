@@ -1,0 +1,52 @@
+1. Install nextjs (global) 
+2. Create new project (Clone project từ github) 
+https://docs.nestjs.com/ (không nên clone mà tạo project mới luôn, clone về sẽ dính history của người khác)
+3. Dùng ide webstorm (vscode không có nhiều hỗ trợ ) 
+4. đọc Docs Security (Authentication) 
+5. Tạo các module hoặc controller bằng lệnh nest 
+Để nó auto config các các module 
+6. Flow của 1 project nestjs (API) 
+	6.1. Chạy vào file main.ts (tạo app module ) 
+	- config được cái root module mà mình muốn chạy đầu tiên 
+	- config được cái port mà app sẽ chạy ở local 
+	6.2. app module (là root module) 
+	- imports:  khai báo các module có trong app 
+	- controllers: khai báo các controller global (trang chủ default page /API)
+	- providers: khai báo các provider global 
+	- exports: khai báo ? (Khai báo các service có thể export của module đó ) 
+	6.3. Muốn viết một api cho một chức năng bất kì thì chỉ việc tạo ra một module mới (chia module theo từng feature)
+	- Trong module sẽ có kiến trúc 3 tier controller --> service --> repository (Tạo chúng bằng lệnh nest và được config auto)
+	nest g module module_name --no-spec  
+	- Trong module còn có các thứ râu ria như là constants, guard (bộ lọc protect route) 
+		6.3.1. Controller 
+		- Inject các service để phục vụ cho chức năng nó cần làm. 
+		- @Controller('path') , @Post('login') --> path/login (Method: Post) 
+		- constructor để làm gì ? (Nó là cơ chế dependency injection, giống với khai báo inject service trong controller của Java)
+		Cũng có thể hiểu  kiểu constructor của class Java  
+		- Cũng có thể dùng nhiều method @Get,Put, Post, Delete trong cùng 1 controller như bên spring boot 
+		6.3.2. Service 
+		- @Injectable là một decorator dùng để khai báo cho app biết được đây là một lớp provider (giống với @Component spring boot)
+		- Export ra class 
+		- Constructor 
+		- Hàm làm nhiệm vụ của service (async, promise , tại sao phải thế: bởi vì function ở service cần đợi function ở database thực hiện 
+trả về kết quả mới thực hiện tiếp được nên nó sẽ là bất đồng bộ, cần async, promise ) 
+7. Phần Authentication (Sáng ngày 17/7/2023) 
+	7.1. Việc này cần 2 module (auth và users) 
+	7.2. Viết users module trước để lấy được dữ liệu user 
+	- Hàm findone (username) trong service 
+	- Export module ra 
+	7.3. Viết auth module 
+	- Viết từ service , hàm sign in 
+	-Hàm sign in gọi hàm findone từ userService , nếu không tìm thấy throw unauthorized exception , đúng thì generate JWT với (username và ID)
+	- Viết authcontroller method post signin và method get profile 
+	- Viết auth guard (trong này sẽ verify token được gửi kèm theo bearer header của url cần được authorize trong app) 
+	- Ngoài ra trong auth guard còn set một public key và export một hàm Public để khi cần thì set @Public cho controller không cần authorized 
+	Hàm public sẽ set metadata = Public key 
+	Lúc này sẽ có lệnh if (isPublicKey) thì sẽ thông qua mà không check token  
+	
+Khi dùng gloabl guard nếu muốn loại trừ một controller nào thì chỉ việc dùng @Public và set nó public key true 
+
+		
+		
+	
+	

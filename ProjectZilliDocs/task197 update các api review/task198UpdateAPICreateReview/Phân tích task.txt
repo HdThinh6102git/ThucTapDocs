@@ -1,0 +1,5 @@
+Yêu cầu: Điều chỉnh API: create review
+	- API: /review/create
+	- Hiện tại: api cho phép tạo đánh giá mà không có rating.
+	- Chỉnh sửa: Ràng buộc lại khi tạo review, buộc phải có totalStar. Nếu không có thì trả message về client và status code là 400.
+

@@ -1,0 +1,22 @@
+- Viết ra một api mới 
+	+ Api dùng để setting cho màn hình sản phẩm 
+- Data api trả về bao gồm danh sách sản phẩm theo từng category (by category_id) 
+
+1. Api url (nằm trong src/controller/product/)
+	const urlDefault = '/api/v1/product/';
+	app.get(`${urlDefault}paging`, productController.pagingProductsAction);
+Đã check qua các url và thấy oki rồi 
+	Tí mình sẽ pull về (backup các file đã làm trước rồi mới pull lỡ mất )
+
+2. Các hàm controller 
+	const pagingProductsAction
+	export default nó ra 
+3. Các hàm service 
+	pagingProductsWithCategory thuộc product.service
+	featureCategory thuộc category.service 
+
+4. Backup file đã làm và pull về 
+5. check lại định dạng output đúng hay chưa 
+6. tạo nhánh mới push và tạo merge request gửi 
+ 
+	

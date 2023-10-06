@@ -1,0 +1,49 @@
+Clone starter project 
+1. Start following https://github.com/JacobSNGoodwin/ranker-course
+	npx degit starter 
+2. run npm install để cài tất cả thư viện trong package.json
+3. Tìm hiểu về một vài đoạn script trong file package.json của folder gốc , client và server 
+4. npm run start (run both client, server and docker compose )
+
+
+
+Sau này phải đọc lại src code này để viết REST API, ổng config khá kĩ và rõ ràng (clean)
+Tiếp tục Build RestAPI Phía server
+1. update file main.ts
+2. update .env file 
+
+Note: controller dùng để 
+ define path , http method , parsing request body into type data structures , serialize type data structures for outgoing responses into json  
+3. create Polls module , Polls Controller , createdPollDto, JoinPollDto
+Test Path with postman 
+4. set poll service 
+Now know 3 repository to work with db (prisma, typeorm, redis ) ở công ty dùng postgresql 
+@Injectable có nghĩa là cái class này có thể được provide cho một module nào đó mà các controller và service khác có thể inject vào và dùng 
+	nếu muốn nó là global thì inject vào app module còn cụ thể từng module nào thì tùy dev 
+Những thứ cần làm trong poll service 
+	- tạo pollid và userid 
+	- gọi repo để lưu poll vào Redis 
+	- tạo một JWT từ userid và polldata 
+	- gửi polldata và jwt access token đến controller 
+
+Cụ thể implement PollService: 
+	- create PollService (nest g service poll --no-spec 
+	- create types.ts in poll module (types này export các type giống với DTO mà tách riêng dùng riêng cho service) gọi là field
+	- create class ids.ts in the src folder (used to create id)
+	- update pollservice 
+	- update pollcontroller 
+5. redis module 
+	install ioredis package 
+	create redis module 
+	update redis module to access redis 
+	read again to specifically know what it does 
+
+
+
+
+
+
+
+
+
+	

@@ -1,0 +1,75 @@
+gRPC là một trong các transporter mechanism của nestJS (framework) 
+
+1. gRPC support for load balancing, tracing , health checking, authentication 
+
+2. install grpc , proto-loader package 
+npm i --save @grpc/grpc-js @grpc/proto-loader
+3. implement transport layer 
+	- chỉ định transport ở main.ts thay vì TCP mặc định dùng GRPC 
+4. add the assets property 
+	- Để allow to distribute non-TypeScript files 
+	- Để turn on watching non-Typescript asset 
+	- Cụ thể là để .proto file cố thể automatically copied to the dist folder 
+5. gRPC options 
+	- package - chỉ định Protobuf package name (setting from .proto file)
+	- protoPath - chỉ định path to the .proto file. 
+	- url - connection url 
+	- protoLoader - chỉ định npm package name (default: '@grpc/proto-loader') 
+	- loader 
+6. Ví dụ gRPC method (service and controller) 
+	- file .proto trong module cần xử lí 
+		+ syntax
+		+ package 
+		+ định nghĩa service 
+		+ định nghĩa các message được dùng trong service 
+	- Trong controller @GrpcMethod('servicename', 'function name in service')
+		+ 2 argument bên trong @GrpcMethod() đều là optional 
+		+ nếu không có functionName ta chỉ việc đặt tên FindOne(service) thì trong controller sẽ là findOne
+		+ nếu không có cả 2 argument thì export Service ngay trong controller 
+	- Muốn dùng thì 
+		+ import ClientgRPC vào module cần dùng và config ngay chỗ đó  
+			* name, transport, options:(package, protoPath)	
+		+ inject clientgRPC vào và dùng service của nó 
+		+ cũng có thể import ClientgRPC vào rồi dùng @client để config trong service cần dùng 
+		+ tất cả method của service đều được tên lower camel cased (findOne) vì trong file .proto là đặt hoa chữ cái đầu 
+		+ service có thể được export trong controller là một class hoặc có thể là một interface 
+7. gRPC streaming 
+	- gRPC support long term live connections , còn gọi là streams 
+	- stream được dùng trong trường hợp: chatting, observations hoặc chunk data transfers 
+	- implement 
+		+ define in .proto file dùng kiểu dữ liệu stream 
+		+ define service interface (dùng kiểu dữ liệu upstream) 
+	- Subject strategy 
+		+ Có thể sử dụng function param cho decorator @GpccStreamMethod() để receive and process multiple messages
+	- Call stream handler 
+		@gRPCStreamCall() 
+8. gRPC meta data 
+	- Là thông tin về một RPC call nào đó 
+	- list of key-value pairs 
+	- key có thể là string hoặc binarry 
+	- giúp client cung cấp infor liên quan đến call đến server và ngược lại 
+	- Có thể gồm: auth token, request identifier and tag for monitoring purpose , cookie  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

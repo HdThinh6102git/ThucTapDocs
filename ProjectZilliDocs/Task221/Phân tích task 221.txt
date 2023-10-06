@@ -1,0 +1,13 @@
+Yêu cầu: Bổ sung API lấy ra danh sách các bài tin tức(blog) mới nhất có paging
+
+1. index 
+2. controller 
+3. service 
+
+Dạ chị, em có thấy api fetchBlogsAction, nó get tất cả các bài viết có paging và get theo thứ tự mới đến cũ luôn rồi á chị 
+{{api_url}}/blog?page=1&perPage=5
+
+
+
+
+

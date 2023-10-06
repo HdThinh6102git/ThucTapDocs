@@ -1,0 +1,14 @@
+1. Upload video (image) dùng multer nó sẽ trả về multer 
+	- Muốn dùng nó thì dùng multer vừa được trả về gọi call back function, khi call back function được chạy thì file sau upload sẽ được lưu vào request 
+2. Không thể copy hoàn toàn một http request qua một biến khác và dùng được 
+	- Bởi vì khi copy qua thì biến đó sẽ bị thiếu mất trasfer-encoding 
+3. Luồng chạy của call back function 
+	- Code sẽ được chạy tuần tự từ trên xuống dưới, khi gặp hàm call back nó sẽ có cơ chế khai báo và nhận diện sau đó sẽ chạy tiếp xuống dưới 
+chứ không đi vào call back function. Sau khi chạy xong hoàn toàn code thì sẽ tiến hành gọi lại các call back đã có 
+	- Khai báo sau chạy trước (may be là LIFO stack hay gì đó tim hiểu kĩ lại cơ chế này) 
+	
+4. Khi thực hiện upload file cần chú ý 
+	- Sau khi uploaded, file sẽ được lưu vào request do đó nếu sử dụng call back lồng nhau , thì chúng dùng chung 1 request sẽ đến trùng kết quả 
+	- Hoặc dùng 2 promise cũng tương tự 
+
+5. Nếu muốn code service để get thumbnail từ video thì có video rồi làm theo thôi, có thư viện làm dùm   

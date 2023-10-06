@@ -1,0 +1,17 @@
+Tối ưu schema 
+
+1. sử dụng indexes 
+	- Các trường quan trọng của collection được tạo index 
+	- Giúp tăng tốc độ truy vấn và tìm kiếm data 
+2. Phân trang (pagination)
+	- Lấy 10, 20, 30,...
+3. Sử dụng DB sharding 
+https://viblo.asia/p/database-sharding-la-gi-Az45boQVKxY
+	- Nếu một collection mà trở nên quá lớn, sử dụng kĩ thuật sharding trong db 
+	- Phân tán dữ liệu trên nhiều node 
+	- Cho phép chia dữ liệu thành các phân đoạn nhỏ hơn để lưu trữ trên máy chủ giúp tăng cường việc truy vấn 
+4. Cache 
+5. Xử lí bất động bộ 
+	- Thay vì đợi insert tất cả hoàn thành mới trả về 
+	- Thì trả về trước khi nó thành công (giống 1 trong các ứng dụng rabbit mq )
+	

@@ -1,0 +1,97 @@
+7. Qui trình cụ thể làm e2e testing 
+- Dùng một cái library của nestjs để test 
+- Default thì nestjs sẽ dùng supertest (config mặc định trong file app.e2e-spec.ts)
+- Dùng library pactum 
+npm i pactum
+- Bắt đầu Test DB 
+- Qui trình set up db , prisma service to be cleaned up every time run test 
+	+ xóa hết file app.e2e-spec.ts và config lại từ đầu 
+	+ Sẽ tạo ra một app mô phỏng để test 
+	+ Tạo ra một test db giống hệt db dev để test thử (trên docker)
+	+ Dùng thư viện dotenv để config file .env cho test 
+		npm i dotenv
+		npm i dotenv-cli
+	+ Mặc định thì ConfigService thuộc nestjs/config sẽ chỉ có thể truy cấp env variable của file .env 
+	nếu muốn dùng env variable từ file khác thì cần config trong file app.module 
+	+ Thay vì làm việc đó thì có thể dùng thư viện dotenv cli
+		dotenv -e .env.test --
+
+8. Cơ chế sẽ nó là dùng 
+	Có 2 khối block chính: 
+Thứ nhất beforeall(trước quá trình test) 
+	Test (thuộc nestjs/testing) để tạo ra một testing module
+	import app module trong môi trong dev vào và compile 
+- Set script để tự động compile test khi save test file 
+	thay vì npm run test:e2e
+	--watch --no-cache thêm 2 cái này vào script 
+	sau khi import app module sẽ sử dụng nó giống y hệt 
+bên môi trường dev 
+Thứ hai afterall (sau quá trình test)
+
+Ngoài ra sẽ tạo ra một test-db trên docker compose 
+Đồng thời sẽ tạo các script cho test-db trong package.json 
+giống hệt với dev-db
+- tạo ra một nơi file .test-env để chưa env trong quá trình test
+do k dùng chung được 
+	Dùng thư viện dotenv để truy cập đến .test-env
+	npm i --save-dev dotenv-cli 
+	Biến trong env.test này sẽ dùng env giống hệt bên dev 
+	Dùng thêm đoạn này 
+		dotenv -e .env.test
+	để dùng được thư viện dotenv coonect.env.test
+
+--> Giờ đã có test db connect thành công 
+
+Set prisma sẽ xóa hết data sau mỗi lần test 
+sau đó viết các description để test 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

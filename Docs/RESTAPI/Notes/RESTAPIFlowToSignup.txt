@@ -1,0 +1,98 @@
+Ngày 18 tháng 7 năm 2023 
+1. Học về nestjs là gì? Lí do dùng nest JS ? 
+	- Cấu trúc sẵn (giống Spring Boot) dễ sử dụng
+	- Độ scale lớn 
+	- Microservices 
+	- RESTAPI 
+	- Popular framework 
+2. Tạo project mới 
+nest new project_name 
+3. Xóa các file app_controller, service (không cần thiết) 
+4. Tạo các module dùng lệnh 
+nest g module module_name
+5. Tạo các service, controller nằm trong module
+nest g controller controller_name --no-spec
+
+Không tạo file spec (không cần thiết) 
+
+Tạo ra 3 module (Auth, User, Bookmark) 
+6. Gọi các service vào controller và test thử controller hoạt động 
+
+7. Chạy docker trên desktop window
+8. Set up postgres in docker 
+Dùng docker compose để làm việc với database (Dễ dàng xóa, chỉ việc destroy contain) 
+Cụ thể: 
+	- Dùng file docker-compose.yml config 
+		+ Tên db (dev-db) sẽ được tạo trên docker 
+		+ Tên image 
+		+ port mà db sẽ chạy (5434)
+		+ Environment: (config userName, password, tên database) 
+		+ networks 
+Sau đó dùng lệnh để tạo ra container mới (với dev-db là tên db) 
+	- docker compose up dev-db -d 
+	- Để xem log hiện tại của container hoặc vào docker desktop click vào để xem 
+	docker logs container_ID
+--> Đã có database run trên docker 
+
+9. Kết nối database và tạo ra các bảng cần dùng (trên docker ) 
+	- Dùng trình truy vấn là prisma 
+	npm install prisma --save-dev 
+	- Khởi tạo prisma mới 
+	npx prisma init 
+	Kết quả sẽ tạo ra file .env (với connection string mặc định) và folder prisma (với file schema.prisma) 
+	- Tạo ra các bảng mới trong database bằng cách tạo các model trong file schema.prisma
+	- Sửa lại connection string đúng với database đã tạo trong docker và chạy lệnh để tạo migration (database)
+		npx prisma migrate dev 
+	- Tạo ra các model ở code typescript (để dùng trong code) bằng lệnh 
+	npx prisma generate 
+	- Xem data schema trên client bằng prisma client với lệnh 
+	npx prisma studio 
+	--> Ở đây chỉ mới có thể kết nối với database và tạo ra bảng mới tuy nhiên chưa thể connect với database để CRUD 
+	- Dùng module để làm việc đó 
+	- Tạo ra một module tên là prisma , tạo ra prisma service 
+	- Trong class Prisma service sẽ extends class PrismaClient và dùng hàm contructor để config datasources connect với database 
+	(Tuy nhiên có một vấn đề là không import được PrismaClient class từ @prisma/client, báo đỏ nhưng vẫn chạy được)
+	- Trong prisma module dùng decorator @Global() để dùng được toàn cục (có nghĩa là không cần import module vẫn có thể import service của nó vào
+dùng. 
+--> Kết nối database để crud thành công 
+
+10. Xây dựng controller signup (register) 
+	10.1. Vấn đề tham số truyền về từ client 
+		- Hạn chế sử dụng @Req do decorator này không được hỗ trợ validate từ framework mà phải tự check if else, try catch (Tốn công) 
+		- Thay vào đó dùng DTO @Body (Nó có thể dễ dàng được hỗ trợ validate trong DTO và đồng thời nó tách riêng ra và có cấu trúc rõ ràng theo 
+data mà ta muốn client truyền về) 
+		- Để framework NestJS giúp ta validate dễ dàng thì nó có một class là PIPE dùng cho 2 trường hợp: 
+			+ transform input data (ex: string to integer) 
+			+ validate (evaluate) input data and if valid ( Nếu ko valid thì throw exception) 
+		- Cụ thể Framework cung cấp cơ chế class validator with pipe để validate các thuộc tính của DTO 
+			+ npm i --save class-validator class-transformer
+		Để sử dụng được cơ chế class validator thì phải có 
+			app.useGlobalPipes(
+    			new ValidationPipe({
+      			whitelist: true,
+    			}),
+ 			 );
+		trong file main
+		Import class-validator và dùng các decorator (@IsEmail, @IsptyEmpty,....) trong class DTO để evaluate data 
+		- Vấn đề data return sau khi saved trong database cũng có thể chỉ định dữ liệu nào được return bằng select , whitelist:true hoặc 
+delete data trả về mới return ra client 
+		- Mã hóa password bằng argon2 (npm i argon2)
+		- Có thể chỉnh lại table ở file schema.prisma sau đó lưu lại với lệnh (lưu ý xóa hết data làm mới được để k bị lỗi data)
+		npx prisma migrate dev (tạo migration mới)
+		
+11. Handle error 
+	- Có thể try catch để bắt lỗi và chỉnh lại format error mà mình mong muốn trả về. (Sau học thêm về handle error)
+	- Vấn đề handle error này có thể sẽ phải dài. 
+
+
+
+				 
+
+
+
+
+
+
+
+
+	

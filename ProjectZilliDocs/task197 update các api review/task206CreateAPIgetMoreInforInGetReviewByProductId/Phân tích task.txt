@@ -1,0 +1,20 @@
+Tách ra apiGetReviewByProductID sẽ được tách thành 2 api: 
+	- 1 api get mấy cái thông số này (Task 206 này) 
+	- 1 api get list theo filter (page, perPage, type, star)
+Yêu cầu: 
+	- Bổ sung API get các thông số tổng trong review của product
+	- Bổ sung thêm api get các thông số sau của các review theo product_id:
+		+ avgStar, total, totalStar1, totalStar2, totalStar3, totalStar4, totalStar5
+1. Folder : src/controller/user/customer/review 
+2. index.ts 
+	urlDefault = '/api/v1/review';
+	app.get(`${urlDefault}/product/totalInfo/:productId`, reviewController.getTotalInforOfAllReviewByProductId);
+3. controller 
+	getTotalInforOfAllReviewByProductId
+		- total: số lượng record khi không có filter type and star cũng không có perpage (không limit)
+			+ Chính là countReviews với where truyền vào where.
+4. Postman 
+	http://localhost:3600/api/v1/review/product/totalInfo/85853506?page=1&perPage=1
+5. Service 
+	
+done 

@@ -1,0 +1,296 @@
+1. Tại sao cần Nest JS 
+Cấu trúc sẵn (giống Spring Boot) dễ sử dụng
+Độ scale lớn 
+Microservices (hỗ trợ nhiều transporter microservices) 
+RESTAPI 
+Popular framework 
+
+2. Create new project cmd 
+nest new project-name
+3. Chia project theo feature 
+4. Create module by cmd 
+nest g module module_name 
+5. Run docker on desktop 
+Setting posgres in docker 
+use docker compose to work with database 
+easy to destroy the contains 
+
+Tạo ra một file docker-compose.yml 
+sau đó config file này với database muốn tạo, port,... 
+Sau đó dùng lệnh 
+docker compose up dev-db -d 
+để thực hiện tạo ra một container mới 
+sau đó thực hiện lệnh 
+docker logs containsID để xem thử là nó đang hoạt động ở port nào 
+docker ps để xem danh sách các container 
+
+Xong giờ có database running trên docker 
+
+6. Access database on docker 
+Dùng một trình truy vấn là prisma
+(prisma kiểu là một trình dùng để thao tao tác với db thay vì dùng UI)  
+npm install prisma --save-dev 
+sau đó 
+npx prisma init 
+tạo ra file .env (connection string) 
+và folder prisma , schema.prisma 
+tạo ra các model mới trong file prisma 
+sửa lại connection string trong file .env đúng với compose đã tạo 
+sau đó dùng lệnh 
+npx prisma migrate dev 
+để tạo database 
+npx prisma generate để tạo ra model typescript
+npx prisma studio để xem và tạo database trên client 
+Không có cách để connect từ code đến prisma schema 
+dùng module để làm việc đó 
+tạo module prisma 
+dùng prisma service để config  connect to database 
+
+Chỗ không import được prismaclient mà chỉ có thể import 
+prismaclient/extentions 
+42p11 
+
+sau khi config xong chỗ prisma service 
+thì để sử dụng được prisma module hoặc prisma service trong 
+module auth cần dùng 
+
+Tuy nhiên nếu module nào dùng cũng cần import vào vậy thì rất 
+tốn công và thời gian 
+dùng @Global trong prisma module 
+
+hạn chế dùng @Req nên dùng DTO là @Body để thay thế @Req
+lấy đúng body k cần care body 
+
+7. Cách để bắt lỗi khi gửi không đủ data từ client 
+8. Pipe in nestjs 
+pipe là một class được kèm theo @Injectable decorator 
+pip có thể được dùng trong 2 trường hợp 
+	- transform input data (ex: string to integer) 
+	- validation: evaluate input data and if valid  không valid
+bung exception 
+
+9. class validator with pipe 
+Đây là một class dùng để validate các thuộc tính của DTO 
+mà nền của class này là pipe 
+
+Cần phải có app.useGlobalPipes(ValidationPipe) trong file main 
+
+Có thể validate tham số truyền dư và bỏ nó vào whitelist 
+10. hash password
+argon 
+
+11. create new user and return saved user successfull 
+có thể chỉ định các trường của user trả về trong hàm create 
+bằng từ khóa select 
+hoặc cũng có thể chỉ định delete trường mà mình không muốn trả về 
+bằng từ khóa delete sau khi đã lưu user (bên ngoài hàm create)
+
+12. Modified model 
+Chỉnh email unique (ko đc trùng)
+bằng cách chỉnh các model trong schema.prisma 
+rồi dùng lệnh 
+npx prisma migrate dev 
+và đặt tên cho migration 
+xong signup 1 h 13p 14 s 
+
+Ngày 19/7/2023
+
+13. Signin function 
+xong 
+14. Automate postgres restart and prisma migrations
+	- Tạo script để automate response database thay vì manually (Trong package.json) 
+	- Sau đó nó sẽ run và rebuild container (Postgres db) 
+	- Viết script để apply tất cả migrations to the db 
+	- Chạy lệnh để remove docker container (full opitons)  
+	docker compose rm dev-db -s -f -v 
+	- Cách này có một vấn đề là (máy chậm) database sẽ cần time để start (nên dùng sleep 1 để khắc phục)
+
+1h 24p 
+
+15. Chỉnh lại db (xong rồi)
+	- email: unique 
+	- map lại tên mới cho các bảng 
+	- set các quan hệ 
+Cái database của mình đang bị sai (có thể là email chưa được unique)
+nên việc login nó chưa chính xác, chứ logic hoàn toàn đúng r 
+
+16. Tạo module config 
+	- Để tiện config các thành phần trong app (thay vì phải config trực tiếp trong các module dùng nó) 
+	ta tách ra config ở một module riêng rồi export const đã config ra  
+	- npm install @nestjs/config (thư viện dùng biến môi trường)
+	- import vào app module 
+	- load .env into app 
+	- inject config module vào prisma service để dùng configservice truy xuất đến các biến môi trường 
+	- Kiểu nó sẽ lấy được biến trong file .env mà k cần set cứng 
+
+17. Using passport js và JWT module (cách apply JWT ở docs cũ)
+	- passport là một auth framework của expressJS
+	- passport có thể là cũ rồi docs hiện tại k dùng 
+	- Vẫn làm theo để follow phần sau 
+	- Cài đặt một vài thư viện 
+	- import JWTModule.register trong auth.module 
+Cái hay của nestjs là mọi thứ đều được quản lí bằng module 
+Lúc trước mình làm thì chỗ register này sẽ set up expireday,...
+Tuy nhiên ở đây không làm thế mà để qua auth.service mình sẽ 
+config sau , để config cả luôn cho refresh token nếu cần
+	(Chưa biết cách implement refresh token) 
+18. Bỏ JWT vào auth 
+	- Inject JwtService vào AuthService 
+	- Viết một hàm dùng để sign token 
+	- Generate thành công access token chức năng login and signup 
+	- Sẽ thực hiện authorize bằng cách verify token được gửi về kèm với các route khác 
+	- logic để verify token là strategy 
+ 	- JwtStrategy sẽ làm nhiệm vụ extract cái JWT ra 
+	- Nó sẽ được import vào Authmodule để xử lí tiếp 	
+	- Tạo controller user để test thử authorize  
+	- Dùng guard để protect route 
+	- Ở đây k custom guard mới mà dùng prebuild của passport 
+	- JwtStrategy còn làm thêm 1 việc nữa là validate 
+	- prebuild AuthGuard của passport nó sẽ dùng JwtStrategy 
+để extract JWT và đồng thời validate một cái payload 
+	- Hàm validate của JwtStrategy là custom nên có thể 
+trả về tùy ý mình muốn, có thể là infor extract từ JWT hoặc 
+thứ gì tùy nhu cầu mình muốn 
+	- Muốn cái hàm getProfile sẽ trả về thông tin user từ 
+Jwt extract ra 
+	- Tránh sử dụng các magic String (là các String set cứng 
+thay vào đó làm một cái cụ thể (Ví dụ AuthGuard('jwt')) 
+	- UseGuards(Authguard('jwt')) == UseGuard(JwtGuard)
+	- Không dùng @Req() thay vào đó dùng DTO 
+	- Custom param decorator 
+	cusstom decorator này sẽ làm việc là lấy thông tin user 
+extract từ jwt và gửi kèm request , chứ k làm trong controller 
+	làm trong decorator để dễ quản lí 
+	có thể tham khảo docs custom route decorators nestjs 
+	- UseGuard có thể dùng cho từng hàm get, patch, post, cũng 
+có thể dùng cho cả 1 Controller (Controller level)
+
+	- có thể custom decorator trả về trường dữ liệu mong muốn 
+chứ không nhất thiết là cả tập dữ liệu được extract ra 
+	- Có thể dùng decorator @HttpCode (Httpstatus.ok) hay gì đó 
+để phía trên phương thức Post, Get bất kì nếu nó thành công sẽ 
+trả về code đó 
+
+
+19. Automated testing 
+	- Cách thứ nhất unit test (test từng tí ) (chưa biết cách viết unit test)
+		+ signup function mock any dependency mà function dùng 
+		+ argument, connection to db 
+		+ executing , call the right thing 
+	Tốn nhiều time, project lớn 
+	- Cách thứ 2 end to end testing và integration testing 
+	- Integration testing 
+		+ take several module (mà nestjs thì separate mọi thứ into modules 
+		+ dùng auth  functionality on it 
+Có nghĩa sẽ load the auth module và prisma module hoặc cái module nào đó rồi gom nhóm lại test và khi thấy ok sẽ chuyển qua cái khác test 
+		+ Ở đây sẽ định nghĩa một vài segment của app và test cùng lúc 
+	Test db (manual testing) hoặc test db trên docker compose
+	- End to end testing 
+		+ verify a very high level user journey of app 
+		+ sign up, sign in , request profile 
+		+ mainly verify user sẽ tương tác với app như thế 
+nào 	
+	- Trong integration test sẽ test được nhiều thứ 
+như lỗi throw đúng chưa, chạy đúng chỗ chưa. 
+	- Itegration testing có thể bằng với thời gian code ra cái
+app 
+
+20. Ở đây dùng thử e2e testing 
+	- Dùng một cái library của nestjs để test 
+	- Default thì nestjs sẽ dùng supertest 
+	- Dùng library pactum 
+	- Bắt đầu test 
+	- Test DB 
+	- set up db , prisma service to be cleaned up every time 
+run test 
+	- xóa hết file app.e2e-spec.ts và config lại từ đầu 
+	- Sẽ tạo ra một app mô phỏng để test 
+	- Tạo ra một test db để test thử 
+	- Dùng thư viện dotenv để config file .env cho test 
+	npm i dotenv
+	npm i dotenv-cli
+	mặc định thì app sẽ chỉ dùng env variable của file .env 
+	nếu muốn dùng env variable từ file khác thì 
+	caanf conffig trong file app.module 
+	thay vì làm việc đó thì có thể dùng thư viện dotenv cli
+
+
+	dotenv -e .env.test --
+
+2h44 p 27 s 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

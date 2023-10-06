@@ -1,0 +1,30 @@
+Dạ em hiểu quá trình làm việc bên dự án này là như sau, chị check giúp em thử đúng không nha chị: 
+	B1: Được assign task trên jira 
+	B2: Kiểm tra 
+		Th1: Nếu task đó có 1 mình em đang làm thì em assign task cha cho em, update status hiện tại sang In progress 
+	
+	Câu hỏi 1: Dạ Chỗ này có nghĩa là chị đã assign task con cho em và em kiểm tra tất cả task con đều là của em làm thì em sẽ tự assign task cha của nó cho em 
+	Em hiểu vậy đúng không chị? 
+	
+		Th2: Ngược lại nếu chỉ được assign task con (không phải tất cả task con của một task cha nào đó) 
+			 thì sẽ chỉ update status của task con sang In progress 
+	B3: Implement code của từng task con 
+	B4: Tạo nhánh feature với id của task con và tạo merge request vào develop 
+	B5: Nếu task đó em làm xong rồi, chị merge rồi thì em assign task đó lại cho chị (nếu trong đó các task con đã done hết)
+	Ngược lại assign lại cho bạn FE và chuyển status task cha thành todo nhé
+	
+	Câu hỏi 2: Dạ chỗ này có nghĩa em làm xong task thì sẽ không thay đổi là done mà assign lại cho chị? 
+	
+	Câu hỏi 3: Chỗ ngược lại này có nghĩa là em tiếp tục làm task đó mà em sẽ assign lại cho bạn FE ( Dạ bạn FE ở đây là anh Huy, hay ai vậy chị) 
+	
+Câu hỏi 1 -> không em, task cha mặc định chị sẽ tạo task và assign cho em rồi á, nên em không cần phải assign lại cho em nữa nè, khi nào em làm xong hết,
+ chị merge hết thì em mới assign lại cho chị
+
+Câu hỏi 2 -> nếu em làm task con xong rồi, em tạo merge về develop -> 
+	chị merge rồi thì em update lại task đó thành done và đồng thời assign lại task đó cho bạn FE có task con chưa làm,
+	 update status của task cha thành todo là xong nhiệm vụ của em trong task đó
+
+Câu hỏi 3 -> bạn FE ở đây là trong task cha sẽ có task con của bạn FE, em assign lại cho bạn FE đó là được
+Lưu ý, khi tạo merge cho chị thì phải hoàn thành các phần:
+note api đã làm trên jira vào comment của task cha, note api lên postman
+nếu chỉnh sửa/thêm trường nào đó thì note trường đã sửa/thêm vào comment của task cha

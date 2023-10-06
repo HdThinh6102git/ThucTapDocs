@@ -1,0 +1,160 @@
+Mục tiêu: 
+	- Muốn viết unit test cho feature , module hoặc function ,... sao cho hiệu quả, bỏ ít thời gian mà vẫn có thể cover được những lỗi quan trọng 
+	- Cách tính test case nhanh chóng 
+	- Muốn là một dev tốt thì luôn phải viết unit test cho task mình làm. 
+
+1. Hiểu rõ mục tiêu cần test
+	VD: 
+	- Muốn tìm bug càng nhiều càng tốt 
+	- Hoặc Cover được 50%,...
+	- Hoặc Test toàn bộ functional requirement cho spring này
+	- Hoặc tìm được nhiều nhất có thể những lỗi ở các spring trước 		
+	....
+2. Viết đầy đủ những test cases 
+	Viết unit test cho 2 trường hợp: 
+		+ Cho flow chính mà mình muốn client sẽ làm (họ làm đúng tất cả) từ param, url, ... , đúng các thao tác cần có 
+		+ Ngoài ra còn viết thêm cho các trường hợp fail, corner case , họ làm không đúng các thao tác cần có, ....
+	- Bao gồm những happy part và unhappy part 
+	- Bao gồm các corner case 
+	- Ngoài việc viết unit test cho những flow chính thì còn phải viết nhiều test cases cho unhappy part hoặc corner case 
+	- Từ kiểu dữ liệu, giá trị: null, empty, 0, hoặc giá trị nằm ngoài biên của giá trị được set , phải có test case ngay biên, và cả bên trong biên
+	- Giá trị của kết quả cũng phải test max biên nó có thể xảy ra 
+	- Array cũng phải check số lượng phân tử, họ có thể copy array,... 
+
+3. Cách đặt tên cho test case phải hiệu quả 
+	- Tên phải nói lên được đó là lỗi gì 
+	VD: given...when....and then .....
+	TestFunctionPlus Input outside biên should return lỗi 
+
+4. Hướng đến mục tiêu viết được automation test (Regression và automation) 
+	- Có thể test manually tuy nhiên phải hướng đến viết được automation test 
+	- Automation test đặc biệt nên được áp dụng cho regression function 
+	(Có nghĩa là áp dụng cho các function cũ đã test qua rồi, để tránh việc mất thời gian phải test lại quá nhiều lần mất thời gian) 
+	- Cao hơn nữa nên kết hợp vào CI/CD pipeline luôn để automation test 
+	(Khi thay đổi môi trường (lib, version,...) , code 
+
+5. Tránh việc Flaky test 
+	- Test case mà lúc nào pass lúc nào fail cũng không biết 
+	- False positive, hoặc false negative 
+	- Lúc thì pass hết, lúc thì không 
+	VD: test button UI get data mà mình set là 5s trả về lấy data ra so sánh (bình thường đúng)
+	nhưng có hôm thì mạng yếu 5s chưa trả thì sai (đây là flaky test nên tránh) 
+	Thay vào việc chờ 5s thì chờ một cái UI element nào đó 
+	
+	- Để tránh việc flaky test thì:  
+		+ Test case phải là independent, có nghĩa test case này không nên phụ thuộc vào test case khác. 
+	VD: 
+	test case 1: create data , test case 2: get data và set là phải chờ test case 1 thành công 
+	test case 2: chính là flaky test do bản thân nó không sai , nếu test case 1 sai thì test case 2 sai theo 
+
+		+ Independent giữa các test case với nhau, giữa các môi trường với nhau, giữa các building block với nhau 
+		+ Tránh việc những logic if else rườm rà 
+		(Chỉ nên là given....when....and then....(keep it simple)) 
+
+6. Sử dụng nhiều level testing 
+	- Biết được mình đang ở level testing nào áp dụng kĩ thuật cho hợp lí 
+	- Các level testing: 
+		+ unit test
+		+ integration test
+		+ system test 
+	- Đang ở unit test, hay integration test hay system test để biết mà sử dụng cho hợp lí 
+	- Dựa vào từng mục tiêu test khác nhau mà xử lí unit test, integration test
+	
+	- Unit test được dùng khi: 
+		+ Nếu chỉ đơn giản là logic function độc lập có chạy đúng hay không.
+
+	- Itegration test được dùng khi: 
+		+ Nếu trường hợp cần kiểm tra hai cái hàm, hai building block, hai sub system nói chuyện với nhau có đúng với ý muốn,
+		 đúng với time mình muốn 
+		+ Nếu test từ controller, service, db thì phải test integration  
+
+7. Vừa phải làm Static testing và Dynamic testing 
+	- Static testing: 
+		+ Tool: SonarQubu, Checkebtyl,... dùng để quality code của mình có đúng quality 
+			* Tool này nó sẽ scan qua code và check đoạn code bị low quality hay high complexity 
+			* If quá nhiều, if lồng if là low quality code, có bị high complex   
+	- Dynamic testing: 
+		+ Các tester thường làm, unit test làm 
+		+ Input thay đổi , output thay đổi, chứ không phải scan code 
+	- Viết unit test cho mọi user story và mọi bug fix của mình (tạo thành thói quen) 
+	- Phải refactor code để test được 
+	- Quá trình implement thì viết luôn, chứ làm xong project thì làm biếng không ai viết test cả 
+	- Không viết nhiều được thì viết cho flow chính 
+
+8. Một test case cho một chức năng thôi (chỉ 1 use case thôi) 
+
+9. Bí kiếp test nhanh chóng và hiệu quả 
+VD: Làm một cái web có tính năng là 
+	- upload file lên server folder 
+	Test tính năng này 
+
+	- Vậy test mất thời gian bao nhiêu, viết bao nhiêu test case sẽ là hợp lí 
+
+	B1: Xác định nhanh chóng có bao nhiêu noun và bao nhiêu verb trong requirement của tính năng cần test 
+		Noun: file, server folder 
+		Verb: upload 
+	B2: Cho mỗi noun xác định những thuộc tính cho nó (liệt kê nhanh) 
+		file: 
+			- attention, 
+			- name, 
+			- chiều dài name ,
+			-  tên file là định dạng utf8 hay gì, 
+			- đuôi của file là gì .jpg, .pdf ,...
+			- encode của file là gì binary, text, image,... 
+			- permission , có được đặt password k 
+		folder
+			- kích thước , size 
+			- có permission gì không (Readonly hay write,... 
+			- chứa được folder không 
+			- có được bảo vệ hay không 
+	B3: Cho mỗi verb xác định tương tự 
+		upload 
+			- trong bao lâu , có hiển thị progress bar hay không , có remaining time không , upload qua mạng 
+			- upload có pause giữa chừng được k 
+			- upload nhiều file hay một file, tách mảnh up hay up 1 lúc 1 file, có mã hóa zip gì không 
+
+	B4: Trong mỗi verb và nound có thể liệt kê nhiều thuộc tính và trong mỗi thuộc tính có thể liệt kê nhiều trường hợp khác nhau 
+	Kết hợp các trường hợp này lại --> vài trăm test case có thể xảy ra 
+	Xác định test case dựa trên những gì đã phân tíhc ở trên 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

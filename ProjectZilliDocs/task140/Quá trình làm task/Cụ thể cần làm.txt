@@ -1,0 +1,139 @@
+Cụ thể cần làm 
+	1. Viết url api (param: screen, website, group_id)
+		- Folder src/controller/setting/setting-website/screen/index.ts
+	(done)
+	2. findSettingItemProductsByScreenAction ở controller 
+		- Folder src/controller/setting/setting-website/screen/setting-screen.controller.ts
+	(doing)
+	3. findSettingProductsScreen ở service
+		- Folder src/service/setting/setting-website/screen/setting-screen.service.ts 
+		
+	
+
+	Cần tìm cách tạo ra product_list_screen trước khi select 
+	(doing)
+Đặt lại tên cho hay hơn 
+	4. Trong database tạo một kiểu screen là product_list_screen  
+		- Table setting_screen có các trường: 
+			+ id, is_public, screen, website, created_at, updated_at, delete_at, group_id 
+		- Hiện tại trong table setting_screen có giá trị của trường screen: 
+			+ home_screen
+			+ promotion_screen
+			+ banner_screen
+			+ recruitment_screen
+		- Cần add thêm row product_list_screen và các trường tương ứng 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+	1  Update hàm createSettingScreen 
+		- Thêm enum (page-constant.ts)
+			+ product_list_screen: 'product_list_screen',
+			+ productlists: [...],
+		- Thêm else if (setting-screen.service.ts)
+			else if cuối nằm trong vòng lặp for 
+		- Viết controller và api url createSettingScreenAction 
+		- Test thử tạo được chưa ở zili_dev
+			+ Đã tạo được product_list_screen
+	
+	2. Viết controller và api url createSettingScreenTempAction
+		- Dùng createSettingScreenTemp của setting-screen.service.ts
+		- Viết controller và api url createSettingScreenTempAction
+		- Test thử tạo được chưa ở zili_dev 
+	4. Viết hàm findSettingScreen  
+		- Đã find được cơ bản items 
+		- Giờ cần update vài thứ để find ra đúng output 
+		output data: 
+		- Level 1: data{} (done)  (SettingScreen)
+		- Level 2: items [] (done) (SettingScreenItem)
+		- Level 3: item_details[]: có list categories mà admin chọn   
+		- Level 4: item_detail (là các item category thuộc list categories) 
+		- Level 5: item_detail_products (list of products của category mà admin setting ở trên) 
+
+include là nó get dựa trên id 
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+output data: 
+		- Level 1: data{} (done)  (SettingScreen)
+		- Level 2: items [] (done) (SettingScreenItem)
+		- Level 3: item_details[]: có list categories mà admin chọn   (SettingScreenItemDetail)
+Câu hỏi: Làm sao lấy được listcategory mà admin đã chọn ? 
+		muốn output ra một list category_id là của tất cả item_detail 
+		mỗi item_detail sẽ có một category_id 
+	- category_id được thêm vào lúc nào (hay nói cách khác admin chọn khi nào và làm cách nào để chọn category muốn hiện)
+
+		- Level 4: item_detail 
+		- Level 5: item_detail_products (list of products của category mà admin setting ở trên) 
+
+Để lấy data như trên: 
+	B1: Select one SettingScreen (dựa vào group_id, website, screen) trong where (đã có) 
+	B2: Select tất cả SettingScreenItem mà có screen_id == id của SettingScreen đã lấy được ở trên (đã có) 
+
+
+	B3: Trong từng SettingScreenItem select tất cả SettingScreenItemDetail mà có screen_item_id == id của SettingScreenItem đó. 
+	(Chỗ này phải set thủ công)
+	(Trong mỗi SettingScreenItemDetail 
+	B4:  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

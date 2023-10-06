@@ -1,0 +1,66 @@
+Dạ chị, theo như yêu cầu lúc trước của chị là: 
+	- Trong item đó, nó có item_details
+	- Trong item_details nó là list category mà admin chọn
+	- Trong mỗi item_detail nó có item_detail_products là list product của category đó mà admin setting ở trên
+
+Nhưng mà theo format output chị gửi ở trên là thiếu list category mà admin chọn ở item_details á chị. 
+
+
+
+	- trong mỗi item_detail nó có item_detail_products là list product của category đó mà admin setting ở trên
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. Level 1: data (setting_screen.findOne)
+2. Level 2: items (SettingScreenItem.findAll(where: screen_id = data.id )
+3. Level 3: item (SettingScreenItem)
+4. Level 4: item_details sẽ vẫn là list item_detail 
+5. Level 4: item_products (list các product thuộc về category ở trên )
+
+Cụ thể item_details chỉ có duy nhất 1 item_detail và một category_id 
+item_products sẽ là list các product có category_id ở trên 
+
+6. Level 4: thông tin category có id = category_id ở trên 
+7. Level 5: trong mỗi item_detail sẽ có category find theo category_id của item_detail 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

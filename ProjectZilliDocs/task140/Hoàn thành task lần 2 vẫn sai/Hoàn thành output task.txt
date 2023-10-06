@@ -1,0 +1,36 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Hoàn thành output data của task 
+
+1. Level 1: data 
+	-  setting_screen.findOne (where: screen = product_list_screen, website = zili_website, group_id = 24)
+	- Lấy đủ tất cả các trường của setting_screen
+Note: Không phải bị doublicate mà là nó create_at và create_At 
+
+2. Level 2: items
+	- SettingScreenItem.findAll(where: screen_id = data.id ) 
+	- Array gồm có 23 item
+	- Đủ các trường 
+Note: Bị doublicate các trường created_at, updated_at
+
+3. Level 3: item 
+	- 23 item trong array ở level 2 
+
+4. Level 4: item_details 
+	- duyệt array items
+		+ Trong từng item thuộc array tạo thêm một field là  item_details:{}
+		+ Trong item_details tạo ra 2 fields: 
+			* item_details_array: array chứa các item_detail có screen_item_id == id của item chứa item_details 
+				- SettingScreenItemDetail.findAll(where: screen_item_id == screen_item_id) 
+				
+			* categories: chứa list category (tìm được nhờ vào các category_id chứa trong các item_detail )
+				- Các category không bị doublicate created_at, updated_at
+Note: Nhớ gọi await trước các hàm gọi xuống db nếu k nó sẽ trả về promise k có data 
+
+5. Level 5: item_detail 
+	- Các phần tử thuộc item_details_array 
+	- Đủ các trường nhưng nó cũng bị doublicate create_at, updated_at (Khác nhau là create_At viết hoa chữ sau) 
+
+6. Level 6: item_detail_products 
+	- Product.findAll(where: category_id == category_id của item_detail chứa nó) 
+	- Đủ các trường 
+Note: vẫn doublicate theo kiểu 2 cái khác nhau create_at và create_At

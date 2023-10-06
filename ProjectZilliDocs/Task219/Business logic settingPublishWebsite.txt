@@ -1,0 +1,105 @@
+Mục đích là để biết được 
+	- blog_id sẽ được add vào setting_screen_item_detail khi nào
+	- quan hệ giữa bảng blog và setting_screen_item_detail là để làm gì 
+1. Controller publishSettingWebsiteAction
+	Try 
+	logger Start publish 
+	
+	B1: Tìm settingWebsite với groupId truyền về ở param url 
+		Th1: Nếu mà tìm thấy settingWebsite thì 
+			B1: Tìm các settingScreen có groupId đó 
+			Nếu mà array settingScreen có phần tử thì 
+			B2: Duyệt qua các setting Screen đó : 
+				- Kiểm tra nếu screen của settingScreen nào bằng PAGE_ENUM.home_screen thì 
+					B1: Tìm settingScreen với các argument chi tiết hơn (website, screen, group_id) = homeScreen
+					B2: gọi hàm này settingScreenWebsiteService.updateDataWithHomeScreen(homeScreen)
+				- Nếu mà hổng bằng thì 
+					+ Gọi hàm này settingScreenWebsiteService.publishSettingScreen(settingScreen.id, settingScreen.screen, settingScreen.website)
+			B3: Tương tự với menu , tìm các menu có status = 0 
+			Nếu mà array menus có phần tử thì 
+			B4: Duyệt qua các menu đó 
+				- Gọi hàm settingMenu.updateDataWithMenu(menu) và đồng thời push giá trị trả về vào một array const menusReturns = []
+				- Gọi hàm menuService.publishMenu(menu.id, menu.type, menu.website)
+			B5: Gọi hàm settingWebsiteService.publishSettingWebsite(websiteGroup.id, websiteGroup.website)
+	Th2: Nếu mà không tìm thấy setting website thì return response 
+	logger Endpublish 
+	
+	Catch thì logger ra cái lỗi và next(e) 
+
+
+--> Kết luận: 
+	- Ở đây khá khái quát chưa nhìn thấy được mục đích cần tìm 
+
+Mục đích là để biết được 
+	- blog_id sẽ được add vào setting_screen_item_detail khi nào (tìm chỗ setting_item_detail ) 
+	- quan hệ giữa bảng blog và setting_screen_item_detail là để làm gì 
+2. Service updateDataWithHomeScreen 
+	- updateDataWithHomeScreen = async
+	- param (setting_screen: any) 
+	(Argument là homeScreen = Tìm settingScreen với các argument chi tiết hơn (website, screen, group_id) )
+	B1: const ids = []
+	B2: Duyệt qua các item của setting_screen.items
+	Nếu mà item nào có item.status, item.setting_screen != rỗng và item.setting_screen khác item.screen thì 
+	Kiểm tra lần lượng các giá trị của item.setting_screen tương ứng update theo logic khác nhau 
+		TH1: Nếu mà item.setting_screen === PAGE_ENUM.home_product_best thì 
+			B1: gọi hàm  productService.updateProductBest()
+			B2: Duyệt qua các item_product 
+				- ids.push(item_product.product_id)
+				- Gọi hàm productService.updateProductBestWithWardrobe({id: item_product.product_id, is_product_best: true})
+		....
+		TH cần tham khảo: item.setting_screen === PAGE_ENUMhome_product_more thì 
+			B1: gọi hàm productService.updateProductMore()
+			(Hàm này là update flag is_product_more: true thành false)
+			B2: Duyệt qua các item_product 
+				- ids.push(item_product.product_id)
+				- Gọi hàm productService.updateProductMoreWithWardrobe({id: item_product.product_id, is_product_more: true})
+				(Hàm này update flag is_product_more dựa vào giá trị truyền về từ request cho product có id được truyền về) 
+				(Argument là item_product.product_id, is_product_more: true) 
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

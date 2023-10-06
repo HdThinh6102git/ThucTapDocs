@@ -1,0 +1,55 @@
+1. Controller 
+	- const publishSettingWebsiteAction = async
+	- param ( req: express.Request, res: express.Response, next: express.NextFunction) 
+	- try catch logger.error('publishSettingWebsiteAction fail', e);  next(e);
+	- logger.info('Start publish setting website')
+	- const group_id = +get(req, 'params.group_id');
+	(lấy group_id được truyền về từ param) 
+	- const websiteGroup = settingWebsiteService.findSettingWebsiteById(group_id)
+	- Nếu websiteGroup thì 
+		+ const settingScreens = settingScreenWebsiteService.findSettingScreens({group_id: +group_id})
+		+ Nếu settingScreens thì duyệt qua từng settingScreens
+			* Nếu settingScreen.screen === PAGE_ENUM.home_screen thì 
+				- let homeScreen = settingScreenWebsiteService.findSettingScreen
+							({website: settingScreen.website, screen: settingScreen.screen, group_id: +group_id})
+				- settingScreenWebsiteService.updateDataWithHomeScreen(homeScreen)
+			* settingScreenWebsiteService.publishSettingScreen(settingScreen.id, settingScreen.screen, settingScreen.website)
+
+(Không check gì trong controller cả, không có gì để tham khảo) 
+
+2. Service 
+	- const updateDataWithHomeScreen 
+	- param setting_screen: any
+	- const ids = []
+	- Duyệt qua từng setting_screen.items
+	Nếu có item.status và item.setting_screen !== '' và item.setting_screen !== item.screen thì 
+		+ Tùy vào giá trị của item.setting_screen sẽ xử lí một việc khác nhau 
+		+ Nếu item.setting_screen === PAGE_ENUM.home_product_best thì... 
+		+ Nếu item.setting_screen === PAGE_ENUM.home_product_new thì ...
+(1) 		+ Nếu item.setting_screen === PAGE_ENUM.home_product_more thì (chỗ này cần tham khảo) 
+			* productService.updateProductMore()
+			* Duyệt qua từng item.item_products
+				- ids.push(item_product.product_id)
+				- productService.updateProductMoreWithWardrobe({id: item_product.product_id, is_product_more: true})
+
+3. productService.updateProductMore()
+	- Product.update({is_product_more: false}, {where: {is_product_more: true}})
+
+4. productService.updateProductMoreWithWardrobe({id: item_product.product_id, is_product_more: true})
+	- const {id, is_product_more} = request
+	- Product.update({is_product_more: is_product_more}, {where: {id: id}})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		

@@ -1,0 +1,73 @@
+Để ý jira để biết được phân task hay không 
+
+Yêu cầu: Bổ sung filter danh sách đánh giá sản phẩm
+	- Bổ sung thêm filter danh sách đánh giá sản phẩm:
+		+ star: số sao (1, 2, 3, 4, 5)
+		+ type: loại media có trong review (image, video)
+
+B1: Xác định filter nằm ở folder nào 
+	- controller: user/customer/review/index.ts and review.controller.ts 
+	- service: user/customer/review/review.service.ts 
+	- table: review (column: total_star , videos, images) 
+B2: Xác định hàm có thể dùng để tham khảo làm theo: 
+	- Controller: pagingReviews 
+	- Service: pagingReviews 
+Note: Làm xong hỏi lại api dùng cho user hay admin để set url cho chính xác 
+
+B3: Phân tích cụ thể các bước sẽ làm: 
+	- Controller: filterReviews
+	- index.ts 
+		+  app.get(urlAdminDefault + '/filter', reviewController.filterReviews);
+	- Postman 
+	- implement Controller: 
+		+ try catch 
+		+ truyền về param là star và type 
+		+ Nếu không tồn tại cả 2 thì sao , tồn tại 1 trong 2 thì sao 
+		+ tạo ra const data chứa giá trị trả về 
+		+ nếu ! data thì throw NotFoundError 
+	- implement Serrvice: filterReviews
+		return Review.findAll include ...
+		where.totalStar (ez) 
+		images: text , videos: text 
+		"images": "[]"
+    		"videos": "[]"
+		is null and is not null 
+		
+
+		Tạm thời select được total star là đúng 
+		Chưa làm chỗ count totalRecord tính sau 
+	- Tìm cách để select theo type trước (được rồi) 
+	
+Và api filter chỉ truyền vào param là type , star hay có cần thêm các tham số khác như limit, offset giống ở paging không chị 
+
+
+Vậy chỉ sửa mỗi cái controller paging , constant 
+*wNQRj&x7$Rt/tw
+
+Dạ chị, em hỏi lại là chỗ check type thì chỉ việc check images hoặc videos nó không null là được lấy ra phải không chị. 
+type: loại media có trong review (image, video)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

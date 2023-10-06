@@ -1,0 +1,75 @@
+1. index 
+app.put(urlAdminDefault + '/update', middleware.authentication(), settingScreenController.updateSettingScreenAction)
+2. Controller 
+	- file setting-screen.controller.ts 
+	- const updateSettingScreenAction = async
+	- param (req: express.Request, res: express.Response, next: express.NextFunction) 
+	- try catch logger.error('updateSettingScreenAction', e);  next(e);
+	- const { screen_items, screen, website, group_id} = req.body; 
+	- let error = false
+	- let screenSetting = settingScreen.findSettingScreen({website: website, screen: screen, group_id: +group_id})
+	- Nếu screenSetting và get(screenSetting, 'id') thì 
+		+ const screenItems = JSON.parse(get(screenSetting, 'items')) 
+		+ Nếu screen_items?.length > 0 thì 
+			* Duyệt qua từng screen_item (truyền về từ request.body) 
+				* Bên trong duyệt qua từng screenItem 
+				* Nếu screen_item.screen === screenItem.screen thì settingScreen.updateSettingScreen(screen_item, screenItem)
+		+ Ngược lại nếu screen_items?.length <= 0 thì error = false
+	- Ngược lại thì error = false
+	- Nếu error thì res.send(setResponse(false));, ngược lại thì res.send(setResponse(true));
+
+(1) Chỗ này cần hỏi lại error = false xuống dưới vẫn gán error = false vậy thì đâu bao giờ trả về true 
+3. Service 
+	- file setting-screen.service.ts 
+	- const updateSettingScreen = async
+	- param (settingScreenNew: any, settingScreenOld: any) 
+	- SettingScreenItem.update(settingScreenNew, id: settingScreenOld.id) 
+	- Duyệt qua từng settingScreenOld.item_details
+		SettingScreenItemDetailProduct.destroy where screen_item_detail_id: item_detail.id, force: true
+	- SettingScreenItemDetail.destroy where screen_item_id: settingScreenOld.id, force: true
+	- SettingScreenItemProduct.destroy where screen_item_id: settingScreenOld.id, force: true
+	- Nếu settingScreenNew.item_details và settingScreenNew.item_details.length > 0 thì 
+		Duyệt qua từng settingScreenNew.item_details
+		+ delete item_detail.id
+		+ item_detail.screen_item_id = settingScreenOld.id
+		+ item_detail = SettingScreenItemDetail.create(item_detail)
+		+ Nếu có item_detail.item_detail_products
+			* Duyệt qua từng item_detail.item_detail_products
+				- delete item_detail_product.id
+				- item_detail_product.screen_item_detail_id = get(item_detail, 'id')
+			* SettingScreenItemDetailProduct.bulkCreate(item_detail.item_detail_products)
+	
+	- Nếu settingScreenNew.item_products và settingScreenNew.item_products.length > 0 thì 
+		+ Duyệt qua từng settingScreenNew.item_products
+			* delete item_product.id
+			* item_product.screen_item_id = settingScreenOld.id
+		+ SettingScreenItemProduct.bulkCreate(settingScreenNew.item_products);
+	- return true; 	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+       

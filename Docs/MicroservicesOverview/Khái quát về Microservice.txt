@@ -1,0 +1,71 @@
+1. Vì sao cần nó?
+	- Giúp team build app có độ scale lớn 
+	- Bao gồm nhiều loosely coupled services 
+2. Microservices là gì? 
+	- Loosely coupled 
+	- Mỗi service hanlde một function trong large scale app (mỗi service có thể được gọi là một domain) 
+3. Microservices hoạt động như nào?
+	- Các service giao tiếp với nhau thông qua interface (small surface area) 
+		+ Small sureface area giới hạn blast radius of failures and defects, giúp mỗi service reason about in the context của app lớn 
+	- Các service talk to each other thông qua một trong 3 thứ: 
+		+ RPC
+		+ Event streaming 
+		+ Message broker  
+	- RPC cụ thể là gRPC 
+		+ Cung cấp faster response (encode binary, http/2) 
+		+ Nhưng blast radius hay impact to các service khác sẽ larger khi service go down 
+	- Event streaming 
+		+ Cung cấp better isolation giữa các service 
+		+ Nhưng take longer to process 
+4. Điểm lợi của microservices 
+	- independently deployed 
+	- mỗi service sẽ nhỏ nên dễ dàng reason about, có small blast radius 
+	- điều này giúp operators có được peace of mind và confidence to deploy thường xuyên 
+	- Microservice cung cấp tính flexibility cao để scale up mỗi service một cách independently 
+	- Một kiến trúc micro tốt sẽ cho phép giấu data tốt (nó sẽ tách nhỏ monolithic db ra dành riêng cho từng logical components) 
+	và từ đó các logical component này sẽ được giấu trong nội bộ của service thôi 
+	(Logical component chính là các bảng được chia ra từ một db ) 
+5. Nhược điểm của microservices 
+	- Nó tách db ra thành nhưng phần riêng biệt (db không thể duy trì khóa chính, khóa ngoại, ràng buộc,...)
+6. Các component của microservice 
+	- Các service 
+	- APIGateway 
+		+ handle các request gửi đến và route chúng đến với microservice tương ứng 
+		+ API gateway nằm ở identity provider service để handle auth của mỗi request gửi đến API 
+		+ Làm nhiệm vụ locate service và route request gửi đến, API gateway dùng 
+			* service registry (dùng để register service registry)
+			* discovery service (discover vị trí của các microservice khác)
+	- Monitoring 
+	- Alerting 
+	- DevOps tooling dùng để deployment 
+	- Troubleshooting 
+7. Dùng Microservice khi nào
+	- Tốn nhiều tiền để build và vận hành 
+	- Chỉ tốt cho large team
+	- Trong team lớn nó cho phép mỗi domain, function sẽ có thể được vận hành độc lập. 
+	- Trong một thiết kế tốt thì các team độc lập  có thể move fast và blast radius of failures là well-contained 
+	- Mỗi service có thể thiết kế, deploy, scale độc lập 
+	- Không nên dùng cho small startup (chi phí quá cao) 
+	- Startup nên thiết kế mỗi function trong app là một well-defined interface 
+		+ sau này scale big thì dùng microservices 
+
+
+
+
+	 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

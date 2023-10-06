@@ -1,0 +1,54 @@
+Yêu cầu: 
+	Thêm type filter Transfer points ở api get lịch sử giao dịch
+	API rút tiền: {{api_url}}/transaction/withdraw
+	API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+Thêm type filter Transfer points ở api get lịch sử giao dịch
+	+ thêm trong transaction.entity là transcation_type chỗ tách api đã thêm rồi 
+	+ chưa đủ còn phải check trong hàm get ở service nữa 
+	+ thông báo nữa 
+
+Trả thêm lí do ở api get lịch sử giao dịch
+	+ thêm sao (nó là trường gì ) 
+
+
+Làm task 457 
+	- Tách API withdraw thành 2 api (done)
+		+ 1 api chuyển điểm 
+		+ 1 api rút tiền 
+	- Chỉnh sửa title template send mail (done)
+		+ Đối với API chuyển điểm từ WITHDRAW thành TRANSFER POINTS
+	
+	- Thêm type filter Transfer points ở api get lịch sử giao dịch (Thêm type này vào) 
+	- Trả thêm lí do ở api get lịch sử giao dịch (dự đoán là trường note) 
+
+
+B1: Tạo ra một tài khoản với email của mình để test  
+Tạm thời register chưa được (register, verify, register kyc , chuyển status về 2) 
+B2: Tạo ra một wallet cho tài khoản đó (done)
+
+B3: Test với code hiện tại (test rỗng) cần thêm 1 vài transaction vào để test (done)
+B4: Sửa lại và test với code mới 
+
+
+Trả thêm lí do ở api get lịch sử giao dịch
+API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+
+Dạ chị cho em hỏi lí do có phải là trường note trong table transaction không vậy chị. 
+
+
+1. Đã test createWithDraw okii (Gửi mail về đúng WithDraw ) 
+2. Đã test createTransferPoints (Gửi mail về đúng template) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

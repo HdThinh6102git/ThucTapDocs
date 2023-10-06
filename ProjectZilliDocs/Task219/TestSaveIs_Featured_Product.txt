@@ -1,0 +1,55 @@
+Trường hợp 1: 
+updateSettingScreenAction 
+Truyền về: 
+	(screen_items, screen, website, group_id) 
+Cụ thể argument là: 
+	- website: "zili_website"
+	- "screen": "home_screen",
+	- "group_id": 24
+	- "screen_items" nó sẽ là 
+		+ những thông tin mới 
+		+ đối với screen_item_detail mới sẽ có thêm blog_id 
+		+ vào nó sẽ lưu blog_id xuống  db vào setting_screen_item_detail (dòng 107) 
+		+ gọi hàm blogService.updateFeaturedBlog(blog_id) 
+(1)			--> position là giá trị như thế nào 
+
+Kết luận: ở trường hợp 1 
+	- Bản chất của nó là update setting_screen_item và các thành phần bên trong nó 
+	và nếu update vậy thì không kiểm tra chỗ home_screen enum được (không hợp lí) 
+
+Trường hợp 2: (chôt sử dụng trường hợp 2) 
+publishSettingWebsite 
+Truyền về: 
+	(group_id) 
+	B1: tìm settingWebsiteById bằng groupId truyền về 
+	B2: tìm settingScreens bằng groupId truyền về 
+	--> sẽ tìm thấy các setting_screen (hiện tại trong db có 5 cái setting_screen và tương ứng với 
+	screen:
+		- home_screen, promotion_screen, banner_screen, recruit_screen, product_list_screen 
+	Duyệt qua các setting_screen tìm đến setting_screen có screen == PAGE_ENUM.home_screen
+	
+	B3: Lấy settingScreen (homeScreen) đó bỏ vào hàm updateDataWithHomeScreen(homeScreen) 
+	Vào trong hàm updateDataWithHomeScreen
+	B4: Duyệt qua các setting_Screen_item 
+		- Nếu setting_screen_item.setting_screen == home_featured_blog 
+			+ B1: Duyệt qua các setting_screen_item_detail(item_details) có screen_item_id == screen_item.id 
+			+ B2: gọi hàm updateBlogFeatured(setting_screen_item_detail.blogId) 
+				Vậy position sẽ là giá trị như thế nào 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

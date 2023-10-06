@@ -1,0 +1,5 @@
+1. Đọc các bài review về nó 
+2. Code với nó mới hiểu về ưu và nhược điểm của nó 
+3. Viết các script , benchmark giữa các framework khác nhau với nhau
+
+go khó có thể tạo kiến trúc  

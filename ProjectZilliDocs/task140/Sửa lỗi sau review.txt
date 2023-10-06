@@ -1,0 +1,32 @@
+1. Sửa lại cái tên hàm bỏ item (xong)
+	findSettingProductListScreen
+2. Sửa lại chỗ không thay đổi code mà chỉ thay đổi dòng code (ảnh hưởng việc review) 
+	- updategettingScreenAction (đã sửa) 
+	- 
+3. Sửa lại code dư thừa 
+	- findSettingProductListScreenAction (bỏ const screen = get(req, 'query.screen'); ----> bỏ chỗ này đâu có tìm được 
+	thay vif query thi set cung
+	PAGE_ENUM.product_list_screen
+sửa lại tên product_list thành  product-list 
+sửa lại chỗ json (sửa xong 
+
+
+4. Sửa urlDefault + '/product-list'
+	+  thêm /local trước cái product-list (sửa xong) 
+5. Bỏ không cần tìm kiếm settingscreen bằng cả  groupId, website và screen (do admin mới biết được groupId mà api này cho user)  
+	- chỉ cần duy nhất tham số website thôi (đã sửa) 
+6. Bỏ logic sort dư thừa ở controller (đã bỏ) 
+7. Thêm điều kiện where.is_public = 1 (đã thêm) 
+8. Check trường hợp không tìm thấy data dẫn đến api chết 
+	Giải pháp:  throw NotFoundError
+9. Check trường hợp không truyền param dẫn đến api chết 
+	- Nếu mình check !param mới truyền không thì truyền rỗng, lúc này nó sẽ dẫn đến sai kết quả 
+	Giải pháp:  throw NotFoundError 
+10. Check các trường hợp biến được gán giá trị lấy về từ db (nếu khác null thì mới dùng) bằng null  thì chỉ trả về thôi 
+11. Bỏ mấy chỗ khởi tạo trước khi gán, nếu không cần thiết, 
+12. Dùng json.parse sau khi lấy data từ db để không có các trường dư thừa như dataValues  
+
+
+
+
+

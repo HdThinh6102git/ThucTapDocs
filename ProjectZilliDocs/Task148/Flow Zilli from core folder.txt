@@ -1,0 +1,63 @@
+1. Core 
+	(aws, axios, config, constant, database, email, es, middleware) 
+	Đại loại folder này chứa các folder để tạo các hàm config bên dưới hệ thống, k public ra ngoài 
+2. Crawler 
+	(Đây là folder hay nó chứa code để crawl data ) 
+3. Enums 
+	- chứa các enum 
+4. models 
+	- là cái gì dùng ở đâu 
+5. modules 
+	- là cái gì dùng ở đâu 
+6. services 
+	- service export ra các hàm được gọi trong controller 
+7. store 
+	- là cái gì dùng ở đâu 
+8. utils 
+	- là cái gì dùng ở đâu
+9. Controllers 
+	- cơ bản nó là controller để nhận và gửi data 
+
+
+Tóm lại cái luồng chạy của một feature nào đó 
+	1. run app --> index.ts root src 
+	2. tạo express app --> config bodyparser (json, urlencode) 
+	3. routes (app), hàm này để routing các controller có trong app (routes.ts) 
+	4. listen port 3800 
+	5. các set interval để chờ một vài status 
+	6. client make a request đến một api nào đó. 
+	Giả sử đây là get product 
+	7. Nó sẽ dựa vào path được route ở file index.ts để tìm đến hàm getCustomerProduct 
+		có 3 tham số req, res, next 
+	8. req thì nhận req gửi về (không có dto) 
+	9. gọi các hàm của service 
+		- ở service thì nó làm một vài logic gì đó
+		- gọi đến model để crud xuống db 
+	10. Trong model định nghĩa các fields 
+		- khóa chính, khóa ngoại, gần giống entity 
+		- nó được định nghĩa bởi sequelizer "@core/database"
+	11. Controller nhận dữ liệu trả về từ service 
+		- res.send (setResponse {}) trả về client json mong muốn (định nghĩa ngay chỗ này chứ không có dto 
+		- next (Express.NextFunction) để nhảy tới route tiếp theo mà match với url khi client request 
+	Xong luồng của api (controller--> service --> model) 
+	Còn lại : 
+		- Core (Chưa biết được gọi ở đâu)
+		(aws, email, excel,... ) 
+		Define các hàm thực hiện các nghiệp vụ hệ thống 
+		- crawler 
+		Define các hàm dùng để crawl data 
+		- enums 
+		Define các enum dùng trong hệ thống 
+		- modules (
+		- store (chứa những đường dẫn lưu trữ, những file lưu trữ )
+		- utils (dạng những cái không thuộc một object cụ thể nào mà nó thực hiện một nghiệp vụ thôi) 
+		nó không phải object domain , làm những việc bên lề ấy 
+		
+	
+	
+
+
+
+
+	
+

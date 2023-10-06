@@ -1,0 +1,44 @@
+1. verificationWithdraw
+	+ param userId, input:  TransactionVerification dto
+	+ kiểu trả về TransactionOutput
+	+ const withdraw = transactionRepo.findOne (id, userId, TRANSACTION_STATUS.NEW_REQUEST,  TRANSACTION_TYPE.WITHDRAW)
+	+ Nếu !withdraw thì trả về exception TRANSACTION_NOT_FOUND
+	+ Nếu có withdraw và hết hạn verifi_time thì trả về exception VERIFICATION_EXPIRED
+	+ Nếu withdraw.verficode != input.verficode thì trả về exception VERIFICATION_INCORRECT
+	+ const user = userRepo.findOne where (id = userId truyền về từ token)
+	+ Nếu !user thì trả về exception USER_RECEIVER_NOT_FOUND
+	+ let amountNow = 0;
+	+ Không cần swithcase mà chạy luôn trường hợp withdraw.work_type = amount 
+	+ Nếu amountNow < withdraw.amount thì trả về exception USER_BALANCE_IS_NOT_ENOUGH
+	+ transactionRepo.save(withdraw)
+	+ userRepo.save(user)
+	+ output = plainToClass(TransactionOutput, withdraw,
+	+ return {status: RESULT_STATUS.SUCCEED,  data: output,};
+Change: 
+	+ Không cần swithcase mà chạy luôn trường hợp withdraw.work_type = amount 
+	
+2. verificationTransferPoints
+	+ param userId, input:  TransactionVerification dto
+	+ kiểu trả về TransactionOutput
+	(1)+ const transferPoints = transactionRepo.findOne (id, userId, TRANSACTION_STATUS.NEW_REQUEST,  TRANSACTION_TYPE.WITHDRAW) 
+	(Sửa transaction_type thành TRANSACTION_TYPE.TRANSFER_POINTS ) 
+	+ Nếu !transferPoints thì trả về exception TRANSACTION_NOT_FOUND
+	+ Nếu có transferPoints và hết hạn verifi_time thì trả về exception VERIFICATION_EXPIRED
+	+ Nếu transferPoints.verficode != input.verficode thì trả về exception VERIFICATION_INCORRECT
+	+ const user = userRepo.findOne where (id = userId truyền về từ token)
+	+ Nếu !user thì trả về exception USER_RECEIVER_NOT_FOUND
+	+ let amountNow = 0;
+	+ switchcase tương tự cũ mà bỏ trường hợp có transferPoints.work_type = amount ra 
+	+ Nếu amountNow < transferPoints.amount thì trả về exception USER_BALANCE_IS_NOT_ENOUGH
+	+ transactionRepo.save(transferPoints)
+	+ userRepo.save(user)
+	(2)+ output = plainToClass(TransactionOutput, transferPoints,
+	+ return {status: RESULT_STATUS.SUCCEED,  data: output,};
+Change: 
+	+const withdraw thành  const transferPoints
+	+ transactionRepo.findOne(TRANSACTION_TYPE.WITHDRAW) thành TRANSACTION_TYPE.TRANSFER_POINTS
+	+ giữ nguyên logic sửa các tên withdraw thành transferpoints (1) --> (2) 
+	+ switchcase tương tự cũ mà bỏ trường hợp có transferPoints.work_type = amount ra 
+	
+	
+	

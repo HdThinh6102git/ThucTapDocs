@@ -1,0 +1,117 @@
+1. Monolithic application architectures 
+2. Microservice architectural style of dev 
+	-dependency injection, decorators, exception filters, pipes, guards and interceptors đều được apply trong microservice tương tự như monolithic 
+	- microservice is an application that uses a different transport layer than HTTP.
+	- Nest supports several built-in transport layer implementations, called transporters, which are responsible for transmitting messages 
+		between different microservice instances.(TCP, gRPC, RabbitMQ,...)
+	- Most transporters natively support both request-response and event-based message styles. 
+--> Vậy gRPC là một built-in transport layer (transporter) dùng để transmitting message giữa các microservice.
+3. Cài đặt microservice 
+	3.1. intall nestjsMicroservice package 
+	 npm i --save @nestjs/microservices
+	3.2. instantiate a microservice 
+		- use the createMicroservice() method of the NestFactory
+		- thay vi create() use createMicroservice() 
+		- config use Transport TCP (default) 
+		- not listen to any port 
+		- options (host, port, retryAttemps, retryDelay
+	3.3. patterns
+		- microservice recognize both messages and events by patterns  
+	3.4. request-response 
+		- request - response là một kiểu message khi exchange messages between various external services 
+		- với request - response (paradigm) , can be certain that the service has actually received the message
+		(without the need to manually implement a message ACK protocol) 
+		- Có trường hợp không dùng request - response sẽ tốt hơn như: 
+			+ streaming transporter dùng log-based persistence (Kafla or NATS Streaming) 
+		- Để enable the request-response message type: 
+			+ Nest tạo ra 2 logical channels 
+				* Một dùng để transferring data 
+				* Hai dùng đợi incoming responses 
+			+ Có 2 cơ chế chính : 
+				* dual-channel support được cung cấp out of the box (cung cấp từ bên ngoài nestjs)
+				* nest manually creating separate channels 
+			+ Nhờ vào 2 cơ chế trên ta cũng có 2 message style (2 loại message trong microservice)
+				* request-response message style 
+				* event-based method (event dưới dạng method)
+		- Implement code 
+			+ In controller --> use @MessagePattern() decorator to create a message handler based on request-response 
+			@MessagePattern({ cmd: 'sum' }) (chỉ định method đó được truyền qua microservice (tương @post,...)
+  			accumulate(data: number[]): number {}
+			+ Message handlers are able to respond either synchronously or asynchronously. (vì thế dùng asynce method)
+	3.5. Event-based method (Kiểu message thứ 2 của microservice)
+		- Request-response method lý tưởng cho việc exchanging message between services (gửi và nhận)
+		- event-based method được dùng khi muốn publish events without waiting for a response (ko cần maintaining two channels)
+		- event-based dùng khi cần gửi thôi 
+		VD: Chỉ muốn thông báo cho another service có một trường hợp gì đó đã xảy ra.(Chẳng hạn handleUserCreated()) 
+	3.6. Decorator 
+		@Payload () get data from client 
+		@Ctx() context 
+	3.7. Khái niệm Client trong microservice 
+		- Là nơi dùng để exchange messages or publish events to a Nest microservice
+		- Dùng class ClientProxy 
+		- method send() (hành động gửi dùng cho request-response messaging) 
+		- method emit() (hành động gửi dùng cho event-driven messaging)
+		- Để có dùng được thì import ClientModule và config register() - (name,transporter(default TCP), options) 
+	3.8. Sending messages
+		client.send() 
+	3.9. Publishing events
+		client.emit()  
+	3.10. Scopes 
+		- when request-based lifetime of the handler may be the desired behavior, 
+			for instance per-request caching in GraphQL applications, request tracking or multi-tenancy.
+		- Trong NestJS, mọi thứ được shared thông qua imcoming requests.
+		- a connection pool to database, single services with global state. 
+		- NodeJS không tuân theo mô hình phi trạng thái đa luồng request/response (chuẩn này mọi request đều được xử lí bởi một luồng riêng biệt)
+		- Tuy nhiên vẫn có trường hợp cần xử lí request-based lifetime of the handler (vd: per-request caching)
+		- Do đó cần kiểm soát scope   
+	3.11. Handling timeout 
+		- Trong hệ thống phân tán, đôi lúc microservices có thể not available 
+		- Để tránh việc chờ vô hạn, có thể dùng Timeout(from rxjs) 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 

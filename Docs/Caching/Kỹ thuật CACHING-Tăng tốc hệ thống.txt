@@ -1,0 +1,109 @@
+1. Tại sao cần caching ? 
+	- FE - Nâng cao trải nghiệm người dùng (Tăng tốc hệ thống) 
+	- BE - Chịu được lượng tải lớn hơn 
+	- BE - Tăng Performance , Efficiency 
+	(Server có thể handle được nhiều request hơn) 
+2. Caching là gì? 
+	- Store Costly Operation 
+	(Lưu trữ lại các operation tốn chi phí và thời gian nhiều)
+	(không phải cái nào cũng caching mà caching đúng lúc đúng chỗ)
+	VD: generate a file
+	(Khi user đầu tiên generate file đó ra trên server sau đó ta có thể caching file đó lại và user sau request thì đưa liền nhanh chóng)
+	Hay có thể lưu trữ các response, data, query , xài đi xài lại 
+	Hoặc như Assets(js/css/font) , media 
+3. Nên apply caching khi nào? 
+	- Chỉ caching những thứ cần dùng đi dùng lại nhiều lần
+	- Caching data ít bị thay đổi 
+		VD: Thống kê giao dịch ngày hôm qua 
+4. Các concepts cơ bản của caching 
+	4.1. Storage 
+		- Có thể caching và lưu trữ trong memory/RAM/CPU L1 L2 L3 (ở phía server)
+		- File system/ flash drive 
+		- remote storage (redis,...) 
+	4.2. Operation (Các phương thức)
+		- Get (lấy thông tin ra) 
+		- Set (lưu thông tin vào) 
+		- Delete (xóa thông tin)
+	4.3. Format 
+		- Đại đa số dùng key-value 
+		- Là HashMap (nếu trong máy)
+		- Key-Value store ở  remote: redis, memcache 
+		- file 
+	Đưa key vào lấy value ra 
+	Dùng format key-value vì có độ phức tạp là O(log n) , O(1) (dù caching lớn bao nhiêu vẫn tốn chỉ một lượng thời gian nhất định) 
+	4.4. Strategy 
+	Các nguyên tắc khi làm caching 
+		- LFU (Least Frequently Used) : Khi bộ nhớ đầy thì cái nào ít xài nhất bỏ đi trước. 
+		- LRU (Least Recentyly Used): Cái nào ít xài nhất ở thời điểm gần đây bỏ đi trước. 
+		- MRU (Most Recently Used): Cái nào mới vừa xài gần đây nhất thì có cái mới vào thiếu chỗ cũng xóa đi trước 
+	Đây là 3 nguyên tắc sẽ chọn và dùng phù hợp thường dùng LFU 
+	4.5. Các level của caching (difficulty level) 
+		Độ khó tăng dần: 
+		Level 1: Configuration (chỉ việc config) 
+		Level 2: Http Header (chỉ định trong header) 
+		Level 3: Implementation (caching trong code) 
+	4.6 Configuration Caching 
+		- set cache trong file config (vd: trong db mysql có thể set được cache)
+	4.7. HttpHeader Caching 
+		- Cache Control: no-cache 
+		- Cache Control: max-age =81913 Age: 100 (đã cache được 100s , long-live-term: 81913 
+		- Client gửi kèm theo Etags  
+			+ If-none-match: 14141413
+			+ Last-difieded: 129193
+			+ If-Modified-Since:131314
+		Sau đó BE sẽ check header và dựa vào đó đưa ra quyết định cho cho phép thực hiện request nữa k 
+	4.8. Implementation caching (Học nestjs caching trên docs) 	
+		Cơ chế là kiểm tra nếu có thì get item nằm sẵn trong bộ nhớ 
+		Chưa có lấy dưới db lên hoặc cái gì đó trả về client và đồng thời set nó vào cache 
+5. Các kĩ thuật caching 
+	5.1. Client Cache 
+		Lần đầu Browser (request)--> server 
+		Browser nhận dữ liệu 
+		- Ở kĩ thuật này thì sẽ set ở client có lưu lại data hay không (nếu có sẽ lưu vào bộ nhớ của client: cookie, local storage, session,...) 
+		- Lần request tiếp theo kiểm tra ở client nếu còn giữ data đó thì sẽ không request lại server nữa 
+		Client quyết định có nên cache hay không 
+		Browser default đã có được implement http header caching 
+	Cách để implement kĩ thuật này: 
+		- Dùng http request/response 
+		- Cụ thể là http header 
+		- Cache là cache những data object , hết bộ nhớ thì crash 
+		- Luôn phải set time to live , size để tránh crash  
+	5.2. Static Files Server Cache 
+		- Để các data nhẹ ở server xa 
+		- Xác định các thôg tin nặng được dùng nhiều ở khu vực nào đó  
+		-Sau khi request lần đầu caching data nặng lưu trữ ở server gần với khu vực dùng nhiều để tăng tốc.   
+	5.3. Database Cache 
+		- Lưu query result trong memory 
+		- Implement bằng cách config thôi 
+	5.4. Server Cache (backend) (NestJS Caching, redis, remote store cache) 
+	
+	Tóm lại: 
+	Sau khi thực hiện lần đầu một request nào mà cần thiết cache ta có các options 
+		+ Cache data đó ở client
+		+ Cache data đó ở server cdn (chứa các file media nặng , server gần nhất thay vì server xa) 
+		+ Cache data đó ở backend (memory của máy/remote như redis) 
+		+ Cache data đó ở database (result query) 
+	Khi đã biết có cache set up, client thực hiện request: 
+		TH1: Kiểm tra ở client có cache hay không có rồi k gửi request nữa, ko thì qua th2
+		TH2: Kiểm tra có phải là file hay không vào cache trong server cdn có chưa , có rồi k thực hiện request về server gốc nữa. 
+		TH3: Kiểm tra có cache ở server (memory hay redis ) chưa --> có rồi k thực hiện request nữa, chưa thì TH4 xuống tới db 
+		TH4: Kiểm tra có cache trong DB hay chưa nếu có k thực query mà trả về kết quả chưa thì query như bình thường 
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

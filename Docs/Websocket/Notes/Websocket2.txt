@@ -1,0 +1,10 @@
+1. Mong muốn khi design app với websocket 
+	- clients có thể emit messages đến server thông qua form input 
+	- server subcribe to messages đến từ clients và emit hoặc broadcast đến all connected clients 
+	--> nhìn khái quát thiết kế thì flow sẽ như sau: 
+		+ client emit message đến server 
+		+ server subcribeMessage event với websocket gateway 
+		+ sau đó nhờ websocket gateway emit message đến tất cả connected clients 
+
+Chưa biết cách tạo client và server chung một project nên tách riêng 
+Tạm thời chưa thể connect được client và server thế nên mình sẽ làm 1 project khác để biết cách làm việc này 

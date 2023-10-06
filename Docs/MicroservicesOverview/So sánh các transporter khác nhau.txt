@@ -1,0 +1,17 @@
+1. Vì sao cần microservice? 
+	- Mỗi service làm một nhiệm vụ khác nhau và nó sẽ được thực hiện tốt nhất với một loại ngôn ngữ phù hợp. 
+	Dùng monolithic chỉ có thể dùng 1 ngôn ngữ trong một project. 
+	Gọi nhau giữa các monolithic thông qua http request sẽ chậm hơn. 
+	- Mô hình microservice ra đời 
+	- Dễ bảo trì do tách riêng từng service 
+	- Performance sẽ tốt hơn, do nó tách ra dùng database riêng 
+Điểm quan trọng nhất của một microservice đó chính là phương thức truyền thông tin giữa các service (transporter) 
+
+2. Transporter TCP  
+3. Transporter gRPC 
+4. Transporter RabbitMQ
+Có 3 kiểu truyền chính: 
+	- RPC 
+	- EventStreaming 
+	- Message broker 
+So sánh những kiểu này suy ra lợi và hại của transporter 

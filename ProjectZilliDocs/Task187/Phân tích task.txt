@@ -1,0 +1,54 @@
+
+1. Xóa trường product của API review sản phẩm. 
+	Trong api này 
+	API: https://api.zilicoffee.vn/api/v1/review/product/85840138?perPage=5&page=1&sort=desc&image=
+Gốc: 
+	- Review.findAll (where param truyền vào) 
+	Trong từng review record 
+	- Product.findOne (where id = review.product_id) review chứa nó 
+	- ProductVariant.findOne(where id = review.variant_id)
+	- Customer.findOne(where id = review.customer_id)
+	- Replyweview.findAll(where review_id = review.id )
+Thay đổi: 
+	- Bỏ Product.findOne (where id = review.product_id) review chứa nó 
+2. Cập nhật API tạo review 
+	Yêu cầu: 
+		- API tạo review check trường hợp nếu FE truyền xuống có token (user đang login vào) thì lưu id của customer đó
+	Ngược lại, lưu thông tin như cũ
+	
+	- index: app.post(`${urlDefault}/create`, reviewController.createReview);
+	http://localhost:3600/api/v1/review/create
+	- controller: 
+		+ createReview
+			+ Làm sao lấy được token của FE truyền xuống 
+				Tham khảo ở 
+			+ Nếu có token thì extract token và lấy customer_id truyền vào để tạo 
+			+ Ngược lại thì thôi 
+	- service: 
+		+ createReview
+
+
+const token: string = get(req, 'headers.authorization');
+if(token){
+            const jwtToken = token ? token.split(' ')[1] : '';
+            const user: any = jwtUtil.verifyToken(jwtToken);
+            req.body.customer_id = user.id
+        }
+customer_id,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

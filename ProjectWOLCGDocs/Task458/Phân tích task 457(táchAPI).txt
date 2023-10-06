@@ -1,0 +1,114 @@
+Yêu cầu: Transfer points - Withdraw
+Cần chỉnh sửa:
+	Tách API withdraw thành 2 api khác nhau:
+	1 api chuyển điểm
+	1 api rút tiền
+	Chỉnh sửa title template send mail khi gửi mã xác nhận chuyển điềm: WITHDRAW thành TRANSFER POINTS
+	
+	Thêm type filter Transfer points ở api get lịch sử giao dịch
+	API rút tiền: {{api_url}}/transaction/withdraw
+	API get lịch sử giao dịch: {api_url}}/transaction/detail/filter
+
+Thuộc src user
+Cấu trúc của một component thuộc src (cụ thể là transaction) 
+	1. index.ts 
+	2. module.ts 
+	3. controllers 
+		- các controller.ts 
+		- index.ts 
+	4. dtos 
+		- dto.ts 
+	5. providers 
+		- các service.ts 
+		- index.ts 
+	6. entities 
+		- các entity.ts 
+		- index.ts 
+	
+API withdraw (rút tiền)	
+
+Tách API withdraw thành 2 api khác nhau:
+	1 api chuyển điểm
+	1 api rút tiền
+1. controller 
+	src/transaction/controllers/transaction.controller.ts
+	- createWithdraw
+	- Phương thức post 
+	- useGuard(jwtAuthGuard) 
+	- dto là requestContext (requestId, url, ip, user) và WithdrawInput (amount, pin_code, work_type)  
+	- kiểu trả về là promise có BaseApiResponse(error, data, message, code, status, meta) và 
+				TransactionOutput(id, amount, status, name, qrCode, note, createAt, user, checkout_url, status_url, 
+						address, txn_id, confirms_needed, timeout, type, receiver, amount_before, amount_after 
+						verification_code, amount_received, fee
+	- return transactionService.createWithDraw(ctx.user.id, input) 
+2. provider 
+	src/transaction/providers/transaction.service.ts
+	- createWithdraw
+	- kiểu trả về BaseApiResponse và TransactionOutput
+	B1: sharedService.getSetting
+	B2: userRepo.findOne(where id: userId)
+	B3: nếu !user throw new UnauthorizedException();
+	B4: nếu user.pin_code !== input.pin_code throw new HttpException(message: MESSAGES.INCORRECT_PIN_CODE,)
+	B5: const withdraw = transactionRepo.findOne(where user.id: userId, status: TRANSACTION_STATUS.NEW_REQUEST, type: TRANSACTION_TYPE.WITHDRAW)
+	B6: verification_code = randomCode (được tạo ra bằng hàm makeId)
+	B7: verification_time = thời gian hiện + VERIFICATION_TIME
+	B8: Nếu có withdraw, verification_time, verification_code và 
+		(now + verfication_time)- withdraw.verfication_time nhỏ hơn revercationion_time
+	Hết time verify thì throw new HttpException (message: MESSAGES.PLEASE_TRY_AGAIN.replace)
+	B9: mailService.sendVerificationEmailTransaction
+	B10: nếu có withdraw và withdraw.status === TRANSACTION_STATUS.NEW_REQUEST (nếu đây là new request) thì 
+		- Gán verification_code mới cho withdraw
+		- Gán verification_time mới cho withdraw
+		- transactionRepo.save(withdraw)
+		- const output = plainToClass(TransactionOutput, withdraw,)
+		- return status: RESULT_STATUS.SUCCEED và data: output
+	B11: const transaction = new Transaction();
+		- gán transaction.type = TRANSACTION_TYPE.WITHDRAW;
+		- transaction.status = TRANSACTION_STATUS.NEW_REQUEST;
+		- transaction.amount = input.amount;
+		- transaction.user = user;
+		- transaction.verification_code = verification_code;
+		- transaction.verification_time = verification_time;
+		- transaction.mail = user.email;
+		- transaction.work_type = input.work_type;
+		- Nếu input.work_type == WORK_TYPE.AMOUNT thì 
+			+ const wallet = walletRepo.findOne(where user.id: userId, status: WALLET_STATUS.VERIFIED, active: WALLET_ACTIVE.ACTIVE)
+			+ Nếu !wallet thì throw new NotFoundException(MESSAGES.WALLET_NOT_FOUND);
+			+ transaction.address = wallet.address;
+			+ transaction.fee = setting.withdrawal_fee_percentage;
+	B12: transactionRepo.save(transaction)
+	B13: output = plainToClass(TransactionOutput, transaction,) 
+	B14: return status: RESULT_STATUS.SUCCEED và data: output
+		
+3. dto 
+4. entity 
+
+
+----------------------------------------------------------
+API /detail/filter (get lịch sử giao dịch) (admin có guard và phương thức post) 
+	
+1. controller 
+2. provider 
+3. dto 
+4. entity 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,167 @@
+	- Task 458: Separate API transfer points and withdraw 
+	- Tách API withdraw thành 2 api khác nhau:
+		+ 1 api chuyển điểm
+		+ 1 api rút tiền
+1. Xác định mình đã làm những gì trong task 
+	- Sửa API Post('withdraw') createWithdraw 
+		+ Gọi đến transactionService.createWithdraw
+	- Sửa createWithdraw ở transactionService 
+
+	Cụ thể: 
+	- Ở controller 
+		+ Chia createWithdraw thành 2 api 
+			* createWithdraw @Post('withdrawal')
+				- dto WithdrawInput: xóa worktype (không dùng, set cứng là amount)
+			* createTransferPoints	 @Post('transfer-points')
+				- dto TransferPointsInput: copy giống như của withdraw cũ 
+				(Hỏi chị Liễu có cần thêm note vào không) 
+				Không, chỉ có chuyển khoản với rút điểm là có note thôi
+	- Ở service 
+		+ Chia hàm createWithdraw thành 2 hàm 
+			* createWithdraw 
+				- Sửa chỗ if (input.work_type == WORK_TYPE.AMOUNT)
+					Bỏ đoạn code bên trong ra khỏi if bởi vì đã set cứng là amount 
+			* createTransferPoints (dòng 476) 
+				- truyền xuống dto TransferPointsInput
+				- check work_type == Amount thì trả về Wrong_Wrok_Type 
+				- Tạo ra một const WRONG_WORK_TYPE
+				- Thay đổi template sendVeriEmailTransaction (TRANSACTION_TYPE.TRANSFER_POINTS)
+				- Tạo ra một TRANSACTION_TYPE mới là TRANSFER_POINTS
+				- Bỏ đoạn code if(input.work_type == WORK_TYPE.AMOUNT)
+					bởi vì không bao giờ xảy ra trường hợp này 
+2. Xác định cần làm gì để hoàn thành task 
+Tách api rút tiền với chuyển đổi point chắc tách luôn api verification luôn ấy
+
+Tính năng chính ở verification chứ create thì chỉ là send mã verify à
+
+Tách type transaction luôn nha bro
+	2.1. verificationWithdraw có business logic là gì 
+	Cụ thể: 
+	- Controller 
+		+ @Post('verification-withdraw') verificationWithdraw
+		+ param ReqContext: ctx và TransactionVerificationdto (id, veri_code) 
+		+ kiểu trả về transactionOutput (giống với chỗ create) 
+		+ gọi đến transactionService.verificationWithdraw(ctx.user.id, input)
+	- Service
+		+ async verificationWithdraw
+		+ param userId, input:  TransactionVerification dto 
+		+ kiểu trả về TransactionOutput
+		+ const withdraw = transactionRepo.findOne (id, userId, TRANSACTION_STATUS.NEW_REQUEST,  TRANSACTION_TYPE.WITHDRAW) 
+		+ Nếu !withdraw thì trả về exception TRANSACTION_NOT_FOUND
+		+ Nếu có withdraw và hết hạn verifi_time thì trả về exception VERIFICATION_EXPIRED
+		+ Nếu withdraw.verficode != input.verficode thì trả về exception VERIFICATION_INCORRECT
+		+ const user = userRepo.findOne where (id = userId truyền về từ token)
+		+ Nếu !user thì trả về exception USER_RECEIVER_NOT_FOUND
+		+ let amountNow = 0;
+		+ switchcase 
+		+ Nếu withdraw.work_type = amount thì ....
+		+ Nếu withdraw.work_type = khác thì .... 
+		+ Nếu amountNow < withdraw.amount thì trả về exception USER_BALANCE_IS_NOT_ENOUGH
+		+ transactionRepo.save(withdraw)
+		+ userRepo.save(user)
+		+ output = plainToClass(TransactionOutput, withdraw,
+		+ return {status: RESULT_STATUS.SUCCEED,  data: output,};
+      
+ 
+	2.2. Sửa api @Post('verification-withdraw') verificationWithdraw
+		+ gọi đến transactionService.verificationWithdraw
+	2.3. Sửa hàm verificationWithdraw ở transactionService
+	Cụ thể: 
+	- Controller 
+		+ Chia verificationWithdraw thành 2 api 
+			* verificationWithdraw @Post('verification-withdraw')
+				
+			* verificationTransferPoints @Post('verification-transfer-points')
+	- Ở service 
+		+ Chia hàm verificationWithdraw thành 2 hàm 
+			* verificationWithdraw
+			* verificationTransferPoints
+
+	2.4. Test với postman 
+	Test api rút tiền withdraw 
+		- tạo ra transaction rút tiền withdraw bằng api createWithdraw 
+			+ Test đã tạo ra đúng transaction hay chưa 
+			+ Đã gửi verifi Mail đúng template (Đúng)
+		- verify transaction rút tiền withdraw bằng api verificationWithdraw
+			+ Đã verify được hay chưa 
+	Test api chuyển điểm transfer points 
+		- tạo ra transaction rút tiền withdraw bằng api createWithdraw 
+			+ Test đã tạo ra đúng transaction hay chưa 
+			+ Đã gửi verifi Mail đúng template
+		- verify transaction rút tiền withdraw bằng api verificationWithdraw
+			+ + Đã verify được hay chưa 
+OKIIII
+	2.5. Push thay đổi lên check xem có bị conflict 
+	2.6. pull develop merge vào feature rồi push thay đổi lên 
+	2.7. check xem các code có bị dư thừa gì ở merge_request change không (done k có dư thừa ) 
+	2.8. viết các docs cần thiết (vieets docsssss) done
+	2.9. Check lại những gì đã làm đúng với phần merge chưa 
+	2.10. gửi merge chị Liễu check 
+	Dạ em gửi merge nha chị 
+	https://gitlab.com/wolcg/backend/user/-/merge_requests/100
+
+	test thử trường hợp này:(Test ở api transfer point) , verification mail 
+	Thử test với REBACK 
+	1. tạo lệch đổi tiền lúc 10h19
+	2. không verification mail
+	3. tạo lại lệnh đổi tiền lúc 10h20
+	4. verification mail
+	5. check time tạo của cuộc giao dịch đúng 10h20 ko nhé
+1. Logic khi create REBACK và verify REBACK 
+createREBACK 
+	- truyền xuống ("amount": 1, "pin_code": "123456", "work_type": "RE_BACK") 
+	- Nếu có cái NEW_REQUEST thì update 
+	- Nếu không tạo ra cái mới 
+	
+verify REBACK 
+	- const transferPoints = transactionRepo.findOne(id: input.id, user.id = userId, TRANSACTION_STATUS.NEW_REQUEST, TRANSACTION_TYPE.TRANSFER_POINTS)
+	- amountNow = Number(user.amountReBack);
+	- transferPoints.amount_before = +user.amount;
+	- user.amount = roundToTwo(+user.amount + +transferPoints.amount);
+	- user.amountReBack = roundToTwo(
+          +user.amountReBack - +transferPoints.amount,
+        );
+	- transferPoints.amount_after = +user.amount;
+	- transferPoints.status = TRANSACTION_STATUS.COMPLETED;
+	- Nếu amountNow < transferPoints.amount thì trả về exception USER_BALANCE_IS_NOT_ENOUGH
+	- transactionRepo.save(transferPoints);
+	- userRepo.save(user);
+
+	Vậy cần test với amount của transaction <= user.amountReBack
+	
+	Thử test với REBACK 
+	1. tạo lệch đổi tiền lúc 10h19
+	2. không verification mail
+	3. tạo lại lệnh đổi tiền lúc 10h20
+	4. verification mail
+	5. check time tạo của cuộc giao dịch đúng 10h20 ko nhé
+	Kết quả giao dịch không đúng vào 10h20 mà vào lúc 10h19 
+	Có nghĩa ở lần tạo thứ nhất mà không verify thì ở lần create thứ nó sẽ lấy cái cũ lên và dùng 
+	- Fix bằng cách 
+		+ Lấy lên thì update luôn create time	
+	
+	T đã fix bug ở trên và xóa các comment rồi nha,
+	 chỗ verification-withdraw t nghĩ không cần sửa thành withdrawal bởi vì verification đã là danh từ rồi 
+	Check lại giúp t nha 	
+	
+				
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

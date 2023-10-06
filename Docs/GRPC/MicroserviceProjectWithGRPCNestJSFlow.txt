@@ -1,0 +1,75 @@
+NestJS sp 3 kiến trúc: 
+	- HTTP-based platforms 
+	- Websockets 
+	- Microservices 
+I. Một project monolithic: (Nest Application)
+	- Tạo ra một project
+	- File Main sẽ tạo ra một NestApplication (Listen một cái cổng nào đó) 
+	- Tạo ra các module (mỗi module có nhiệm vụ thực hiện một service nào đó ) 
+		+ Service được viết với chuẩn RESTful API 
+		+ Các tầng Controller, Service, Repo,...
+		+ Nhờ vào các decorator @Controller, @Post,...và cung cấp đường dẫn tương ứng Nest app nhận biết được 
+		từ đó ta request để nhận kết quả của service thông qua đường dẫn và cổng tương ứng của Nest app
+		(Client request to api dùng cơ chế http request hoặc websocket)    
+
+(Câu hỏi 1: tôi tạo ra các monolithic project khác nhau, listen các cổng khác nhau và gọi nhau để nhận kết quả thông qua http request
+	, có bất lợi gì mà phải xây dựng microservice?) (có nghĩa là muốn giao tiếp bằng restful api  
+(Các microservice nó có thể sử dụng nhiều cơ chế truyền tin khác so với các monolithic truyền với nhau,
+	 có thể sẽ tìm được câu trả lời ở chỗ truyền tin)
+(Trả lời: restful api có  lượng param truyền theo lớn/1 request thời gian chậm --> không phù hợp 
+	bởi vì dùng gRPC có encode binary và Http/2 dẫn đến tốc độ truyền nhanh gấp 5 lần so với Json http request giữa các monolithic project) 
+
+(Câu hỏi 2: Tại sao ta không dùng cơ chế gRPC cho việc truyền thông tin giữa các monolithic hay là web client server) 
+(Trả lời: Bởi vì gRPC chạy trên nền là HTTP/2, hiện tại không có browser nào hỗ trợ một cái gRPC client , nó không có clientGRPC để get service và dùng
+mà hiện tại chỉ có ở các ngôn ngữ lập trình hay framework hỗ trợ giữa các service và app với nhau thôi. )
+Thực ra vẫn có thể sử dụng cơ chế gRPC-Web nhưng hiệu suất không cao  
+ 
+II. Một Microservices Project:  (Dùng transporter là GRPC)
+	- Tạo ra một project  (API Gateway)
+	- File Main sẽ tạo ra một Nest Application (Listen một cái cổng nào đó)   
+	- Vẫn tạo ra các module (mỗi module có nhiệm vụ thực hiện một service nào đó) 
+	nhưng ở đây chúng chỉ là proxy (vỏ thôi, và sẽ nhận kết quả từ một microservice) 
+	- Tạo ra một Microservice
+		+ Nó là một project riêng, cũng có file main.ts 
+		+ Lúc này file Main sẽ tạo ra một NestMicroservice không listen cổng nào  
+		+ Trong microservice cũng được chia ra các tầng controller, service,...
+		+ Tuy nhiên nó không có đường dẫn hay listen tới cổng nào (nên không thể request trực tiếp và nhận kết quả từ service này) 
+	- Lúc này các proxy ở Nest App có thể gọi đến NestMicroservice và nhận kết quả. 
+	hoặc các NestMicroservice khác nhau cũng có thể gọi nhau để nhận kết quả. 
+	- Ở đây cụ thể ta dùng phương thức truyền tin qua lại giữa các Nestmicroservice với nhau và với Nestapp là RPC 
+	- Để truyền được thông qua GRPC (dùng cơ chế chính là protocol buffer) 
+		+ Chính xác là ta sẽ cho phép Remote Procedure Call từ NestApp đến NestMicroservice
+		+ Tạo ra một file .proto với message và service (thuộc microservice)
+		+ Sau đó generate file .proto này thành các interface và function 
+		+ Đối với phía NestMicroservice:
+			* Config ở trong file main.ts 
+			* Config controller implement interface ServiceController được generate ra và định nghĩa các hàm của nó 
+			(Định nghĩa theo luồng controller, service(logic), repo,...) 
+			* Decorate controller với ServiceControllerMethods function được generate ra
+			(Để nó sẽ duyệt qua các method có trong controller và decorate cho nestjs grpc biết đây là grpc method) 
+			* Có một cách khác để làm việc này là dùng decorator @GrpcMethod('ServiceName', 'methodname') 
+			 (Cách này được docs recommend, cách trên là nhờ thư viện ts-proto) - cách này không generate auth.ts 
+		+ Đối với phía NestApplication 
+			* Trong module import ClientModule.register (cũng gồm có proto file path) 
+			* Nó đã có sẵn cái proxy rồi 
+			* Ở tầng service của module cần nhận kết quả microservice trên 
+				- Inject ClientGrpc (là một interface thuộc nestjs/microservices) 
+				- Dùng interface ClientGrpc.getService<SeviceClient>
+				(ServiceClient là interface được generate ra) 
+				- Sau đó từ ServiceClient ta gọi đến các hàm cần thiết của nó và trả về kết quả cần cho từng method tương ứng.
+
+(Câu hỏi 3: .proto file chỉ để generate ra các interface thôi sao, vậy config nó để làm gì)  
+(Quay ngược lại xem cơ chế hoạt động của gRPC)
+(Trả lời: config chỉ định dùng nó trong Microservice để sử dụng trong quá trình call gRPC ở dưới nền, cụ thể xem kĩ cơ chế call gRPC )
+
+(Câu hỏi 4: Làm cách nào ClientGrpc nhận diện và get được service <ServiceClient> ?)
+(Trả lời: Đây là vấn đề được framework nestjs hỗ trợ từ cơ chế nhận diện cho đến phương thức gọi, chi tiết thì trong cơ chế lí thuyết) 
+
+Cách implement khác (giống trên nestjs docs) 
+(Note: Thay vì generate ra file ts và các interface tương ứng để implement vào controller ở micro hay implement vào service ở client 
+	thì ta phải tự viết với cú pháp tương tự ở trong controller micro và viết interface với cú pháp tương tự để implement vào service ở client) 
+
+--> Generate là giải pháp tốt hơn rất nhiều, nhưng mà mình chưa generate được bằng lệnh protoc 
+
+
+

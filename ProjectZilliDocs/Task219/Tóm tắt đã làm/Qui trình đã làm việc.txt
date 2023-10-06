@@ -1,0 +1,17 @@
+----------------------------------------------------------------------------------------------------------------------------------------
+Quá trình làm task 
+
+	Bước 1: Xác định việc cần làm và nơi sẽ làm 
+	Bước 2: Tìm cách để implement những việc dễ đến khó (sau khi làm xong thì note lại các bước làm nó và xác định done) 
+	Bước 3: Đối với những việc khó cần nhiều logic mà mình chưa từng biết thì đọc code và phân tích code ra (ý nghĩa từng dòng code và logic của cả hàm đó) 
+	Bước 4: Xác định luồng chạy của hàm đó 
+	Bước 5: Một khi đã tìm ra được giải pháp để làm thì tổng hợp những note ở trên lại và ghi lại các giải pháp có thể giải quyết được vấn đề và gửi nó cho người giao task để xác nhận đúng yêu cầu hay chưa 
+	(Có thể push code lên và  gửi kèm code đã implement để giúp người đọc dễ hình dung hơn) 
+	Bước 6: Dựa vào ý kiến đưa ra chọn giải pháp cuối cùng và tiến hành implement nó 
+	Bước 7: Sau khi đã implement xong thì check các lỗi chính tả, các lỗi dấu chấm, dấu chấm phẩy, check ở git hub desktop có những thay đổi nào là dư thừa , lỗi khiến người review khó review hơn hay không, các dòng code không cần thiết 
+	có thể cải thiện được thêm gì hay không 
+	Bước 8: Sửa hết các lỗi cần thiết và push nó lên merge request check có bị conflict hay không 
+	Bước 9: Tiến hành test dựa trên mục tiêu cần đạt được sau khi hoàn thành task 
+	Bước 10: Sau khi đã test xong thì tiến hành note lại api đã làm trên postman chung, tiến hành note lại các bước đã làm một cách cụ thể, trên jira sẽ note lại các api đã được noted ở postman và các trường được thêm 
+	cũng như các bước để test . 
+	Bước 11: Ping người giao và báo đã hoàn thành task , nếu kiểm tra có vấn đề thì tiến hành sửa và cập nhật

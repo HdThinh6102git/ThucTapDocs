@@ -1,0 +1,87 @@
+1. Controller 
+	- Nhận về các argument là (express.Request) trả về express.Response
+	- try catch để xử lý ở trong try nếu lỗi tung logger.error('updateSettingScreenAction', e);  next(e);
+	- Xử lý trong try 
+	- const { screen_items, screen, website, group_id} = req.body; 
+	(destrutoring các item được lấy về req.body) 
+	- let error = false
+	- let screenSetting = settingScreen.findSettingScreen(website: website, screen: screen, group_id: +group_id) 
+	(settingScreen.findSettingScreen là model query sequelize ) 
+	- Nếu có screenSetting và có screenSetting.id thì 
+		+ const screenItems = JSON.parse(screenSetting) 
+		(JSON parse screenSetting vừa được tìm ở trên ) 
+		+ Nếu screen_items?.length > 0 thì 
+			* Duyệt qua từng screen_items
+				- Bên trong duyệt qua từng screenItems (Đã JSON.parse) 
+					+ Nếu screen_item.screen === screenItem.screen thì settingScreen.updateSettingScreen(screen_item, screenItem)
+		+ Ngược lại screen_items?.length <= 0 thì error = false
+	- Ngược lại không có screenSetting hoặc không có screenSetting.id thì error = false
+	- Nếu error thì res.send(setResponse(false))
+	- Ngược lại error = false  thì res.send(setResponse(true));
+
+(1) Chỗ này cần hỏi lại error = false xuống dưới vẫn gán error = false vậy thì đâu bao giờ trả về true 
+
+2. Service 
+	- Nhận về 2 argument (settingScreenNew: any, settingScreenOld: any) 
+	(Là screen_item được truyền về từ body(new) và screenItem get lên từ database (old) ) 
+	- SettingScreenItem.update(settingScreenNew, id: settingScreenOld.id) 
+		+ (SettingScreenItem.update là sequelize update ) 
+		+ (Update setting Screen Item có id =  setting screen old.id với data của settingScreenNew ) 
+	- Duyệt qua từng item_details của settingScreenOld
+		+ SettingScreenItemDetailProduct.destroy 
+		(Xóa ItemDetailProduct có screen_item_detail_id ==  item_detail.id) 
+	- SettingScreenItemDetail.destroy
+	(Xóa ItemDetail có screen_item_id == settingScreenOld.id) ==> Xóa cái itemDetailProduct trước để xóa được ItemDetail ) 
+	- SettingScreenItemProduct.destroy
+	(Xóa ItemProduct có screen_item_id == settingScreenOld.id) 
+	- Nếu settingScreenNew.item_details và và settingScreenNew.item_details.length > 0 thì duyệt qua từng settingScreenNew.item_details
+		+ delete item_detail.id
+		(Xóa item_detail.id cũ được truyền về) 
+		+ item_detail.screen_item_id = settingScreenOld.id
+		+ item_detail = SettingScreenItemDetail.create(item_detail)
+		(Tạo ra item_detail mới có id mới ) 
+		+ Nếu có item_detail.item_detail_products thì 
+			* Duyệt qua từng item_detail.item_detail_products
+				- delete item_detail_product.id (Xóa id cũ được truyền về) 
+				- item_detail_product.screen_item_detail_id = get(item_detail, 'id')
+				(gán screen_item_detail_id = id của item_detail vừa mới tạo ra) 
+				- SettingScreenItemDetailProduct.bulkCreate(item_detail.item_detail_products)
+				(Tạo ra ItemDetailProduct mới) 
+	(Vậy ở đây sẽ chỉ cập nhật thông tin của SettingScreenItem , còn các record nhỏ hơn bên trong nó thì xóa luôn và tạo mới với thông tin cũ ) 
+	
+	- Tương tự nếu settingScreenNew.item_products và settingScreenNew.item_products.length > 0 thì
+		+ Duyệt qua từng settingScreenNew.item_products
+			* delete item_product.id
+			* item_product.screen_item_id = settingScreenOld.id
+		(Gán cùng lúc các thông tin cho các item_products) 
+		+ SettingScreenItemProduct.bulkCreate(settingScreenNew.item_products);
+		(Tạo đồng loạt nhiều item_products) 
+	- return true; 	
+
+
+3. Vậy check điều kiện lưu data của trường is_blog_featured và position ở api update setting là: 
+	- 
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+feat: Separate API transfer points and withdraw 
+1. src/shared/constants/common.ts
+dòng 85 thêm Wrong_work_type 
+(Đã có ) 
+2. src/transaction/controllers/transaction.controller.ts
+	B1: comment controller withdraw cũ 
+	B2: Tạo ra 2 hàm mới là withdrawal và transfer-points 
+		- Đối với withdrawal 
+			+ không sửa gì chỉ sửa tên (nó là nguyễn bản với withdraw cũ) 
+		- Đối với transfer-points 
+			+ Gần giống nhưng dùng service khác 
+			+ Dùng dto khác 
+3. src/transaction/dtos/index.ts
+4. src/transaction/dtos/transferpoints-input.dto.ts
+5. src/transaction/dtos/withdraw-input.dto.ts	
+6. src/transaction/entities/transaction.entity.ts
+7. src/transaction/providers/transaction.service.ts
+
+
+
+Dạ chị xóa giúp em nhánh feature/SCRUM-458 được không chị và close merge request 100 nha chị, em làm lại commit lại
+
+Chứ bữa trước em bị conflict mà em pull sửa conflict thì nó tạo ra một commit mới 
+
+
+Tính t  làm xong các bước trên á mà push lên nó lại là một commit mới là (Merge branch 'develop' into feature/SCRUM-458) 
+
+
+Dạ chị, em làm xong task SCrum -458 và tạo nhánh nhưng bị conflict 
+	
+Commit này là những gì đã merge từ develop vô nhánh feature 
+	Chứ không thấy được các thay đổi đã làm trong nhánh task nữa, vậy giờ làm thế nào Tính, hay xóa nhánh này luôn và close merge request làm lại từ đầu 

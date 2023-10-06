@@ -1,0 +1,100 @@
+1. Use JSON format  
+2. Nound instead of verbs 
+	- Qui tắc đặt tên cho endpoint (url) 
+	- 1 đường dẫn duy nhất (chỉ thay đổi http method post, put, patch,...) 
+	- Đặt tên dựa trên business entity hoặc domain object 
+3. Plural Nouns 
+	- Đặt tên bằng danh từ số nhiều 
+	- vd: users, orders,... trừ một số từ k thể thêm s thì thôi 
+4. Http method 
+	- Sử dụng http method đúng với chuẩn (post thêm, delete xóa,...)
+	- put là upsert (nếu chưa có tạo mới, có rồi thì cập nhật) 
+	- patch là cập nhật (nếu chưa có thì lỗi) 
+5. Http code 
+	Dùng chuẩn các http code 
+	- Informational responses ( trả về thông tin) : 100 - 199 (ít xài) 
+	- Successful responses : 200 - 299 
+	- Redirection messages  : 300 - 399 
+	(gửi request đến server mà server chưa xử lí, redirect đến chỗ khác.) 
+	- Client error responses: 400 - 499 
+	- Server error responses: 500 - 599 
+	Phổ biến: 
+		+ 200- ok, 400-bad, 401-Unauthorized , 403-forbidden, 429-rate limit(Chống spam do request nhiều)
+	Một vài recommend: 
+	- Khi get dữ liệu rỗng thì nền trả về 204 No Content thay vì 200 ok và object rỗng 
+		+ Có thể trả về 200 ok object rỗng để frontend dễ dàng hiển thị 
+		+ Dùng nào cũng được mà phải cho toàn bộ dự án đồng nhất 
+	- Khi thực hiện Delete một user mà user đó không tồn tại thì 
+		+ Trả về 404 not found thay vì 400 bad request 
+	- Khi thực hiện method Put 
+		+ Nếu rơi vào trường hợp insert thì trả về 201 Created 
+		+ Nếu rơi vào trường hợp update thì trả về 200 Ok 
+	- Khi thực hiện Put bị conflict 
+		+ Trả về 409 Conflict thay vì 400 Bad request 
+	- Khi thực hiện một request từ client đến server mà Server nhận nhưng chưa xử lí: 
+		+ Trả về 202 Accepted thay vì 200 ok đồng thời một id để biết trạng thái của việc xử lí 
+6. Relationships in url (này hay, phải áp dụng để api rõ ràng hơn, chuyên nghiệp hơn)
+	- customers/2/orders/1 thay vì orders/1?customerid = 2 
+	- customers/2/orders (lấy tất cả order của customer 2 
+	- posts/2/comments/1
+7. Filtering, Sorting, Pagination (chỗ này cũng hay) 
+	- Có quá nhiều invoices , query một lúc sẽ rất nhiều 
+	- Cần học về tìm kiếm, Pagination 
+	- Lấy cả đống là vứt, cần có pagination 
+	- orders?page=0&pageSiag=10 
+	- filter: &only=id+customer+quantity&sort by=-total price 
+	Trước mình bị lỗi chỗ filter tạo ra từng api riêng cho từng sort, từng filter (rất là lằng nhằng)
+	Thiết kế một cái và design theo dạng robot truyền tham số 
+8. Prefix 
+	- Thay vì /customers thì là /api/customers 
+	- Để phân biệt được đây là restful api chứ không phải là ui 
+9. Versioning 
+	- Cách 1: /api/v1/customers thay vì /api/customers 
+	- Cách 2: truyền header cho api 
+	{"Apiversion": "1"} 
+10. HATEOAS 
+	- Trong data trả về có navigate đến data khác liên quan đến nó 
+	- Trả về danh sách customer thì trong đó có link để navigate đến customers/2 chẳng hạn 
+11. API documentation 
+	- Viết docs cho api
+		+ tên, làm nhiệm vụ gì , param gì , bao nhiêu param 
+	- Dùng swagger hoặc postman để document cho api (công ty mình dùng postman)
+	- swagger là api documentation rất mạnh 
+	- có thể export từ swagger thành file pdf ,...
+	- Postman cũng có thể design rồi export thành Json rồi , export thành link rồi gửi cho front end và xài ik vậy 
+	- Hoặc Open Api 
+	- Sẽ không tốn quá nhiều time document 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

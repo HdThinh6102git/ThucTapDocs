@@ -1,0 +1,1 @@
+1. Load chậm (Load trang chậm) có thể do mạng hoặc do backend 

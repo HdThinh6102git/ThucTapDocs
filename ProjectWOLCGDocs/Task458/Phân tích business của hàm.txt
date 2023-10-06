@@ -1,0 +1,33 @@
+1. getSetting
+2. get userId và check nếu k có thì tung unauthorized 
+3. user mà không có pincode thì tung lỗi không có pin_code 
+
+4. Tạo ra const withdraw = tìm transaction (user.id = userId, status, type )
+Chỗ withdraw này là để rút tiền 
+	+ khai báo verfCode randomCode, verifTime
+	+ khai báo verfTime 
+	+ Kiểm tra verftime của withdraw nếu hết hạn thì tung lỗi 
+		httpException PLEASE_TRY_AGAIN
+	+ Gửi một verificationEmailTranssaction 
+	+ Nếu withdraw có status = NEW_REQUEST 
+		* gán verfCode, verfTime mới cho withDraw
+		* Lưu withdraw xuống db (transaction.save)
+		* khai báo output = plainToClass(TransactionOutput, withdraw,)
+		* return status: RESULT_STATUS.SUCCEED và data: output
+
+5. Tạo ra const transaction = new Transaction()
+Chỗ transaction này là để chuyển điểm 
+	+ gán type, status, amount, user, verifCode, verifTime, mail, work_type
+	+ Nếu input.work_type == WORK_TYPE.AMOUNT 
+		* Tìm wallet where 
+		* Nếu !wallet thì tung lỗi 
+			NotFoundException(MESSAGES.WALLET_NOT_FOUND);
+		* gán transaction.address = wallet.address
+		* transaction.fee = setting.withdrawal_fee_percentage;
+	+ Lưu const transaction xuống db (transaction.save)
+	+ khai báo output = plainToClass(TransactionOutput, transaction,)
+	+ return status: RESULT_STATUS.SUCCEED và data: output
+
+
+
+
